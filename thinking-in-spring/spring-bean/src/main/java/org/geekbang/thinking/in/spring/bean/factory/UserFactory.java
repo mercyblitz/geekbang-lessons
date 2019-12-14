@@ -14,48 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geekbang.thinking.in.spring.ioc.overview.domain;
+package org.geekbang.thinking.in.spring.bean.factory;
+
+import org.geekbang.thinking.in.spring.ioc.overview.domain.User;
 
 /**
- * 用户类
+ * {@link User} 工厂类
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since
  */
-public class User {
+public interface UserFactory {
 
-    private Long id;
-
-    private String name;
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                '}';
-    }
-
-    public static User createUser() {
-        User user = new User();
-        user.setId(1L);
-        user.setName("小马哥");
-        return user;
+    default User createUser() {
+        return User.createUser();
     }
 }

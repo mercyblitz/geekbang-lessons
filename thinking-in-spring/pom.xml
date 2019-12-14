@@ -11,6 +11,8 @@
 
     <modules>
         <module>ioc-container-overview</module>
+        <module>spring-bean</module>
+        <module>dependency-lookup</module>
     </modules>
 
     <properties>
@@ -49,6 +51,11 @@
 
     <!-- Spring 依赖 -->
     <dependencies>
+        <!-- Spring IoC 核心依赖 -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework</groupId>
@@ -65,4 +72,19 @@
             <artifactId>spring-webflux</artifactId>
         </dependency>
     </dependencies>
+
+    <build>
+
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+
+    </build>
 </project>

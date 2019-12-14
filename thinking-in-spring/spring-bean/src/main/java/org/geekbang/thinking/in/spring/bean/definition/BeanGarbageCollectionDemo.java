@@ -14,48 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geekbang.thinking.in.spring.ioc.overview.domain;
+package org.geekbang.thinking.in.spring.bean.definition;
+
+import org.geekbang.thinking.in.spring.bean.factory.UserFactory;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 /**
- * 用户类
+ * Bean 垃圾回收（GC）示例
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since
  */
-public class User {
+public class BeanGarbageCollectionDemo {
 
-    private Long id;
-
-    private String name;
-
-    public Long getId() {
-        return id;
+    public static void main(String[] args) throws InterruptedException {
+        // 创建 BeanFactory 容器
+        AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
+        // 注册 Configuration Class（配置类）
+        applicationContext.register(BeanInitializationDemo.class);
+        // 启动 Spring 应用上下文
+        applicationContext.refresh();
+        // 关闭 Spring 应用上下文
+        applicationContext.close();
+        Thread.sleep(5000L);
+        // 强制触发 GC
+        System.gc();
+        Thread.sleep(5000L);
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    @Override
-    public String toString() {
-        return "User{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                '}';
-    }
-
-    public static User createUser() {
-        User user = new User();
-        user.setId(1L);
-        user.setName("小马哥");
-        return user;
-    }
 }
