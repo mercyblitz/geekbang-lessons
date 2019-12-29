@@ -4,7 +4,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
         https://www.springframework.org/schema/beans/spring-beans.xsd">
 
-    <import resource="classpath:/META-INF/dependency-lookup-context.xml"/>
+    <import resource="classpath:/"/>
 
     <bean class="org.geekbang.thinking.in.spring.ioc.dependency.injection.UserHolder">
         <property name="user" ref="superUser" />
