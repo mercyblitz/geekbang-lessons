@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+        xmlns="http://www.springframework.org/schema/beans"
+        xmlns:context="http://www.springframework.org/schema/context"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        https://www.springframework.org/schema/beans/spring-context.xsd">
+
+    <bean class="org.geekbang.thinking.in.spring.bean.lifecycle.MyInstantiationAwareBeanPostProcessor"/>
+
+    <bean id="userHolder" class="org.geekbang.thinking.in.spring.bean.lifecycle.UserHolder" autowire="constructor"
+          init-method="init" destroy-method="doDestroy">
+        <!-- 通过 XML 元素配置 -->
+        <!--        <property name="number" value="1" /> -->
+        <property name="description" value="The user holder"/>
+    </bean>
+
+    <context:annotation-config></context:annotation-config>
+
+</beans>
