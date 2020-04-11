@@ -17,4 +17,6 @@
         <property name="description" value="The user holder"/>
     </bean>
 
+    <context:annotation-config></context:annotation-config>
+
 </beans>
