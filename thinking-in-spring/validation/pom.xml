@@ -6,10 +6,11 @@
         <artifactId>thinking-in-spring</artifactId>
         <groupId>org.geekbang</groupId>
         <version>1.0-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>i18n</artifactId>
+    <artifactId>validation</artifactId>
 
     <!-- Spring Boot 2.2.2.RELEASE -->
     <dependencyManagement>
@@ -26,11 +27,23 @@
     </dependencyManagement>
 
     <dependencies>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter</artifactId>
-        </dependency>
-    </dependencies>
 
+        <dependency>
+            <groupId>${project.groupId}</groupId>
+            <artifactId>ioc-container-overview</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.mortbay.jasper</groupId>
+            <artifactId>apache-el</artifactId>
+        </dependency>
+
+    </dependencies>
 
 </project>
