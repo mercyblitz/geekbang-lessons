@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+        xmlns="http://www.springframework.org/schema/beans"
+        xmlns:context="http://www.springframework.org/schema/context"
+        xmlns:util="http://www.springframework.org/schema/util"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        https://www.springframework.org/schema/context/spring-context.xsd
+        http://www.springframework.org/schema/util
+        https://www.springframework.org/schema/util/spring-util.xsd">
+
+    <!-- 3. 将其声明为 Spring Bean -->
+    <bean class="org.geekbang.thinking.in.spring.conversion.CustomizedPropertyEditorRegistrar"/>
+
+    <!-- 声明 ConversionServiceFactoryBean 并且 name 必须为 "conversionService" -->
+    <bean id="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean">
+        <property name="converters">
+            <bean class="org.geekbang.thinking.in.spring.conversion.PropertiesToStringConverter"/>
+        </property>
+    </bean>
+
+    <!-- java.util.Properties -->
+    <util:properties id="context">
+        <prop key="id">1</prop>
+        <prop key="name">mercyblitz</prop>
+    </util:properties>
+
+    <bean id="user" class="org.geekbang.thinking.in.spring.ioc.overview.domain.User">
+        <property name="id" value="1"/>
+        <property name="name" value="小马哥"/>
+        <property name="context"> <!-- Properties 类型 -->
+            <value>
+                id = 1
+                name = mercyblitz
+            </value>
+        </property>
+        <property name="contextAsText" ref="context"/> <!-- Properties -> String -->
+    </bean>
+
+</beans>
