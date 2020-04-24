@@ -1,0 +1,2 @@
+## 定义 namespace 与 NamespaceHandler 的映射
+http\://time.geekbang.org/schema/users=org.geekbang.thinking.in.spring.configuration.metadata.UsersNamespaceHandler
