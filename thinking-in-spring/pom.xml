@@ -22,6 +22,7 @@
         <module>i18n</module>
         <module>validation</module>
         <module>data-binding</module>
+        <module>conversion</module>
     </modules>
 
     <properties>
