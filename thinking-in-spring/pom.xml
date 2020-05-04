@@ -23,6 +23,8 @@
         <module>validation</module>
         <module>data-binding</module>
         <module>conversion</module>
+        <module>generic</module>
+        <module>event</module>
     </modules>
 
     <properties>
