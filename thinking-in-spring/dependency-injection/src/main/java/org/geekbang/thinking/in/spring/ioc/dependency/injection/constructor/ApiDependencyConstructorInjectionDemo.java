@@ -14,28 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geekbang.thinking.in.spring.ioc.dependency.injection;
+package org.geekbang.thinking.in.spring.ioc.dependency.injection.constructor;
 
-import org.geekbang.thinking.in.spring.ioc.overview.domain.User;
-import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.geekbang.thinking.in.spring.ioc.dependency.injection.UserHolder;
+import org.springframework.beans.factory.config.BeanDefinition;
+import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-import org.springframework.context.annotation.Bean;
 
 /**
- * 基于 Java 注解的依赖 Setter 方法注入示例
+ * 基于 API 实现依赖 Constructor 注入示例
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since
  */
-public class AnnotationDependencySetterInjectionDemo {
+public class ApiDependencyConstructorInjectionDemo {
 
     public static void main(String[] args) {
 
         // 创建 BeanFactory 容器
         AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
-        // 注册 Configuration Class（配置类）
-        applicationContext.register(AnnotationDependencySetterInjectionDemo.class);
+
+        // 生成 UserHolder 的 BeanDefinition
+        BeanDefinition userHolderBeanDefinition = createUserHolderBeanDefinition();
+        // 注册 UserHolder 的 BeanDefinition
+        applicationContext.registerBeanDefinition("userHolder", userHolderBeanDefinition);
 
         XmlBeanDefinitionReader beanDefinitionReader = new XmlBeanDefinitionReader(applicationContext);
 
@@ -54,10 +57,21 @@ public class AnnotationDependencySetterInjectionDemo {
         applicationContext.close();
     }
 
-    @Bean
-    public UserHolder userHolder(User user) {
-        UserHolder userHolder = new UserHolder();
-        userHolder.setUser(user);
-        return userHolder;
+    /**
+     * 为 {@link UserHolder} 生成 {@link BeanDefinition}
+     *
+     * @return
+     */
+    private static BeanDefinition createUserHolderBeanDefinition() {
+        BeanDefinitionBuilder definitionBuilder = BeanDefinitionBuilder.genericBeanDefinition(UserHolder.class);
+        definitionBuilder.addConstructorArgReference("superUser");
+        return definitionBuilder.getBeanDefinition();
     }
+
+//    @Bean
+//    public UserHolder userHolder(User user) { // superUser -> primary = true
+//        UserHolder userHolder = new UserHolder();
+//        userHolder.setUser(user);
+//        return userHolder;
+//    }
 }
