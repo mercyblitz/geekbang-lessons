@@ -91,6 +91,7 @@ public class BeanScopeDemo implements DisposableBean {
         // 注册 Configuration Class（配置类） -> Spring Bean
         applicationContext.register(BeanScopeDemo.class);
 
+
         applicationContext.addBeanFactoryPostProcessor(beanFactory -> {
             beanFactory.addBeanPostProcessor(new BeanPostProcessor() {
 
@@ -119,7 +120,7 @@ public class BeanScopeDemo implements DisposableBean {
 
         scopedBeansByLookup(applicationContext);
 
-        scopedBeansByInjection(applicationContext);
+//        scopedBeansByInjection(applicationContext);
 
         // 显示地关闭 Spring 应用上下文
         applicationContext.close();

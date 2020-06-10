@@ -23,7 +23,6 @@ package org.geekbang.thinking.in.spring.ioc.overview.enums;
  * @since
  */
 public enum City {
-
     BEIJING,
     HANGZHOU,
     SHANGHAI
