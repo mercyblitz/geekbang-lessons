@@ -47,6 +47,11 @@ public class ResolvableDependencySourceDemo {
         // 注册 Configuration Class（配置类） -> Spring Bean
         applicationContext.register(ResolvableDependencySourceDemo.class);
 
+//        applicationContext.getBeanFactory();
+//        applicationContext.getAutowireCapableBeanFactory();
+//
+
+
         applicationContext.addBeanFactoryPostProcessor(beanFactory -> {
             // 注册 Resolvable Dependency
             beanFactory.registerResolvableDependency(String.class, "Hello,World");

@@ -129,7 +129,7 @@ public class BeanScopeDemo implements DisposableBean {
 
 //        scopedBeansByLookup(applicationContext);
 
-        scopedBeansByInjection(applicationContext);
+//        scopedBeansByInjection(applicationContext);
 
         // 显示地关闭 Spring 应用上下文
         applicationContext.close();
