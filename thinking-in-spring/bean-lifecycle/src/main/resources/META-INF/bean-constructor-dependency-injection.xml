@@ -8,15 +8,15 @@
         http://www.springframework.org/schema/context
         https://www.springframework.org/schema/context/spring-context.xsd">
 
-<!--    <bean class="org.geekbang.thinking.in.spring.bean.lifecycle.instantiation.MyInstantiationAwareBeanPostProcessor"/>-->
+    <bean class="org.geekbang.thinking.in.spring.bean.lifecycle.instantiation.MyInstantiationAwareBeanPostProcessor"/>
 
     <bean id="userHolder" class="org.geekbang.thinking.in.spring.bean.lifecycle.UserHolder" autowire="constructor"
           init-method="init" destroy-method="doDestroy">
         <!-- 通过 XML 元素配置 -->
-<!--        <property name="number" value="1"/>-->
+        <property name="number" value="1"/>
         <property name="description" value="The user holder"/>
     </bean>
 
-    <context:annotation-config></context:annotation-config>
+<!--    <context:annotation-config/>-->
 
 </beans>
