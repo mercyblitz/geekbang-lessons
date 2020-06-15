@@ -33,6 +33,12 @@
             <version>${project.version}</version>
         </dependency>
 
+<!--        <dependency>-->
+<!--            <artifactId>ioc-container-overview</artifactId>-->
+<!--            <groupId>org.geekbang</groupId>-->
+<!--            <version>1.0-SNAPSHOT</version>-->
+<!--        </dependency>-->
+
         <!-- Testing -->
 
         <dependency>

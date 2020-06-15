@@ -16,7 +16,6 @@
  */
 package org.geekbang.thinking.in.spring.environment;
 
-import com.sun.tools.internal.xjc.reader.xmlschema.bindinfo.BIConversion;
 import org.geekbang.thinking.in.spring.ioc.overview.domain.User;
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.support.ClassPathXmlApplicationContext;

@@ -13,7 +13,34 @@
     <artifactId>generic</artifactId>
 
     <properties>
-        <spring.version>4.3.26.RELEASE</spring.version>
+        <spring_old.version>4.3.26.RELEASE</spring_old.version>
     </properties>
+
+    <!-- Spring 依赖 -->
+    <dependencies>
+        <!-- Spring IoC 核心依赖 -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${spring_old.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+            <version>${spring_old.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+            <version>${spring_old.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webflux</artifactId>
+        </dependency>
+    </dependencies>
 
 </project>
