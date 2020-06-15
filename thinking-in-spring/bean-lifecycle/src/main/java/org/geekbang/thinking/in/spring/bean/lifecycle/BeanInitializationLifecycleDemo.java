@@ -16,11 +16,11 @@
  */
 package org.geekbang.thinking.in.spring.bean.lifecycle;
 
+import org.geekbang.thinking.in.spring.bean.lifecycle.instantiation.MyInstantiationAwareBeanPostProcessor;
 import org.geekbang.thinking.in.spring.ioc.overview.domain.User;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
 import org.springframework.context.annotation.CommonAnnotationBeanPostProcessor;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 /**
  * Bean 初始化生命周期示例

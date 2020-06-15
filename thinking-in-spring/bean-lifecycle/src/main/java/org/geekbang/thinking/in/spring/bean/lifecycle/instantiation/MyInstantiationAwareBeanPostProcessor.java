@@ -14,8 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geekbang.thinking.in.spring.bean.lifecycle;
+package org.geekbang.thinking.in.spring.bean.lifecycle.instantiation;
 
+import org.geekbang.thinking.in.spring.bean.lifecycle.UserHolder;
 import org.geekbang.thinking.in.spring.ioc.overview.domain.SuperUser;
 import org.geekbang.thinking.in.spring.ioc.overview.domain.User;
 import org.springframework.beans.BeansException;
@@ -30,7 +31,7 @@ import org.springframework.util.ObjectUtils;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since
  */
-class MyInstantiationAwareBeanPostProcessor implements InstantiationAwareBeanPostProcessor {
+public class MyInstantiationAwareBeanPostProcessor implements InstantiationAwareBeanPostProcessor {
 
     @Override
     public Object postProcessBeforeInstantiation(Class<?> beanClass, String beanName) throws BeansException {
@@ -56,7 +57,6 @@ class MyInstantiationAwareBeanPostProcessor implements InstantiationAwareBeanPos
     // user 是跳过 Bean 属性赋值（填入）
     // superUser 也是完全跳过 Bean 实例化（Bean 属性赋值（填入））
     // userHolder
-
     @Override
     public PropertyValues postProcessProperties(PropertyValues pvs, Object bean, String beanName)
             throws BeansException {

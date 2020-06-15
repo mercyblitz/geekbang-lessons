@@ -14,8 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geekbang.thinking.in.spring.bean.lifecycle;
+package org.geekbang.thinking.in.spring.bean.lifecycle.instantiation;
 
+import org.geekbang.thinking.in.spring.bean.lifecycle.UserHolder;
 import org.geekbang.thinking.in.spring.ioc.overview.domain.User;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.beans.factory.xml.XmlBeanDefinitionReader;
@@ -57,6 +58,7 @@ public class BeanInstantiationLifecycleDemo {
         // 构造器注入按照类型注入，resolveDependency
         UserHolder userHolder = beanFactory.getBean("userHolder", UserHolder.class);
         System.out.println(userHolder);
+
     }
 
     private static void executeApplicationContext() {
