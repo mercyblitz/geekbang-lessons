@@ -21,11 +21,6 @@
 
         <!-- 复用 ioc-container-overview</artifactId> -->
         <dependency>
-            <groupId>${groupId}</groupId>
-            <artifactId>ioc-container-overview</artifactId>
-            <version>${version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.geekbang</groupId>
             <artifactId>ioc-container-overview</artifactId>
             <version>1.0-SNAPSHOT</version>

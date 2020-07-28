@@ -33,9 +33,10 @@ public class SingletonBeanRegistrationDemo {
     public static void main(String[] args) throws InterruptedException {
         // 创建 BeanFactory 容器
         AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext();
+        SingletonBeanRegistry singletonBeanRegistry = applicationContext.getBeanFactory();
+
         // 创建一个外部 UserFactory 对象
         UserFactory userFactory = new DefaultUserFactory();
-        SingletonBeanRegistry singletonBeanRegistry = applicationContext.getBeanFactory();
         // 注册外部单例对象
         singletonBeanRegistry.registerSingleton("userFactory", userFactory);
         // 启动 Spring 应用上下文

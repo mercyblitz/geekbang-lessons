@@ -27,6 +27,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import javax.sound.midi.Soundbank;
 import java.util.Map;
 
 import static org.springframework.beans.factory.support.BeanDefinitionBuilder.genericBeanDefinition;
@@ -57,9 +58,14 @@ public class AnnotationBeanDefinitionDemo {
         applicationContext.refresh();
         // 按照类型依赖查找
         System.out.println("Config 类型的所有 Beans" + applicationContext.getBeansOfType(Config.class));
+        System.out.println("-------------");
         System.out.println("User 类型的所有 Beans" + applicationContext.getBeansOfType(User.class));
         // 显示地关闭 Spring 应用上下文
         applicationContext.close();
+    }
+
+    public static void registerUserBeanDefinition(BeanDefinitionRegistry registry) {
+        registerUserBeanDefinition(registry, null);
     }
 
     public static void registerUserBeanDefinition(BeanDefinitionRegistry registry, String beanName) {
@@ -78,16 +84,12 @@ public class AnnotationBeanDefinitionDemo {
         }
     }
 
-    public static void registerUserBeanDefinition(BeanDefinitionRegistry registry) {
-        registerUserBeanDefinition(registry, null);
-    }
 
     // 2. 通过 @Component 方式
     @Component // 定义当前类作为 Spring Bean（组件）
     public static class Config {
 
         // 1. 通过 @Bean 方式定义
-
         /**
          * 通过 Java 注解的方式，定义了一个 Bean
          */

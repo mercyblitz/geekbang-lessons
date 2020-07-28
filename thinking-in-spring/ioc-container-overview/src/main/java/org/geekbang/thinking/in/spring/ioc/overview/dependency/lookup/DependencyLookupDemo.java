@@ -37,7 +37,10 @@ public class DependencyLookupDemo {
     public static void main(String[] args) {
         // 配置 XML 配置文件
         // 启动 Spring 应用上下文
-        BeanFactory beanFactory = new ClassPathXmlApplicationContext("classpath:/META-INF/dependency-lookup-context.xml");
+        ClassPathXmlApplicationContext beanFactory = new ClassPathXmlApplicationContext("classpath:/META-INF/dependency-lookup-context.xml");
+
+        System.out.println(beanFactory.getBeanFactory().getBeanDefinition("user"));
+
         // 按照类型查找
         lookupByType(beanFactory);
         // 按照类型查找结合对象
