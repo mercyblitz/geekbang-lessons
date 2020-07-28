@@ -16,7 +16,7 @@
     <!-- 普通 beanDefinition GenericBeanDefinition -->
     <!-- 经过合并后 GenericBeanDefinition 变成 RootBeanDefinition -->
     <bean id="user" class="org.geekbang.thinking.in.spring.ioc.overview.domain.User">
-        <property name="id" value="11"/>
+        <property name="id" value="11" />
         <property name="name" value="小马哥"/>
         <property name="city" value="HANGZHOU"/>
         <property name="workCities" value="BEIJING,HANGZHOU"/>

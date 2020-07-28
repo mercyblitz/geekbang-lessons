@@ -16,6 +16,7 @@
  */
 package org.geekbang.thinking.in.spring.annotation;
 
+import org.geekbang.thinking.in.spring.ioc.overview.domain.User;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.stereotype.Component;
@@ -36,6 +37,9 @@ public class ComponentScanDemo {
 
     public static void main(String[] args) {
         AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext();
+
+        context.scan("org.geekbang.thinking.in.spring.annotation.config");
+
         // 注册 Configuration Class
         context.register(ComponentScanDemo.class);
 
@@ -51,6 +55,9 @@ public class ComponentScanDemo {
         // Annotation -> AnnotationAttributes(Map)
 
         System.out.println(testClass);
+
+        User user = context.getBean(User.class);
+        System.out.println("user = " + user);
 
         // 关闭 Spring 应用上下文
         context.close();
