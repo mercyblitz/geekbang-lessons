@@ -16,27 +16,38 @@
  */
 package org.geekbang.thinking.in.spring.aop.features;
 
-import org.geekbang.thinking.in.spring.aop.overview.EchoService;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.aop.ThrowsAdvice;
+import org.springframework.aop.framework.ProxyFactory;
+
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Random;
 
 /**
- * 基于 XML 配置自动代理示例
- *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since
  */
-public class AspectJSchemaBasedAutoProxyDemo {
+public class ThrowsAdviceDemo {
 
-    public static void main(String[] args) {
-        ClassPathXmlApplicationContext context =
-                new ClassPathXmlApplicationContext("classpath:/META-INF/spring-aop-auto-proxy-context.xml");
+    public static void main(String[] args) throws Exception {
 
-        context.refresh();
+        ThrowsAdviceDemo instance = new ThrowsAdviceDemo();
 
-        EchoService echoService = context.getBean("echoService", EchoService.class);
+        ProxyFactory proxyFactory = new ProxyFactory(instance);
 
-        System.out.println(echoService.echo("Hello,World"));
+        proxyFactory.addAdvice(new MyThrowsAdvice());
 
-        context.close();
+        ThrowsAdviceDemo proxy = (ThrowsAdviceDemo) proxyFactory.getProxy();
+        proxy.execute();
+        proxy.execute();
+
+    }
+
+    public void execute() {
+        Random random = new Random();
+        if (random.nextBoolean()) {
+            throw new RuntimeException("For Purpose.");
+        }
+        System.out.println("Executing...");
     }
 }

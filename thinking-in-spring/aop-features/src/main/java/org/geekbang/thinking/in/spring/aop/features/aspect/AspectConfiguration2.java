@@ -21,6 +21,7 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
+import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 
 /**
@@ -30,23 +31,15 @@ import org.springframework.core.annotation.Order;
  * @since
  */
 @Aspect
-@Order
-public class AspectConfiguration {
+public class AspectConfiguration2 implements Ordered {
 
-    @Pointcut("execution(public * *(..))") // 匹配 Join Point
-    private void anyPublicMethod() { // 方法名即 Pointcut 名
-        System.out.println("@Pointcut at any public method.");
+    @Before("execution(public * *(..))")          // Join Point 拦截动作
+    public void beforeAnyPublicMethod2() {
+        System.out.println("@Before any public method.(2)");
     }
 
-    @Around("anyPublicMethod()")         // Join Point 拦截动作
-    public Object aroundAnyPublicMethod(ProceedingJoinPoint pjp) throws Throwable {
-        System.out.println("@Around any public method.");
-        return pjp.proceed();
+    @Override
+    public int getOrder() {
+        return 0;
     }
-
-    @Before("anyPublicMethod()")          // Join Point 拦截动作
-    public void beforeAnyPublicMethod() {
-        System.out.println("@Before any public method.");
-    }
-
 }

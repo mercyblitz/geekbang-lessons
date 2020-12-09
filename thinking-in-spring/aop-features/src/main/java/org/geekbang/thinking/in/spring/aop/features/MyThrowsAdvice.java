@@ -16,27 +16,27 @@
  */
 package org.geekbang.thinking.in.spring.aop.features;
 
-import org.geekbang.thinking.in.spring.aop.overview.EchoService;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.springframework.aop.ThrowsAdvice;
+
+import java.lang.reflect.Method;
+import java.util.Arrays;
 
 /**
- * 基于 XML 配置自动代理示例
- *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since
  */
-public class AspectJSchemaBasedAutoProxyDemo {
+public class MyThrowsAdvice implements ThrowsAdvice {
 
-    public static void main(String[] args) {
-        ClassPathXmlApplicationContext context =
-                new ClassPathXmlApplicationContext("classpath:/META-INF/spring-aop-auto-proxy-context.xml");
+//    public void afterThrowing(RuntimeException e) {
+//        System.out.printf("Exception : %s\n", e);
+//    }
 
-        context.refresh();
-
-        EchoService echoService = context.getBean("echoService", EchoService.class);
-
-        System.out.println(echoService.echo("Hello,World"));
-
-        context.close();
+    public void afterThrowing(Method method, Object[] args, Object target, Exception e) {
+        System.out.printf("Method : %s , args : %s , target : %s, exception : %s\n",
+                method,
+                Arrays.asList(args),
+                target,
+                e
+        );
     }
 }
