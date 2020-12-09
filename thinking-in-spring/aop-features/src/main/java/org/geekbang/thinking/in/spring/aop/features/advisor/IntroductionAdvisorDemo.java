@@ -32,7 +32,7 @@ import java.util.Map;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since
  */
-public class IntroductionAdvisorDemo implements EchoService, Comparable<IntroductionAdvisorDemo> {
+public class IntroductionAdvisorDemo extends Object implements EchoService, Comparable<IntroductionAdvisorDemo> {
 
     public static void main(String[] args) {
         // EchoService 和 Comparable
