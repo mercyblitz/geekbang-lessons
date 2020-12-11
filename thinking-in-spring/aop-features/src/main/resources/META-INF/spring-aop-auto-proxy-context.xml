@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+        xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <bean id="echoService" class="org.geekbang.thinking.in.spring.aop.overview.DefaultEchoService"/>
+
+    <!-- Advice Bean = MethodInterceptor Bean -->
+    <bean id="echoServiceMethodInterceptor"
+          class="org.geekbang.thinking.in.spring.aop.features.interceptor.EchoServiceMethodInterceptor"/>
+
+    <!--    <bean class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">-->
+    <!--        <property name="beanNames" value="*"/>-->
+    <!--        <property name="interceptorNames">-->
+    <!--            <value>echoServiceMethodInterceptor</value>-->
+    <!--        </property>-->
+    <!--    </bean>-->
+
+    <!-- AutoProxy Bean -->
+    <bean class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"/>
+
+    <!-- Pointcut Bean -->
+    <bean id="echoServicePointcut" class="org.geekbang.thinking.in.spring.aop.features.pointcut.EchoServicePointcut">
+        <constructor-arg index="0" value="echo"/>
+        <constructor-arg index="1" value="org.geekbang.thinking.in.spring.aop.overview.EchoService"/>
+
+    </bean>
+
+    <!-- PointcutAdvisor Bean -->
+    <bean class="org.springframework.aop.support.DefaultPointcutAdvisor">
+        <constructor-arg index="0" ref="echoServicePointcut"/>
+        <constructor-arg index="1" ref="echoServiceMethodInterceptor"/>
+    </bean>
+</beans>
