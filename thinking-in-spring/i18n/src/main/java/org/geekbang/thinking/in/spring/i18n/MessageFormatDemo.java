@@ -33,7 +33,7 @@ public class MessageFormatDemo {
 
     public static void main(String[] args) {
 
-        ResourceBundle.getBundle("")
+        ResourceBundle.getBundle("");
 
         int planet = 7;
         String event = "a disturbance in the Force";
