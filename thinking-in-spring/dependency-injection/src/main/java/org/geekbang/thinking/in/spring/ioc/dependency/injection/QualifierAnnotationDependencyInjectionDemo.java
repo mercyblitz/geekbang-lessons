@@ -69,20 +69,20 @@ public class QualifierAnnotationDependencyInjectionDemo {
 
     @Bean
     @Qualifier // 进行逻辑分组
-    public User user2() {
+    public static User user2() {
         return createUser(8L);
 
     }
 
     @Bean
     @UserGroup
-    public User user3() {
+    public static User user3() {
         return createUser(9L);
     }
 
     @Bean
     @UserGroup
-    public User user4() {
+    public static User user4() {
         return createUser(10L);
     }
 

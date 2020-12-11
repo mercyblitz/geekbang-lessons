@@ -18,7 +18,6 @@ package org.geekbang.thinking.in.spring.ioc.bean.scope;
 
 import org.geekbang.thinking.in.spring.ioc.overview.domain.User;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
