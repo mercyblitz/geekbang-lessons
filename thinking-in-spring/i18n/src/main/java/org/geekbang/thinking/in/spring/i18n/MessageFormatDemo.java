@@ -20,6 +20,7 @@ import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.ResourceBundle;
 
 /**
  * {@link MessageFormat} 示例
@@ -31,6 +32,8 @@ import java.util.Locale;
 public class MessageFormatDemo {
 
     public static void main(String[] args) {
+
+        ResourceBundle.getBundle("")
 
         int planet = 7;
         String event = "a disturbance in the Force";
