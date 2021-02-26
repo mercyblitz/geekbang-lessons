@@ -16,4 +16,12 @@
         <spring.version>4.3.26.RELEASE</spring.version>
     </properties>
 
+    <dependencies>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webflux</artifactId>
+            <scope>system</scope>
+            <systemPath>${basedir}/lib/empty.jar</systemPath>
+        </dependency>
+    </dependencies>
 </project>
