@@ -15,23 +15,23 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean register(User user) {
-//        UserRepository userRepository = new InMemoryUserRepository();
-//        userRepository.save(user);
-
-        try {
-            Properties props = new Properties();
-            props.setProperty(Context.INITIAL_CONTEXT_FACTORY,"org.apache.naming.java.javaURLContextFactory");
-
-            Context context = new InitialContext(props);
-//            Context envContext  = (Context)context.lookup("java:/comp/env");
-            DataSource ds = (DataSource)context.lookup("java:/comp/env/jdbc/UserPlatformDB");
-            Connection connection = ds.getConnection();
-
-            System.out.println("dataSource " + connection.getMetaData());
-            return true;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        UserRepository userRepository = new InMemoryUserRepository();
+        userRepository.save(user);
+        return true;
+//        try {
+//            Properties props = new Properties();
+//            props.setProperty(Context.INITIAL_CONTEXT_FACTORY,"org.apache.naming.java.javaURLContextFactory");
+//
+//            Context context = new InitialContext(props);
+////            Context envContext  = (Context)context.lookup("java:/comp/env");
+//            DataSource ds = (DataSource)context.lookup("java:/comp/env/jdbc/UserPlatformDB");
+//            Connection connection = ds.getConnection();
+//
+//            System.out.println("dataSource " + connection.getMetaData());
+//            return true;
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
     }
 
     @Override
