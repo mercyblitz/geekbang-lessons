@@ -45,14 +45,14 @@ public class FrontControllerServlet extends HttpServlet {
      * @param servletConfig
      */
     public void init(ServletConfig servletConfig) {
-        initHandleMethods();
+        initHandleMethods(servletConfig);
     }
 
     /**
      * 读取所有的 RestController 的注解元信息 @Path
      * 利用 ServiceLoader 技术（Java SPI）
      */
-    private void initHandleMethods() {
+    private void initHandleMethods(ServletConfig servletConfig) {
         for (Controller controller : ServiceLoader.load(Controller.class)) {
             Class<?> controllerClass = controller.getClass();
             Path pathFromClass = controllerClass.getAnnotation(Path.class);
@@ -69,6 +69,9 @@ public class FrontControllerServlet extends HttpServlet {
                         new HandlerMethodInfo(requestPath, method, supportedHttpMethods));
             }
             controllersMapping.put(requestPath, controller);
+        }
+        for (Map.Entry<String, Controller> controllerEntry : controllersMapping.entrySet()) {
+            servletConfig.getServletContext().log("path:" + controllerEntry.getKey() + ", controller:" + controllerEntry.getValue());
         }
     }
 
@@ -146,6 +149,7 @@ public class FrontControllerServlet extends HttpServlet {
                             viewPath = "/" + viewPath;
                         }
                         RequestDispatcher requestDispatcher = servletContext.getRequestDispatcher(viewPath);
+                        servletContext.log("viewPath:" + viewPath);
                         requestDispatcher.forward(request, response);
                         return;
                     } else if (controller instanceof RestController) {
