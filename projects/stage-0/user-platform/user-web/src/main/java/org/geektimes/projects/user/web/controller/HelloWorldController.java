@@ -20,4 +20,9 @@ public class HelloWorldController implements PageController {
     public String execute(HttpServletRequest request, HttpServletResponse response) throws Throwable {
         return "index.jsp";
     }
+
+    @Path("/world2")
+    public String world2(HttpServletRequest request, HttpServletResponse response) throws Throwable {
+        return "index.jsp";
+    }
 }
