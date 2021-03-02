@@ -16,12 +16,16 @@
  */
 package org.geekbang.thinking.in.spring.aop.overview;
 
+import org.springframework.context.annotation.Configuration;
+
 /**
  * 默认 {@link EchoService} 实现
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since
  */
+@Configuration // @Configuration 需要 @ComponentScan -> ConfigurationClassPostProcessor
+// CGLIB 代理对象
 public class DefaultEchoService implements EchoService {
 
     @Override
