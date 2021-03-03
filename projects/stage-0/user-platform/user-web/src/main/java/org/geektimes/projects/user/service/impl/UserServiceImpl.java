@@ -11,7 +11,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public boolean register(User user) {
-        databaseUserRepository.getAll();
         return databaseUserRepository.save(user);
     }
 

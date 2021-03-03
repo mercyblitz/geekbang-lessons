@@ -44,9 +44,9 @@ public class DatabaseUserRepository implements UserRepository {
 
     @Override
     public boolean save(User user) {
-        executeQuery(INSERT_USER_DML_SQL,
-                resultSet -> {return null; }, COMMON_EXCEPTION_HANDLER, user.getName(), user.getPassword(),user.getEmail(),user.getPhoneNumber());
-        return false;
+        execute(INSERT_USER_DML_SQL,
+                resultSet -> true, COMMON_EXCEPTION_HANDLER, user.getName(), user.getPassword(),user.getEmail(),user.getPhoneNumber());
+        return true;
     }
 
     @Override
@@ -128,7 +128,7 @@ public class DatabaseUserRepository implements UserRepository {
                 // Boolean -> boolean
                 String methodName = preparedStatementMethodMappings.get(argType);
                 Method method = PreparedStatement.class.getMethod(methodName, wrapperType);
-                method.invoke(preparedStatement, i + 1, args);
+                method.invoke(preparedStatement, i + 1, arg);
             }
             ResultSet resultSet = preparedStatement.executeQuery();
             // 返回一个 POJO List -> ResultSet -> POJO List
@@ -140,6 +140,35 @@ public class DatabaseUserRepository implements UserRepository {
         return null;
     }
 
+    protected <T> T execute(String sql, ThrowableFunction<Boolean, T> function,
+                                 Consumer<Throwable> exceptionHandler, Object... args) {
+        Connection connection = getConnection();
+        try {
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            for (int i = 0; i < args.length; i++) {
+                Object arg = args[i];
+                Class argType = arg.getClass();
+
+                Class wrapperType = wrapperToPrimitive(argType);
+
+                if (wrapperType == null) {
+                    wrapperType = argType;
+                }
+
+                // Boolean -> boolean
+                String methodName = preparedStatementMethodMappings.get(argType);
+                Method method = PreparedStatement.class.getMethod(methodName, int.class ,wrapperType);
+                method.invoke(preparedStatement, i + 1, arg);
+            }
+            boolean resultSet = preparedStatement.execute();
+            // 返回一个 POJO List -> ResultSet -> POJO List
+            // ResultSet -> T
+            return function.apply(resultSet);
+        } catch (Throwable e) {
+            exceptionHandler.accept(e);
+        }
+        return null;
+    }
 
     private static String mapColumnLabel(String fieldName) {
         return fieldName;

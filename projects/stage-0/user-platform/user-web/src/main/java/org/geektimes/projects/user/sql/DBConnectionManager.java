@@ -1,6 +1,7 @@
 package org.geektimes.projects.user.sql;
 
 import org.geektimes.projects.user.domain.User;
+import org.geektimes.projects.user.repository.DatabaseUserRepository;
 
 import java.beans.BeanInfo;
 import java.beans.Introspector;
@@ -21,6 +22,14 @@ public class DBConnectionManager {
     }
 
     public synchronized Connection getConnection() {
+        if (this.connection == null) {
+            String databaseURL = "jdbc:derby:G:/db/user-platform;create=true";
+            try {
+                this.connection = DriverManager.getConnection(databaseURL);
+            } catch (SQLException throwables) {
+
+            }
+        }
         return this.connection;
     }
 
@@ -28,32 +37,27 @@ public class DBConnectionManager {
         if (this.connection != null) {
             try {
                 this.connection.close();
+                this.connection=null;
             } catch (SQLException e) {
                 throw new RuntimeException(e.getCause());
             }
         }
     }
     public DBConnectionManager(){
-        if (this.connection == null) {
-            String databaseURL = "jdbc:derby:D:/db/user-platform;create=true";
-            try {
-                this.connection = DriverManager.getConnection(databaseURL);
-            } catch (SQLException throwables) {
-
-            }
-        }
         Connection connection = getConnection();
-
         Statement statement = null;
         try {
             statement = connection.createStatement();
+            // 删除 users 表
+            System.out.println(statement.execute(DROP_USERS_TABLE_DDL_SQL)); // false
             // 创建 users 表
             System.out.println(statement.execute(CREATE_USERS_TABLE_DDL_SQL)); // false
             System.out.println(statement.executeUpdate(INSERT_USER_DML_SQL));  // 5
-
+            releaseConnection();
         } catch (SQLException throwables) {
             throwables.printStackTrace();
         }
+
     }
 
 

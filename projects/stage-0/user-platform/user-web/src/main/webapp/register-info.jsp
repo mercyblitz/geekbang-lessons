@@ -25,8 +25,8 @@
 			<label>邮箱:</label><input name="email" type="text">
 			</br>
 			<label>密码:</label><input name="password" type="password">
-			<button class="btn btn-lg btn-primary btn-block" type="submit">Sign
-				in</button>
+			</br>
+			<button class="btn btn-lg btn-primary btn-block" type="submit">提交</button>
 		</form>
 	</div>
 </body>
