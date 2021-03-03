@@ -15,7 +15,6 @@ import javax.ws.rs.Path;
 public class HelloWorldController implements PageController {
 
     @GET
-    @POST
     @Path("/world") // /hello/world -> HelloWorldController
     public String execute(HttpServletRequest request, HttpServletResponse response) throws Throwable {
         return "index.jsp";

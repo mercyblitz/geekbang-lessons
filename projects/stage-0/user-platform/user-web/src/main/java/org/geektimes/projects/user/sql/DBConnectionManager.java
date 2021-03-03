@@ -2,6 +2,10 @@ package org.geektimes.projects.user.sql;
 
 import org.geektimes.projects.user.domain.User;
 
+import javax.naming.Context;
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
+import javax.sql.DataSource;
 import java.beans.BeanInfo;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
@@ -16,13 +20,28 @@ public class DBConnectionManager {
 
     private Connection connection;
 
+
+    // JNDI 获取数据源
+    private static DataSource dataSource;
+
     public void setConnection(Connection connection) {
         this.connection = connection;
     }
 
     public Connection getConnection() {
-        return this.connection;
+        String databaseURL = "jdbc:derby:/db/user-platform;create=true";
+        Connection connection = null;
+        try {
+            connection = DriverManager.getConnection(databaseURL);
+            this.connection = connection;
+            return this.connection;
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+        return null;
+
     }
+
 
     public void releaseConnection() {
         if (this.connection != null) {

@@ -43,7 +43,7 @@ public class DatabaseUserRepository implements UserRepository {
 
     @Override
     public boolean save(User user) {
-        return false;
+        return executeQuery(INSERT_USER_DML_SQL,resultSet -> {return true;}, COMMON_EXCEPTION_HANDLER);
     }
 
     @Override

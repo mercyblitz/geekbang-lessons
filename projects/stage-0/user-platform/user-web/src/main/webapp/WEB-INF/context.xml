@@ -8,4 +8,5 @@
               driverClassName="org.apache.derby.jdbc.EmbeddedDriver"
               url="jdbc:derby:Databases/UserPlatformDB"/>
 
+
 </Context>
