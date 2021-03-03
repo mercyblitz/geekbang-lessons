@@ -20,7 +20,7 @@ public class DBConnectionManager {
         this.connection = connection;
     }
 
-    public Connection getConnection() {
+    public synchronized Connection getConnection() {
         return this.connection;
     }
 
@@ -33,6 +33,29 @@ public class DBConnectionManager {
             }
         }
     }
+    public DBConnectionManager(){
+        if (this.connection == null) {
+            String databaseURL = "jdbc:derby:D:/db/user-platform;create=true";
+            try {
+                this.connection = DriverManager.getConnection(databaseURL);
+            } catch (SQLException throwables) {
+
+            }
+        }
+        Connection connection = getConnection();
+
+        Statement statement = null;
+        try {
+            statement = connection.createStatement();
+            // 创建 users 表
+            System.out.println(statement.execute(CREATE_USERS_TABLE_DDL_SQL)); // false
+            System.out.println(statement.executeUpdate(INSERT_USER_DML_SQL));  // 5
+
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
+    }
+
 
     public static final String DROP_USERS_TABLE_DDL_SQL = "DROP TABLE users";
 

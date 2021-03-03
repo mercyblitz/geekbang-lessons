@@ -20,6 +20,7 @@ public class DatabaseUserRepository implements UserRepository {
 
     private static Logger logger = Logger.getLogger(DatabaseUserRepository.class.getName());
 
+
     /**
      * 通用处理方式
      */
@@ -43,6 +44,8 @@ public class DatabaseUserRepository implements UserRepository {
 
     @Override
     public boolean save(User user) {
+        executeQuery(INSERT_USER_DML_SQL,
+                resultSet -> {return null; }, COMMON_EXCEPTION_HANDLER, user.getName(), user.getPassword(),user.getEmail(),user.getPhoneNumber());
         return false;
     }
 
