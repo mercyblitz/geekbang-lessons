@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context> <!-- 上下文资源/组件声明（类似于 Spring 上下文）-->
+
+	<!-- Apache Commons Digester (Read-Only) 表达式（规则） -->
+	<!-- Apache Commons DataSource Connection Pool(DBCP) 1.x -->
+	<!--
+	JNDI : Java Naming and Directory Interface
+	ENV -> java:comp/env
+					    /bean
+					    	 /DBConnectionManager
+
+	=      java:comp/env/bean/DBConnectionManager
+
+	Tomcat JNDI : http://tomcat.apache.org/tomcat-7.0-doc/jndi-resources-howto.html
+	-->
+	<!-- 资源或者组件类似于 Spring Bean -->
+	<Resource name="jdbc/UserPlatformDB"
+              type="javax.sql.DataSource"  auth="Container"
+              description="Derby database for User Platform"
+              maxActive="100" maxIdle="30" maxWait="10000"
+              username="" password="" 
+              driverClassName="org.apache.derby.jdbc.EmbeddedDriver"
+              url="jdbc:derby:/db/user-platform;create=true"/>
+
+	<!-- FactoryBean -->
+	<Resource name="bean/DBConnectionManager" auth="Container"
+			  type="org.geektimes.projects.user.sql.DBConnectionManager"
+			  factory="org.apache.naming.factory.BeanFactory" />
+
+</Context>
