@@ -14,22 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geekbang.thinking.in.spring.aop.overview;
+package org.geekbang.thinking.in.spring.aop.features.event;
 
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.ApplicationEvent;
 
 /**
- * 默认 {@link EchoService} 实现
+ * 动作已执行的事件
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since
  */
-@Configuration // @Configuration 需要 @ComponentScan -> ConfigurationClassPostProcessor
-// CGLIB 代理对象
-public class DefaultEchoService implements EchoService {
+public class ExecutedEvent extends ApplicationEvent {
 
-    @Override
-    public String echo(String message) {
-        return "[ECHO] " + message;
+    /**
+     * Create a new {@code ApplicationEvent}.
+     *
+     * @param source the object on which the event initially occurred or with
+     *               which the event is associated (never {@code null})
+     */
+    public ExecutedEvent(Object source) {
+        super(source);
     }
 }

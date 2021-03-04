@@ -14,22 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geekbang.thinking.in.spring.aop.overview;
+package org.geekbang.thinking.in.spring.aop.features.event;
 
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.context.ApplicationEventPublisherAware;
 
 /**
- * 默认 {@link EchoService} 实现
- *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since
  */
-@Configuration // @Configuration 需要 @ComponentScan -> ConfigurationClassPostProcessor
-// CGLIB 代理对象
-public class DefaultEchoService implements EchoService {
+public class StaticExecutor implements ApplicationEventPublisherAware {
+
+    private ApplicationEventPublisher applicationEventPublisher;
+
+    public void execute() {
+        System.out.println("Executing...");
+        applicationEventPublisher.publishEvent(new ExecutedEvent(this));
+    }
 
     @Override
-    public String echo(String message) {
-        return "[ECHO] " + message;
+    public void setApplicationEventPublisher(ApplicationEventPublisher applicationEventPublisher) {
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 }

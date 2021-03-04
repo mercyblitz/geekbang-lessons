@@ -14,22 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geekbang.thinking.in.spring.aop.overview;
-
-import org.springframework.context.annotation.Configuration;
+package org.geekbang.thinking.in.spring.aop.features.event;
 
 /**
- * 默认 {@link EchoService} 实现
- *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since
  */
-@Configuration // @Configuration 需要 @ComponentScan -> ConfigurationClassPostProcessor
-// CGLIB 代理对象
-public class DefaultEchoService implements EchoService {
+public class Executor { // ClassFilter
 
-    @Override
-    public String echo(String message) {
-        return "[ECHO] " + message;
+    public void execute() { // MethodMatcher: Join Point 方法（需要 Pointcut 来匹配）
+        System.out.println("Executing...");
     }
 }
