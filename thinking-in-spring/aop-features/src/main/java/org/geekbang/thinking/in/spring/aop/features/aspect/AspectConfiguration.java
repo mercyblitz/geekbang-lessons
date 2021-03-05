@@ -76,4 +76,12 @@ public class AspectConfiguration {
         System.out.println("@AfterThrowing any public method");
     }
 
+
+    public String toString() {
+        return "AspectConfiguration";
+    }
+
+    private int getValue() {
+        return 0;
+    }
 }
