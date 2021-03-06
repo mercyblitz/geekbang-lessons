@@ -1,21 +1,17 @@
 package org.geektimes.projects.user.sql;
 
-import org.geektimes.projects.user.context.ComponentContext;
 import org.geektimes.projects.user.domain.User;
 
-import javax.naming.Context;
-import javax.naming.InitialContext;
-import javax.naming.NamingException;
+import javax.annotation.Resource;
+import javax.persistence.EntityManager;
 import javax.sql.DataSource;
 import java.beans.BeanInfo;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
-import java.io.PrintWriter;
 import java.lang.reflect.Method;
 import java.sql.*;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,10 +19,35 @@ public class DBConnectionManager { // JNDI Component
 
     private final Logger logger = Logger.getLogger(DBConnectionManager.class.getName());
 
+    @Resource(name = "jdbc/UserPlatformDB")
+    private DataSource dataSource;
+
+    @Resource(name = "bean/EntityManager")
+    private EntityManager entityManager;
+
+//    public Connection getConnection() {
+//        ComponentContext context = ComponentContext.getInstance();
+//        // 依赖查找
+//        DataSource dataSource = context.getComponent("jdbc/UserPlatformDB");
+//        Connection connection = null;
+//        try {
+//            connection = dataSource.getConnection();
+//        } catch (SQLException e) {
+//            logger.log(Level.SEVERE, e.getMessage());
+//        }
+//        if (connection != null) {
+//            logger.log(Level.INFO, "获取 JNDI 数据库连接成功！");
+//        }
+//        return connection;
+//    }
+
+    public EntityManager getEntityManager() {
+        logger.info("当前 EntityManager 实现类：" + entityManager.getClass().getName());
+        return entityManager;
+    }
+
     public Connection getConnection() {
-        ComponentContext context = ComponentContext.getInstance();
         // 依赖查找
-        DataSource dataSource = context.getComponent("jdbc/UserPlatformDB");
         Connection connection = null;
         try {
             connection = dataSource.getConnection();
@@ -35,10 +56,10 @@ public class DBConnectionManager { // JNDI Component
         }
         if (connection != null) {
             logger.log(Level.INFO, "获取 JNDI 数据库连接成功！");
-            System.out.println("获取 JNDI 数据库连接成功！");
         }
         return connection;
     }
+
 
 //    private Connection connection;
 //
@@ -180,4 +201,5 @@ public class DBConnectionManager { // JNDI Component
         typeMethodMappings.put(Long.class, "getLong");
         typeMethodMappings.put(String.class, "getString");
     }
+
 }

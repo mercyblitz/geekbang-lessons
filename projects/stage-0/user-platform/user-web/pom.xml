@@ -39,6 +39,18 @@
             <artifactId>derby</artifactId>
         </dependency>
 
+        <!-- Hibernate ORM Core -->
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+        </dependency>
+
+        <!-- Hibernate ORM JPA -->
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-entitymanager</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>
