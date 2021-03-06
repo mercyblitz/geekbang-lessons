@@ -70,12 +70,14 @@ public class ComponentContext {
      * 实例化组件
      */
     protected void instantiateComponents() {
+        // 遍历获取所有的组件名称
         List<String> componentNames = listAllComponentNames();
+        // 通过依赖查找，实例化对象（ Tomcat BeanFactory setter 方法的执行，仅支持简单类型）
         componentNames.forEach(name -> componentsMap.put(name, lookupComponent(name)));
     }
 
     /**
-     * 初始化组件
+     * 初始化组件（支持 Java 标准 Commons Annotation 生命周期）
      * <ol>
      *  <li>注入阶段 - {@link Resource}</li>
      *  <li>初始阶段 - {@link PostConstruct}</li>
@@ -205,6 +207,8 @@ public class ComponentContext {
         return executeInContext(context -> {
             NamingEnumeration<NameClassPair> e = executeInContext(context, ctx -> ctx.list(name), true);
 
+            // 目录 - Context
+            // 节点 -
             if (e == null) { // 当前 JNDI 名称下没有子节点
                 return Collections.emptyList();
             }

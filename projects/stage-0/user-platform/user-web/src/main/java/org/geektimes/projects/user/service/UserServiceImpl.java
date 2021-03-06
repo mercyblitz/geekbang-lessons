@@ -5,12 +5,15 @@ import org.geektimes.projects.user.sql.LocalTransactional;
 
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
+import javax.validation.Validator;
 
 public class UserServiceImpl implements UserService {
 
     @Resource(name = "bean/EntityManager")
     private EntityManager entityManager;
+
+    @Resource(name = "bean/Validator")
+    private Validator validator;
 
     @Override
     // 默认需要事务

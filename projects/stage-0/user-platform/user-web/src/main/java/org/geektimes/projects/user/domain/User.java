@@ -1,12 +1,13 @@
 package org.geektimes.projects.user.domain;
 
-import javax.annotation.Generated;
 import javax.persistence.*;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
 import java.io.Serializable;
 import java.util.Objects;
 
 import static javax.persistence.GenerationType.AUTO;
-import static javax.persistence.GenerationType.SEQUENCE;
 
 /**
  * 用户领域对象
@@ -19,12 +20,15 @@ public class User implements Serializable {
 
     @Id
     @GeneratedValue(strategy = AUTO)
+    @NotNull
     private Long id;
 
     @Column
     private String name;
 
     @Column
+    @Max(32)
+    @Min(6)
     private String password;
 
     @Column

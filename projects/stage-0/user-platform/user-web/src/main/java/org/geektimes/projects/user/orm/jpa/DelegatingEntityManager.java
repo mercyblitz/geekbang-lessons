@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.Properties;
 
 /**
- * 委派实现
+ * 委派实现（静态 AOP 实现）
  */
 public class DelegatingEntityManager implements EntityManager {
 
