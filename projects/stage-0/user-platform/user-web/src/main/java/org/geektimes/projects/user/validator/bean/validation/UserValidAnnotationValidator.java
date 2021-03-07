@@ -15,10 +15,12 @@ public class UserValidAnnotationValidator implements ConstraintValidator<UserVal
 
     @Override
     public boolean isValid(User value, ConstraintValidatorContext context) {
+        if (idRange < 1) {
+            // 获取模板信息
+            context.getDefaultConstraintMessageTemplate();
+            return false;
+        }
 
-        // 获取模板信息
-        context.getDefaultConstraintMessageTemplate();
-
-        return false;
+        return true;
     }
 }
