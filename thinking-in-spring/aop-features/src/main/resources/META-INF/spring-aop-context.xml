@@ -16,9 +16,11 @@
     <bean id="aspectXmlConfig" class="org.geekbang.thinking.in.spring.aop.features.aspect.AspectXmlConfig"/>
 
     <aop:config>
+        <!--        <aop:pointcut id="allPointcut" expression="execution(* * *(..))"/>-->
         <aop:aspect id="AspectXmlConfig" ref="aspectXmlConfig">
             <aop:pointcut id="anyPublicMethod" expression="execution(public * *(..))"/>
             <aop:around method="aroundAnyPublicMethod" pointcut-ref="anyPublicMethod"/>
+            <aop:around method="aroundAnyPublicMethod" pointcut="execution(public * *(..))"/>
             <aop:before method="beforeAnyPublicMethod" pointcut-ref="anyPublicMethod"/>
             <aop:before method="beforeAnyPublicMethod" pointcut="execution(public * *(..))"/>
             <aop:after method="finalizeAnyPublicMethod" pointcut-ref="anyPublicMethod"/>
@@ -28,7 +30,10 @@
     </aop:config>
 
 
-    <bean id="echoService" class="org.geekbang.thinking.in.spring.aop.overview.DefaultEchoService"/>
+    <bean id="echoService" class="org.geekbang.thinking.in.spring.aop.overview.DefaultEchoService">
+        <!-- CGLIB 字节码提升的方式，类同于 @Configuration -->
+        <!--  <aop:scoped-proxy/> -->
+    </bean>
 
     <bean id="echoServiceMethodInterceptor"
           class="org.geekbang.thinking.in.spring.aop.features.interceptor.EchoServiceMethodInterceptor"/>

@@ -21,6 +21,7 @@ import org.geekbang.thinking.in.spring.aop.features.aspect.AspectConfiguration;
 import org.springframework.aop.AfterReturningAdvice;
 import org.springframework.aop.MethodBeforeAdvice;
 import org.springframework.aop.aspectj.annotation.AspectJProxyFactory;
+import org.springframework.aop.framework.AopContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.EnableAspectJAutoProxy;
@@ -43,12 +44,15 @@ public class AspectJAnnotationUsingAPIDemo {
         AspectJProxyFactory proxyFactory = new AspectJProxyFactory(cache);
         // 增加 Aspect 配置类
         proxyFactory.addAspect(AspectConfiguration.class);
-
+        // 设置暴露代理对象到 AopContext
+        proxyFactory.setExposeProxy(true);
         proxyFactory.addAdvice(new MethodBeforeAdvice() {
             @Override
             public void before(Method method, Object[] args, Object target) throws Throwable {
                 if ("put".equals(method.getName()) && args.length == 2) {
-                    System.out.printf("[MethodBeforeAdvice] 当前存放是 Key: %s , Value : %s \n", args[0], args[1]);
+                    Object proxy = AopContext.currentProxy();
+                    System.out.printf("[MethodBeforeAdvice] 当前存放是 Key: %s , Value : %s ，" +
+                            "代理对象：%s\n", args[0], args[1], proxy);
                 }
             }
         });
