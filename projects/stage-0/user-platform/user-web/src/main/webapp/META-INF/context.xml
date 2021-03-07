@@ -14,6 +14,7 @@
 	Tomcat JNDI : http://tomcat.apache.org/tomcat-7.0-doc/jndi-resources-howto.html
 	-->
 	<!-- 资源或者组件类似于 Spring Bean -->
+
 	<Resource name="jdbc/UserPlatformDB"
               type="javax.sql.DataSource"  auth="Container"
               description="Derby database for User Platform"
@@ -22,9 +23,11 @@
               driverClassName="org.apache.derby.jdbc.EmbeddedDriver"
               url="jdbc:derby:/db/user-platform;create=true"/>
 
+
 	<!-- FactoryBean -->
 	<Resource name="bean/DBConnectionManager" auth="Container"
 			  type="org.geektimes.projects.user.sql.DBConnectionManager"
 			  factory="org.apache.naming.factory.BeanFactory" />
+
 
 </Context>
