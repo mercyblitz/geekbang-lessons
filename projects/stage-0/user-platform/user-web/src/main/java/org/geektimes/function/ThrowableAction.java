@@ -14,22 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geekbang.thinking.in.spring.aop.overview;
+package org.geektimes.function;
 
-import org.springframework.context.annotation.Configuration;
+import java.util.function.Function;
 
 /**
- * 默认 {@link EchoService} 实现
+ * A function interface for action with {@link Throwable}
  *
- * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
- * @since
+ * @see Function
+ * @see Throwable
  */
-@Configuration // @Configuration 需要 @ComponentScan -> ConfigurationClassPostProcessor
-// CGLIB 代理对象
-public class DefaultEchoService implements EchoService {
+@FunctionalInterface
+public interface ThrowableAction {
 
-    @Override
-    public String echo(String message) {
-        return "[ECHO] " + message;
+    /**
+     * Executes the action
+     *
+     * @throws Throwable if met with error
+     */
+    void execute() throws Throwable;
+
+    /**
+     * Executes {@link ThrowableAction}
+     *
+     * @param action {@link ThrowableAction}
+     * @throws RuntimeException wrap {@link Exception} to {@link RuntimeException}
+     */
+    static void execute(ThrowableAction action) throws RuntimeException {
+        try {
+            action.execute();
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
     }
 }
