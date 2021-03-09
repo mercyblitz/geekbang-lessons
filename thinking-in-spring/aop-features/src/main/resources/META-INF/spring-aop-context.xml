@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+        xmlns="http://www.springframework.org/schema/beans"
+        xmlns:aop="http://www.springframework.org/schema/aop"
+        xmlns:context="http://www.springframework.org/schema/context"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+        https://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/aop
+        https://www.springframework.org/schema/aop/spring-aop.xsd
+        http://www.springframework.org/schema/context
+        https://www.springframework.org/schema/context/spring-context.xsd">
+
+    <aop:aspectj-autoproxy/>
+
+    <bean id="aspectXmlConfig" class="org.geekbang.thinking.in.spring.aop.features.aspect.AspectXmlConfig"/>
+
+    <aop:config>
+        <!--        <aop:pointcut id="allPointcut" expression="execution(* * *(..))"/>-->
+        <aop:aspect id="AspectXmlConfig" ref="aspectXmlConfig">
+            <aop:pointcut id="anyPublicMethod" expression="execution(public * *(..))"/>
+            <aop:around method="aroundAnyPublicMethod" pointcut-ref="anyPublicMethod"/>
+            <aop:around method="aroundAnyPublicMethod" pointcut="execution(public * *(..))"/>
+            <aop:before method="beforeAnyPublicMethod" pointcut-ref="anyPublicMethod"/>
+            <aop:before method="beforeAnyPublicMethod" pointcut="execution(public * *(..))"/>
+            <aop:after method="finalizeAnyPublicMethod" pointcut-ref="anyPublicMethod"/>
+            <aop:after-returning method="afterAnyPublicMethod" pointcut-ref="anyPublicMethod"/>
+            <aop:after-throwing method="afterThrowingAnyPublicMethod" pointcut-ref="anyPublicMethod"/>
+        </aop:aspect>
+    </aop:config>
+
+
+    <bean id="echoService" class="org.geekbang.thinking.in.spring.aop.overview.DefaultEchoService">
+        <!-- CGLIB 字节码提升的方式，类同于 @Configuration -->
+        <!--  <aop:scoped-proxy/> -->
+    </bean>
+
+    <bean id="echoServiceMethodInterceptor"
+          class="org.geekbang.thinking.in.spring.aop.features.interceptor.EchoServiceMethodInterceptor"/>
+
+    <bean id="targetSource" class="org.springframework.aop.target.HotSwappableTargetSource">
+        <constructor-arg ref="echoService"/>
+    </bean>
+
+    <bean id="echoServiceProxyFactoryBean" class="org.springframework.aop.framework.ProxyFactoryBean">
+        <property name="targetName" value="echoService"/>
+        <property name="interceptorNames">
+            <value>echoServiceMethodInterceptor</value>
+        </property>
+        <property name="targetSource" ref="targetSource"/>
+    </bean>
+
+</beans>
