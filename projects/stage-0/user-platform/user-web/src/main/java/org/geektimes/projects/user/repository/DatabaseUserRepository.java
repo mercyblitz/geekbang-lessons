@@ -94,6 +94,7 @@ public class DatabaseUserRepository implements UserRepository {
                     // 以 id 为例，  user.setId(resultSet.getLong("id"));
                     setterMethodFromUser.invoke(user, resultValue);
                 }
+                users.add(user);
             }
             return users;
         }, e -> {
@@ -124,7 +125,7 @@ public class DatabaseUserRepository implements UserRepository {
 
                 // Boolean -> boolean
                 String methodName = preparedStatementMethodMappings.get(argType);
-                Method method = PreparedStatement.class.getMethod(methodName, wrapperType);
+                Method method = PreparedStatement.class.getMethod(methodName, int.class, wrapperType);
                 method.invoke(preparedStatement, i + 1, args);
             }
             ResultSet resultSet = preparedStatement.executeQuery();
