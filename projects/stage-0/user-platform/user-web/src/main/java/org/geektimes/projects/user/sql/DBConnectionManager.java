@@ -2,6 +2,7 @@ package org.geektimes.projects.user.sql;
 
 import org.geektimes.projects.user.domain.User;
 
+
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.sql.DataSource;
@@ -46,6 +47,42 @@ public class DBConnectionManager { // JNDI Component
         return entityManager;
     }
 
+
+//     public static Connection getConnection() {
+
+//        try {
+//            DriverManager.setLogWriter(new PrintWriter(System.out));
+//            String databaseURL = "jdbc:derby:my-user-platform;create=true";
+//            Class.forName("org.apache.derby.jdbc.EmbeddedDriver");
+//            Driver driver = DriverManager.getDriver(databaseURL);
+//            Connection connection = driver.connect(databaseURL, new Properties());
+//            return connection;
+//        } catch (ClassNotFoundException e) {
+//            e.printStackTrace();
+//        } catch (SQLException throwables) {
+//            throwables.printStackTrace();
+//        }
+
+//        String databaseURL = "jdbc:derby:my-user-platform;create=true";
+//        try {
+//            Connection connection = DriverManager.getConnection(databaseURL);
+//            return connection;
+//        } catch (SQLException throwables) {
+//            throwables.printStackTrace();
+//        }
+//         try {
+//             Context  initCtx = new InitialContext();
+//             Context envCtx = (Context) initCtx.lookup("java:comp/env");
+//             DataSource ds = (DataSource)envCtx.lookup("jdbc/UserPlatformDB");
+//             Connection conn = ds.getConnection();
+//             return conn;
+//         } catch (Exception e) {
+//             e.printStackTrace();
+//         }
+
+//         return null;
+
+
     public Connection getConnection() {
         // 依赖查找
         Connection connection = null;
@@ -58,6 +95,7 @@ public class DBConnectionManager { // JNDI Component
             logger.log(Level.INFO, "获取 JNDI 数据库连接成功！");
         }
         return connection;
+
     }
 
 
@@ -107,7 +145,7 @@ public class DBConnectionManager { // JNDI Component
 //        Driver driver = DriverManager.getDriver("jdbc:derby:/db/user-platform;create=true");
 //        Connection connection = driver.connect("jdbc:derby:/db/user-platform;create=true", new Properties());
 
-        String databaseURL = "jdbc:derby:/db/user-platform;create=true";
+        String databaseURL = "jdbc:derby:my-user-platform;create=true";
         Connection connection = DriverManager.getConnection(databaseURL);
 
         Statement statement = connection.createStatement();

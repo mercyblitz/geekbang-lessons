@@ -5,7 +5,7 @@
          http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
          metadata-complete="true" version="2.5">
 
-    <!-- ÇëÈ·±£Õâ¸ö Listener ·ÅÖÃÔÚÊ×Î» -->
+    <!-- è¯·ç¡®ä¿è¿™ä¸ª Listener æ”¾ç½®åœ¨é¦–ä½ -->
     <listener>
         <listener-class>org.geektimes.projects.user.web.listener.ComponentContextInitializerListener</listener-class>
     </listener>
@@ -54,7 +54,7 @@
         <filter-name>CharsetEncodingFilter</filter-name>
         <filter-class>org.geektimes.projects.user.web.filter.CharsetEncodingFilter</filter-class>
         <init-param>
-            <!-- Filter ÅäÖÃ = FilterConfig -->
+            <!-- Filter é…ç½® = FilterConfig -->
             <param-name>encoding</param-name>
             <param-value>UTF-8</param-value>
         </init-param>
@@ -93,6 +93,7 @@
         <welcome-file>/index</welcome-file>
         <welcome-file>/index.jsp</welcome-file>
     </welcome-file-list>
+
 
 <!--    <resource-ref>-->
 <!--        <description>DB Connection</description>-->

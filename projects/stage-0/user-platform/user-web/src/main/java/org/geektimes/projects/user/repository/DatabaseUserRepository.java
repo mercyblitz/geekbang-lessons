@@ -27,7 +27,7 @@ public class DatabaseUserRepository implements UserRepository {
     private static Consumer<Throwable> COMMON_EXCEPTION_HANDLER = e -> logger.log(Level.SEVERE, e.getMessage());
 
     public static final String INSERT_USER_DML_SQL =
-            "INSERT INTO users(name,password,email,phoneNumber) VALUES " +
+            "INSERT INTO USERS(name,password,email,phoneNumber) VALUES " +
                     "(?,?,?,?)";
 
     public static final String QUERY_ALL_USERS_DML_SQL = "SELECT id,name,password,email,phoneNumber FROM users";
@@ -44,7 +44,9 @@ public class DatabaseUserRepository implements UserRepository {
 
     @Override
     public boolean save(User user) {
-        return false;
+        return executeUpdate(INSERT_USER_DML_SQL,result->{
+            return result==1?true:false;
+        } ,COMMON_EXCEPTION_HANDLER);
     }
 
     @Override
@@ -138,6 +140,44 @@ public class DatabaseUserRepository implements UserRepository {
         return null;
     }
 
+
+    protected <T> T executeUpdate(String sql, ThrowableFunction<Integer, T> function,
+                                  Consumer<Throwable> exceptionHandler, Object... args) {
+        Connection connection =DBConnectionManager.getConnection();
+     
+        try {
+            Statement statement = connection.createStatement();
+
+            // 执行查询语句（DML）
+            ResultSet resultSet = statement.executeQuery("SELECT id,name,password,email,phoneNumber FROM users");
+            
+            
+            
+            PreparedStatement preparedStatement = connection.prepareStatement(sql);
+            for (int i = 0; i < args.length; i++) {
+                Object arg = args[i];
+                Class argType = arg.getClass();
+
+                Class wrapperType = wrapperToPrimitive(argType);
+
+                if (wrapperType == null) {
+                    wrapperType = argType;
+                }
+
+                // Boolean -> boolean
+                String methodName = preparedStatementMethodMappings.get(argType);
+                Method method = PreparedStatement.class.getMethod(methodName, wrapperType);
+                method.invoke(preparedStatement, i + 1, args);
+            }
+            int result = preparedStatement.executeUpdate();
+            return function.apply(result);
+        } catch (Exception e){
+            exceptionHandler.accept(e);
+        } catch (Throwable e) {
+            exceptionHandler.accept(e);
+        }
+        return null;
+    }
 
     private static String mapColumnLabel(String fieldName) {
         return fieldName;
