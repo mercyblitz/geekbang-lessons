@@ -25,8 +25,7 @@ public class User implements Serializable {
     private String name;
 
     @Column
-    @Max(32)
-    @Min(6)
+    @Size(min = 6,max = 32)
     private String password;
 
     @Column
