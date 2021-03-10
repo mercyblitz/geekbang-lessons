@@ -25,73 +25,21 @@
         }
     </style>
     <script type="text/javascript" src="static/js/jquery-3.5.1.slim.min.js"></script>
-    <script>
-      $(function () {
-          $("#register").click(function () {
-              $.ajax({
-                  type:"POST",
-                  url:"/registerAction/register",
-                  data:$('#form').serialize(),
-                  success:function (result) {
-                      if("Yes"==result){
-                          alert("登录成功！");
-                      }else{
-                          alert("用户名或密码错误");
-                          $("#password").val("");
-                          $("#password").focus();
-                      }
-                  },
-                  error:function (err) {
-                      alert("系统错误");
-                  }
-              });
-          })
-      })
 
-    </script>
 </head>
 <body>
-<form id = "form" action="registerAction" method="post" >
-    <h1 class="h3 mb-3 font-weight-normal">用户注册</h1>
-    <table align="center">
-        <tr>
-            <td>
-                用户名：
-            </td>
-            <td>
-                <input id="name" type="text" name="name">
-            </td>
-        </tr>
-        <tr>
-            <td>
-                密码：
-            </td>
-            <td>
-                <input id="password" type="password" name="password">
-            </td>
-        </tr>
-        <tr>
-            <td>
-                电话号码：
-            </td>
-            <td>
-                <input id="mobile" type="text" name="mobile">
-            </td>
-        </tr>
-        <tr>
-            <td>
-                邮箱：
-            </td>
-            <td>
-                <input id="email" type="text" name="email">
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <button type="button" id = "register"> 注册</button>
-            </td>>
-        </tr>
-    </table>
+<form class="form-signup" action="sign-up" method="post">
+    <h1 class="h3 mb-3 font-weight-normal">注册</h1>
+    <label for="inputName" class="sr-only">请输入用户名</label>
+    <input type="text" id="inputName" name="name" class="form-control" placeholder="请输入用户名" required autofocus>
+    <label for="inputPhone" class="sr-only">请输入手机号码</label>
+    <input type="text" id="inputPhone" name="phoneNumber" class="form-control" placeholder="请输入手机号码" required autofocus>
+    <label for="inputEmail" class="sr-only">请输出电子邮件</label>
+    <input type="email" id="inputEmail" name="email" class="form-control" placeholder="请输入电子邮件" required autofocus>
+    <label for="inputPassword" class="sr-only">Password</label>
+    <input type="password" id="inputPassword" name="password" class="form-control" placeholder="请输入密码" required>
+    <button class="btn btn-lg btn-primary btn-block" type="submit">Sign up</button>
+    <p class="mt-5 mb-3 text-muted">&copy; 2017-2021</p>
 </form>
 </body>
 </html>
