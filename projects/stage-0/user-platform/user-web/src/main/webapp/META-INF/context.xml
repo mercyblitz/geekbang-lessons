@@ -45,4 +45,12 @@
 			  type="org.geektimes.projects.user.service.UserServiceImpl"
 			  factory="org.apache.naming.factory.BeanFactory" />
 
+	<Resource name="bean/ContentDestoryed" auth="Container"
+			  type="org.geektimes.projects.user.web.system.ContentDestoryed"
+			  factory="org.apache.naming.factory.BeanFactory" />
+
+	<Resource name="bean/JpaUserRepository" auth="Container"
+			  type="org.geektimes.projects.user.repository.JpaUserRepository"
+			  factory="org.apache.naming.factory.BeanFactory" />
+
 </Context>

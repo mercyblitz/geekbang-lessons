@@ -1,10 +1,12 @@
 package org.geektimes.projects.user.web.listener;
 
-import org.geektimes.context.ComponentContext;
-
+import javax.annotation.PreDestroy;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
+
+import org.geektimes.web.mvc.context.ComponentContext;
+
 
 /**
  * {@link ComponentContext} 初始化器
@@ -23,8 +25,14 @@ public class ComponentContextInitializerListener implements ServletContextListen
 
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
-//        ComponentContext context = ComponentContext.getInstance();
-//        context.destroy();
+        ComponentContext.getInstance().destoryContent();
+    }
+
+
+
+    @PreDestroy
+    public void preDestory(){
+        System.out.println("容器关闭处理preDestory组件");
     }
 
 }

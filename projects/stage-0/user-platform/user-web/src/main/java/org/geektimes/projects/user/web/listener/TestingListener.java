@@ -1,14 +1,15 @@
 package org.geektimes.projects.user.web.listener;
 
-import org.geektimes.context.ComponentContext;
-import org.geektimes.projects.user.domain.User;
-import org.geektimes.projects.user.sql.DBConnectionManager;
+import java.util.logging.Logger;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
-import java.util.logging.Logger;
+
+import org.geektimes.projects.user.domain.User;
+import org.geektimes.projects.user.sql.DBConnectionManager;
+import org.geektimes.web.mvc.context.ComponentContext;
 
 /**
  * 测试用途
@@ -23,7 +24,7 @@ public class TestingListener implements ServletContextListener {
         ComponentContext context = ComponentContext.getInstance();
         DBConnectionManager dbConnectionManager = context.getComponent("bean/DBConnectionManager");
         dbConnectionManager.getConnection();
-        testUser(dbConnectionManager.getEntityManager());
+//        testUser(dbConnectionManager.getEntityManager());
         logger.info("所有的 JNDI 组件名称：[");
         context.getComponentNames().forEach(logger::info);
         logger.info("]");
@@ -32,9 +33,9 @@ public class TestingListener implements ServletContextListener {
     private void testUser(EntityManager entityManager) {
         User user = new User();
         user.setName("小马哥");
-        user.setPassword("******");
+        user.setPassword("123456789");
         user.setEmail("mercyblitz@gmail.com");
-        user.setPhoneNumber("abcdefg");
+        user.setPhoneNumber("13247607284");
         EntityTransaction transaction = entityManager.getTransaction();
         transaction.begin();
         entityManager.persist(user);

@@ -56,10 +56,12 @@
             <artifactId>hibernate-entitymanager</artifactId>
         </dependency>
 
+
         <!-- Hibernate Validator -->
         <dependency>
-            <groupId>org.hibernate.validator</groupId>
+            <groupId>org.hibernate</groupId>
             <artifactId>hibernate-validator</artifactId>
+            <version>5.1.0.Final</version>
         </dependency>
 
         <dependency>

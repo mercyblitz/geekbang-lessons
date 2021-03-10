@@ -1,6 +1,11 @@
 package org.geektimes.projects.user.orm.jpa;
 
-import org.geektimes.context.ComponentContext;
+
+import java.io.IOException;
+import java.net.URL;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.*;
@@ -9,11 +14,8 @@ import javax.persistence.criteria.CriteriaDelete;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.CriteriaUpdate;
 import javax.persistence.metamodel.Metamodel;
-import java.io.IOException;
-import java.net.URL;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+
+import org.geektimes.web.mvc.context.ComponentContext;
 
 /**
  * 委派实现（静态 AOP 实现）

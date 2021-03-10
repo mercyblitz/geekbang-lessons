@@ -1,12 +1,13 @@
 package org.geektimes.projects.user.validator.bean.validation;
 
-import org.geektimes.projects.user.domain.User;
+import java.util.Set;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
-import java.util.Set;
+
+import org.geektimes.projects.user.domain.User;
 
 public class BeanValidationDemo {
 
@@ -16,7 +17,7 @@ public class BeanValidationDemo {
         Validator validator = factory.getValidator();
 
         User user = new User();
-        user.setPassword("***");
+        user.setPassword("12365478");
 
         // 校验结果
         Set<ConstraintViolation<User>> violations = validator.validate(user);

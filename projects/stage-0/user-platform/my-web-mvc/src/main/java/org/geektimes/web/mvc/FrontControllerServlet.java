@@ -1,28 +1,28 @@
 package org.geektimes.web.mvc;
 
-import org.apache.commons.lang.StringUtils;
-import org.geektimes.web.mvc.controller.Controller;
-import org.geektimes.web.mvc.controller.PageController;
-import org.geektimes.web.mvc.controller.RestController;
-import org.geektimes.web.mvc.header.CacheControlHeaderWriter;
-import org.geektimes.web.mvc.header.annotation.CacheControl;
+import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.*;
+import java.util.stream.Stream;
 
+import javax.annotation.Resource;
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
-import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.Path;
-import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
-import java.util.*;
+
+import org.apache.commons.lang.StringUtils;
+import org.geektimes.web.mvc.context.ComponentContext;
+import org.geektimes.web.mvc.controller.Controller;
+import org.geektimes.web.mvc.controller.PageController;
+import org.geektimes.web.mvc.controller.RestController;
 
 import static java.util.Arrays.asList;
 import static org.apache.commons.lang.StringUtils.substringAfter;
@@ -55,6 +55,8 @@ public class FrontControllerServlet extends HttpServlet {
     private void initHandleMethods() {
         for (Controller controller : ServiceLoader.load(Controller.class)) {
             Class<?> controllerClass = controller.getClass();
+            // 注入Controller类的依赖
+            injectComponents(controller, controller.getClass());
             Path pathFromClass = controllerClass.getAnnotation(Path.class);
             String requestPath = pathFromClass.value();
             Method[] publicMethods = controllerClass.getMethods();
@@ -70,6 +72,22 @@ public class FrontControllerServlet extends HttpServlet {
             }
             controllersMapping.put(requestPath, controller);
         }
+    }
+
+    private void injectComponents(Controller controller, Class<? extends Controller> controllerClass) {
+        Stream.of(controllerClass.getDeclaredFields()).filter( fild->{
+            int method = fild.getModifiers();
+            return !Modifier.isStatic(method)&&fild.isAnnotationPresent(Resource.class);
+        }).forEach(filed->{
+            Resource resource = filed.getAnnotation(Resource.class);
+            Object obj =  ComponentContext.getInstance().getComponent(resource.name());
+            filed.setAccessible(true);
+            try{
+                filed.set(controller,obj);
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        });
     }
 
     /**
