@@ -1,24 +1,29 @@
 package org.geektimes.projects.user.service;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.geektimes.projects.user.domain.User;
 import org.geektimes.projects.user.sql.LocalTransactional;
 
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
+import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
+import javax.validation.metadata.BeanDescriptor;
+import java.util.Collections;
+import java.util.Set;
 
 public class UserServiceImpl implements UserService {
 
     @Resource(name = "bean/EntityManager")
     private EntityManager entityManager;
 
-    @Resource(name = "bean/Validator")
-    private Validator validator;
+
 
     @Override
     // 默认需要事务
     @LocalTransactional
     public boolean register(User user) {
+
         // before process
 //        EntityTransaction transaction = entityManager.getTransaction();
 //        transaction.begin();
@@ -27,7 +32,7 @@ public class UserServiceImpl implements UserService {
         entityManager.persist(user);
 
         // 调用其他方法方法
-        update(user); // 涉及事务
+       // update(user); // 涉及事务
         // register 方法和 update 方法存在于同一线程
         // register 方法属于 Outer 事务（逻辑）
         // update 方法属于 Inner 事务（逻辑）
@@ -53,7 +58,7 @@ public class UserServiceImpl implements UserService {
         // after process
         // transaction.commit();
 
-        return false;
+        return true;
     }
 
     @Override
