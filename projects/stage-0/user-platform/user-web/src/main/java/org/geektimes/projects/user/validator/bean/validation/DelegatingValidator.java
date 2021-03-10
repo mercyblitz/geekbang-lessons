@@ -17,6 +17,7 @@ public class DelegatingValidator implements Validator {
     public void init() {
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         this.validator = factory.getValidator();
+
     }
 
     @Override

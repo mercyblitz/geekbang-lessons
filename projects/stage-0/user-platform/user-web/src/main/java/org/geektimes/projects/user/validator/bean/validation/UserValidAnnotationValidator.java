@@ -8,7 +8,7 @@ import javax.validation.ConstraintValidatorContext;
 public class UserValidAnnotationValidator implements ConstraintValidator<UserValid, User> {
 
     private int idRange;
-
+    @Override
     public void initialize(UserValid annotation) {
         this.idRange = annotation.idRange();
     }

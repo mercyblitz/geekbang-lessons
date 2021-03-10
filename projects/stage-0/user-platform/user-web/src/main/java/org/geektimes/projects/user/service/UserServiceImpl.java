@@ -5,9 +5,13 @@ import org.geektimes.projects.user.sql.LocalTransactional;
 
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
+import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
+import java.util.Set;
 
 public class UserServiceImpl implements UserService {
+
+
 
     @Resource(name = "bean/EntityManager")
     private EntityManager entityManager;
@@ -22,6 +26,15 @@ public class UserServiceImpl implements UserService {
         // before process
 //        EntityTransaction transaction = entityManager.getTransaction();
 //        transaction.begin();
+        Set<ConstraintViolation<User>> validate = validator.validate(user);
+        if (validate.size()>0) {
+            StringBuilder errorMsg = new StringBuilder();
+            for (ConstraintViolation<User> userConstraintViolation : validate) {
+                errorMsg.append(userConstraintViolation.getMessage()).append("，");
+            }
+            errorMsg.delete(errorMsg.length() - 1, errorMsg.length());
+            throw new RuntimeException(errorMsg.toString());
+        }
 
         // 主调用
         entityManager.persist(user);
@@ -53,7 +66,7 @@ public class UserServiceImpl implements UserService {
         // after process
         // transaction.commit();
 
-        return false;
+        return true;
     }
 
     @Override

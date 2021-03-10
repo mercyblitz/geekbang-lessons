@@ -32,9 +32,9 @@ public class TestingListener implements ServletContextListener {
     private void testUser(EntityManager entityManager) {
         User user = new User();
         user.setName("小马哥");
-        user.setPassword("******");
+        user.setPassword("*******111");
         user.setEmail("mercyblitz@gmail.com");
-        user.setPhoneNumber("abcdefg");
+        user.setPhoneNumber("15800918240");
         EntityTransaction transaction = entityManager.getTransaction();
         transaction.begin();
         entityManager.persist(user);

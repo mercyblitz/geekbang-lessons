@@ -1,12 +1,10 @@
 package org.geektimes.projects.user.orm.jpa;
 
-import org.apache.derby.impl.db.BasicDatabase;
 import org.apache.derby.jdbc.EmbeddedDataSource;
 import org.geektimes.projects.user.domain.User;
 
 import javax.annotation.Resource;
 import javax.persistence.*;
-import javax.persistence.spi.PersistenceProvider;
 import javax.sql.DataSource;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,7 +48,7 @@ public class JpaDemo {
 
     private static DataSource getDataSource() {
         EmbeddedDataSource dataSource = new EmbeddedDataSource();
-        dataSource.setDatabaseName("/db/user-platform");
+        dataSource.setDatabaseName("db/user-platform");
         dataSource.setCreateDatabase("create");
         return dataSource;
     }

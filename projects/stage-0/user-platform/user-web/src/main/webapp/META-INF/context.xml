@@ -18,9 +18,10 @@
               type="javax.sql.DataSource"  auth="Container"
               description="Derby database for User Platform"
               maxActive="100" maxIdle="30" maxWait="10000"
-              username="" password="" 
+              username="" password=""
               driverClassName="org.apache.derby.jdbc.EmbeddedDriver"
-              url="jdbc:derby:/db/user-platform;create=true"/>
+              url="jdbc:derby:db/user-platform;create=true"
+			  factory="org.apache.tomcat.jdbc.pool.DataSourceFactory"/>
 
 	<!-- FactoryBean -->
 	<Resource name="bean/DBConnectionManager" auth="Container"
@@ -44,5 +45,6 @@
 	<Resource name="bean/UserService" auth="Container"
 			  type="org.geektimes.projects.user.service.UserServiceImpl"
 			  factory="org.apache.naming.factory.BeanFactory" />
+
 
 </Context>

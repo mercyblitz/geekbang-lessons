@@ -2,6 +2,7 @@ package org.geektimes.projects.user.sql;
 
 import org.geektimes.projects.user.domain.User;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.persistence.EntityManager;
 import javax.sql.DataSource;
@@ -24,6 +25,15 @@ public class DBConnectionManager { // JNDI Component
 
     @Resource(name = "bean/EntityManager")
     private EntityManager entityManager;
+
+    @PostConstruct
+    public void init() {
+        try {
+            getConnection().createStatement().execute(CREATE_USERS_TABLE_DDL_SQL);
+        } catch (Exception e) {
+
+        }
+    }
 
 //    public Connection getConnection() {
 //        ComponentContext context = ComponentContext.getInstance();
@@ -107,7 +117,7 @@ public class DBConnectionManager { // JNDI Component
 //        Driver driver = DriverManager.getDriver("jdbc:derby:/db/user-platform;create=true");
 //        Connection connection = driver.connect("jdbc:derby:/db/user-platform;create=true", new Properties());
 
-        String databaseURL = "jdbc:derby:/db/user-platform;create=true";
+        String databaseURL = "jdbc:derby:db/user-platform;create=true";
         Connection connection = DriverManager.getConnection(databaseURL);
 
         Statement statement = connection.createStatement();
