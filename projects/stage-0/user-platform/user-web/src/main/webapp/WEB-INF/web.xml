@@ -5,6 +5,12 @@
          http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
          metadata-complete="true" version="2.5">
 
+    <!-- ServletContext 配置参数 -->
+    <context-param>
+        <param-name>application.name</param-name>
+        <param-value>user-web</param-value>
+    </context-param>
+
     <!-- 请确保这个 Listener 放置在首位 -->
     <listener>
         <listener-class>org.geektimes.projects.user.web.listener.ComponentContextInitializerListener</listener-class>
