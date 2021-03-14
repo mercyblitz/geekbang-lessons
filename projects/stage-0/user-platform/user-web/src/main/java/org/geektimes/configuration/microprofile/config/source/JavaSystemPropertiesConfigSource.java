@@ -15,10 +15,8 @@ public class JavaSystemPropertiesConfigSource implements ConfigSource {
     private final Map<String, String> properties;
 
     public JavaSystemPropertiesConfigSource() {
-        this.properties = new HashMap<>();
-        for (String propertyName : System.getProperties().stringPropertyNames()) {
-            this.properties.put(propertyName, System.getProperties().getProperty(propertyName));
-        }
+        Map systemProperties = System.getProperties();
+        this.properties = new HashMap<>(systemProperties);
     }
 
     @Override

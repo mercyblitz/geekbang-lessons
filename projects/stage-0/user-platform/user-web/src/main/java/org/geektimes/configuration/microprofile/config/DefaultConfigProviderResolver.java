@@ -7,7 +7,7 @@ import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 
-public class JavaEEConfigProviderResolver extends ConfigProviderResolver {
+public class DefaultConfigProviderResolver extends ConfigProviderResolver {
 
     @Override
     public Config getConfig() {
@@ -22,7 +22,11 @@ public class JavaEEConfigProviderResolver extends ConfigProviderResolver {
         }
         ServiceLoader<Config> serviceLoader = ServiceLoader.load(Config.class, classLoader);
         Iterator<Config> iterator = serviceLoader.iterator();
-        return iterator.hasNext() ? iterator.next() : null; // 获取 Config SPI 第一个实现
+        if (iterator.hasNext()) {
+            // 获取 Config SPI 第一个实现
+            return iterator.next();
+        }
+        throw new IllegalStateException("No Config implementation found!");
     }
 
     @Override
