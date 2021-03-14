@@ -2,12 +2,14 @@ package org.geektimes.projects.user.management;
 
 import org.geektimes.projects.user.domain.User;
 
-public class UserManager implements UserManagerMBean {
+public class UserManager implements UserManagerInterface {
 
     private final User user;
+    private Address address;
 
-    public UserManager(User user) {
+    public UserManager(User user, Address address) {
         this.user = user;
+        this.address = address;
     }
 
     @Override
@@ -75,7 +77,13 @@ public class UserManager implements UserManagerMBean {
         return user.toString();
     }
 
-    public User getUser() {
-        return user;
+    @Override
+    public Address getAddress() {
+        return address;
+    }
+
+    @Override
+    public void setAddress(Address address) {
+        this.address = address;
     }
 }

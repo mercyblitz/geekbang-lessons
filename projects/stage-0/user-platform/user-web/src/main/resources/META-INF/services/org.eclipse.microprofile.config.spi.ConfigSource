@@ -1,1 +1,3 @@
 org.geektimes.configuration.microprofile.config.source.JavaSystemPropertiesConfigSource
+org.geektimes.configuration.microprofile.config.source.LocalConfigSource
+org.geektimes.configuration.microprofile.config.source.SystemEnvironmentConfigSource

@@ -5,7 +5,9 @@ import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigValue;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.eclipse.microprofile.config.spi.Converter;
+import sun.reflect.generics.reflectiveObjects.ParameterizedTypeImpl;
 
+import java.beans.Introspector;
 import java.util.*;
 
 public class JavaConfig implements Config {
@@ -13,7 +15,8 @@ public class JavaConfig implements Config {
     /**
      * 内部可变的集合，不要直接暴露在外面
      */
-    private List<ConfigSource> configSources = new LinkedList<>();
+    private final List<ConfigSource> configSources = new LinkedList<>();
+    private final Map<String,Converter> converters = new HashMap<>();
 
     private static Comparator<ConfigSource> configSourceComparator = new Comparator<ConfigSource>() {
         @Override
@@ -24,17 +27,33 @@ public class JavaConfig implements Config {
 
     public JavaConfig() {
         ClassLoader classLoader = getClass().getClassLoader();
-        ServiceLoader<ConfigSource> serviceLoader = ServiceLoader.load(ConfigSource.class, classLoader);
-        serviceLoader.forEach(configSources::add);
+
+        // 加载ConfigSource
+        ServiceLoader<ConfigSource> configSourceServiceLoader = ServiceLoader.load(ConfigSource.class, classLoader);
+        configSourceServiceLoader.forEach(configSources::add);
         // 排序
         configSources.sort(configSourceComparator);
+
+        // 加载 Converter
+        ServiceLoader<Converter> converterServiceLoader = ServiceLoader.load(Converter.class, classLoader);
+        Iterator<Converter> converterIterator = converterServiceLoader.iterator();
+        while (converterIterator.hasNext()) {
+            Converter converter = converterIterator.next();
+            String typeName = ((ParameterizedTypeImpl) converter.getClass().getGenericInterfaces()[0]).getActualTypeArguments()[0].getTypeName();
+            converters.put(typeName, converter);
+        }
     }
 
     @Override
     public <T> T getValue(String propertyName, Class<T> propertyType) {
         String propertyValue = getPropertyValue(propertyName);
         // String 转换成目标类型
-        return null;
+        Converter converter = converters.get(propertyType.getTypeName());
+        if (Objects.nonNull(converter)) {
+            return (T) converter.convert(propertyValue);
+        }
+
+        return propertyType.cast(propertyValue);
     }
 
     @Override
@@ -56,12 +75,17 @@ public class JavaConfig implements Config {
     @Override
     public <T> Optional<T> getOptionalValue(String propertyName, Class<T> propertyType) {
         T value = getValue(propertyName, propertyType);
+        //todo  使用convertor转换
         return Optional.ofNullable(value);
     }
 
     @Override
     public Iterable<String> getPropertyNames() {
-        return null;
+        ArrayList<String> propertyNames = new ArrayList<>(10);
+        for (ConfigSource configSource : configSources) {
+            propertyNames.addAll(configSource.getPropertyNames());
+        }
+        return propertyNames;
     }
 
     @Override

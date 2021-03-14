@@ -16,14 +16,15 @@ public class UserMBeanDemo {
         ObjectName objectName = new ObjectName("org.geektimes.projects.user.management:type=User");
         // 创建 UserMBean 实例
         User user = new User();
-        mBeanServer.registerMBean(createUserMBean(user), objectName);
+        Address address = new Address();
+        mBeanServer.registerMBean(createUserMBean(user, address), objectName);
         while (true) {
             Thread.sleep(2000);
             System.out.println(user);
         }
     }
 
-    private static Object createUserMBean(User user) throws Exception {
-        return new UserManager(user);
+    private static Object createUserMBean(User user, Address address) throws Exception {
+        return new UserManager(user, address);
     }
 }

@@ -43,4 +43,10 @@ public class DefaultConfigProviderResolver extends ConfigProviderResolver {
     public void releaseConfig(Config config) {
 
     }
+
+    public static void main(String[] args) {
+        ConfigProviderResolver providerResolver = new DefaultConfigProviderResolver();
+        Config config = providerResolver.getConfig();
+        config.getPropertyNames().forEach(System.out::println);
+    }
 }

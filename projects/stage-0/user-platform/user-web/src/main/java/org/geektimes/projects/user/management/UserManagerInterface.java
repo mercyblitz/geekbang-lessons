@@ -2,10 +2,13 @@ package org.geektimes.projects.user.management;
 
 import org.geektimes.projects.user.domain.User;
 
+import javax.management.MXBean;
+
 /**
  * {@link User} MBean 接口描述
  */
-public interface UserManagerMBean {
+@MXBean
+public interface UserManagerInterface {
 
     // MBeanAttributeInfo 列表
     Long getId();
@@ -31,6 +34,8 @@ public interface UserManagerMBean {
     // MBeanOperationInfo
     String toString();
 
-    User getUser();
+    Address getAddress();
+
+    void setAddress(Address address);
 
 }

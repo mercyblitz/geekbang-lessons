@@ -6,19 +6,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public class JavaSystemPropertiesConfigSource implements ConfigSource {
+/**
+ * 系统环境变量配置源
+ */
+public class SystemEnvironmentConfigSource implements ConfigSource {
 
-    private static final String ORDINAL = "200";
+    private static final String ORDINAL = "100";
 
-    /**
-     * Java 系统属性最好通过本地变量保存，使用 Map 保存，尽可能运行期不去调整
-     * -Dapplication.name=user-web
-     */
     private final Map<String, String> properties;
 
-    public JavaSystemPropertiesConfigSource() {
-        Map systemProperties = System.getProperties();
-        this.properties = new HashMap<>(systemProperties);
+    public SystemEnvironmentConfigSource() {
+        Map environmentProperties = System.getenv();
+        this.properties = new HashMap<>(environmentProperties);
         this.properties.put(CONFIG_ORDINAL, ORDINAL);
     }
 
