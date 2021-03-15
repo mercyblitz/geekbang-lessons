@@ -1,19 +1,17 @@
-package org.geektimes.web.mvc.context;
+package org.geektimes.context;
 
-import java.lang.reflect.Modifier;
-import java.util.*;
-import java.util.logging.Logger;
-import java.util.stream.Stream;
+import org.geektimes.function.ThrowableAction;
+import org.geektimes.function.ThrowableFunction;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.annotation.Resource;
 import javax.naming.*;
 import javax.servlet.ServletContext;
-
-import org.geektimes.web.mvc.function.ThrowableAction;
-import org.geektimes.web.mvc.function.ThrowableFunction;
-
+import java.lang.reflect.Modifier;
+import java.util.*;
+import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 /**
  * 组件上下文（Web 应用全局使用）
@@ -30,12 +28,12 @@ public class ComponentContext {
     // 假设一个 Tomcat JVM 进程，三个 Web Apps，会不会相互冲突？（不会冲突）
     // static 字段是 JVM 缓存吗？（是 ClassLoader 缓存）
 
-    // private static ApplicationContext applicationContext;
+//    private static ApplicationContext applicationContext;
 
-    // public void setApplicationContext(ApplicationContext applicationContext){
-    // ComponentContext.applicationContext = applicationContext;
-    // WebApplicationContextUtils.getRootWebApplicationContext()
-    // }
+//    public void setApplicationContext(ApplicationContext applicationContext){
+//        ComponentContext.applicationContext = applicationContext;
+//        WebApplicationContextUtils.getRootWebApplicationContext()
+//    }
 
     private Context envContext; // Component Env Context
 
@@ -49,7 +47,7 @@ public class ComponentContext {
      * @return
      */
     public static ComponentContext getInstance() {
-        return (ComponentContext)servletContext.getAttribute(CONTEXT_NAME);
+        return (ComponentContext) servletContext.getAttribute(CONTEXT_NAME);
     }
 
     private static void close(Context context) {
@@ -69,18 +67,6 @@ public class ComponentContext {
     }
 
     /**
-     * 销毁容器 处理@PreDestroy
-     * 
-     * @throws RuntimeException
-     */
-    public void destoryContent() throws RuntimeException {
-        componentsMap.values().forEach(component -> {
-            Class<?> componentClass = component.getClass();
-            processPreDestroy(component, componentClass);
-        });
-    }
-
-    /**
      * 实例化组件
      */
     protected void instantiateComponents() {
@@ -93,9 +79,9 @@ public class ComponentContext {
     /**
      * 初始化组件（支持 Java 标准 Commons Annotation 生命周期）
      * <ol>
-     * <li>注入阶段 - {@link Resource}</li>
-     * <li>初始阶段 - {@link PostConstruct}</li>
-     * <li>销毁阶段 - {@link PreDestroy}</li>
+     *  <li>注入阶段 - {@link Resource}</li>
+     *  <li>初始阶段 - {@link PostConstruct}</li>
+     *  <li>销毁阶段 - {@link PreDestroy}</li>
      * </ol>
      */
     protected void initializeComponents() {
@@ -109,10 +95,12 @@ public class ComponentContext {
     }
 
     private void injectComponents(Object component, Class<?> componentClass) {
-        Stream.of(componentClass.getDeclaredFields()).filter(field -> {
-            int mods = field.getModifiers();
-            return !Modifier.isStatic(mods) && field.isAnnotationPresent(Resource.class);
-        }).forEach(field -> {
+        Stream.of(componentClass.getDeclaredFields())
+                .filter(field -> {
+                    int mods = field.getModifiers();
+                    return !Modifier.isStatic(mods) &&
+                            field.isAnnotationPresent(Resource.class);
+                }).forEach(field -> {
             Resource resource = field.getAnnotation(Resource.class);
             String resourceName = resource.name();
             Object injectedObject = lookupComponent(resourceName);
@@ -121,16 +109,17 @@ public class ComponentContext {
                 // 注入目标对象
                 field.set(component, injectedObject);
             } catch (IllegalAccessException e) {
-                e.printStackTrace();
             }
         });
     }
 
     private void processPostConstruct(Object component, Class<?> componentClass) {
-        Stream.of(componentClass.getMethods()).filter(method -> !Modifier.isStatic(method.getModifiers()) && // 非 static
-            method.getParameterCount() == 0 && // 没有参数
-            method.isAnnotationPresent(PostConstruct.class) // 标注 @PostConstruct
-        ).forEach(method -> {
+        Stream.of(componentClass.getMethods())
+                .filter(method ->
+                        !Modifier.isStatic(method.getModifiers()) &&      // 非 static
+                                method.getParameterCount() == 0 &&        // 没有参数
+                                method.isAnnotationPresent(PostConstruct.class) // 标注 @PostConstruct
+                ).forEach(method -> {
             // 执行目标方法
             try {
                 method.invoke(component);
@@ -161,10 +150,8 @@ public class ComponentContext {
     /**
      * 在 Context 中执行，通过指定 ThrowableFunction 返回计算结果
      *
-     * @param function
-     *            ThrowableFunction
-     * @param <R>
-     *            返回结果类型
+     * @param function ThrowableFunction
+     * @param <R>      返回结果类型
      * @return 返回
      * @see ThrowableFunction#apply(Object)
      */
@@ -175,12 +162,9 @@ public class ComponentContext {
     /**
      * 在 Context 中执行，通过指定 ThrowableFunction 返回计算结果
      *
-     * @param function
-     *            ThrowableFunction
-     * @param ignoredException
-     *            是否忽略异常
-     * @param <R>
-     *            返回结果类型
+     * @param function         ThrowableFunction
+     * @param ignoredException 是否忽略异常
+     * @param <R>              返回结果类型
      * @return 返回
      * @see ThrowableFunction#apply(Object)
      */
@@ -202,8 +186,8 @@ public class ComponentContext {
         return result;
     }
 
-    protected <C> C lookupComponent(String name) {
-        return executeInContext(context -> (C)context.lookup(name));
+    public <C> C lookupComponent(String name) {
+        return executeInContext(context -> (C) context.lookup(name));
     }
 
     /**
@@ -214,7 +198,7 @@ public class ComponentContext {
      * @return
      */
     public <C> C getComponent(String name) {
-        return (C)componentsMap.get(name);
+        return (C) componentsMap.get(name);
     }
 
     /**
@@ -250,7 +234,8 @@ public class ComponentContext {
                     fullNames.addAll(listComponentNames(element.getName()));
                 } else {
                     // 否则，当前名称绑定目标类型的话话，添加该名称到集合中
-                    String fullName = name.startsWith("/") ? element.getName() : name + "/" + element.getName();
+                    String fullName = name.startsWith("/") ?
+                            element.getName() : name + "/" + element.getName();
                     fullNames.add(fullName);
                 }
             }
@@ -269,7 +254,7 @@ public class ComponentContext {
         Context context = null;
         try {
             context = new InitialContext();
-            this.envContext = (Context)context.lookup(COMPONENT_ENV_CONTEXT_NAME);
+            this.envContext = (Context) context.lookup(COMPONENT_ENV_CONTEXT_NAME);
         } catch (NamingException e) {
             throw new RuntimeException(e);
         } finally {
