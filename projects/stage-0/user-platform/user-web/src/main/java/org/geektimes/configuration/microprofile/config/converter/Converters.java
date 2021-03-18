@@ -45,8 +45,16 @@ public class Converters implements Iterable<Converter> {
 
     public void addConverter(Converter converter, int priority) {
         Class<?> convertedType = resolveConvertedType(converter);
+        addConverter(converter, priority, convertedType);
+    }
+
+    public void addConverter(Converter converter, int priority, Class<?> convertedType) {
         PriorityQueue priorityQueue = typedConverters.computeIfAbsent(convertedType, t -> new PriorityQueue<>());
         priorityQueue.offer(new PrioritizedConverter(converter, priority));
+    }
+
+    public void setClassLoader(ClassLoader classLoader) {
+        this.classLoader = classLoader;
     }
 
     protected Class<?> resolveConvertedType(Converter<?> converter) {
