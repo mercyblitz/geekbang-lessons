@@ -34,6 +34,9 @@
         <!-- MicroProfile 版本-->
         <microprofile-config-api.version>2.0</microprofile-config-api.version>
 
+        <!-- Testing 版本 -->
+        <junit.version>4.13</junit.version>
+
         <!-- Maven Plugins 版本 -->
         <maven.compiler.version>3.8.1</maven.compiler.version>
         <maven.source.version>3.2.1</maven.source.version>
@@ -122,6 +125,15 @@
                 <version>${microprofile-config-api.version}</version>
             </dependency>
 
+            <!-- JUnit -->
+            <dependency>
+                <groupId>junit</groupId>
+                <artifactId>junit</artifactId>
+                <version>${junit.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+
         </dependencies>
 
     </dependencyManagement>
@@ -187,25 +199,25 @@
                         </execution>
                     </executions>
                 </plugin>
-<!--                <plugin>-->
-<!--                    <groupId>org.apache.tomcat.maven</groupId>-->
-<!--                    <artifactId>tomcat8-maven-plugin</artifactId>-->
-<!--                    <version>3.0-r1756463</version>-->
-<!--                    <executions>-->
-<!--                        <execution>-->
-<!--                            <id>tomcat-run</id>-->
-<!--                            <goals>-->
-<!--                                &lt;!&ndash; 最终打包成可执行的jar包 &ndash;&gt;-->
-<!--                                <goal>exec-war-only</goal>-->
-<!--                            </goals>-->
-<!--                            <phase>package</phase>-->
-<!--                            <configuration>-->
-<!--                                &lt;!&ndash; ServletContext 路径 &ndash;&gt;-->
-<!--                                <path>/</path>-->
-<!--                            </configuration>-->
-<!--                        </execution>-->
-<!--                    </executions>-->
-<!--                </plugin>-->
+                <!--                <plugin>-->
+                <!--                    <groupId>org.apache.tomcat.maven</groupId>-->
+                <!--                    <artifactId>tomcat8-maven-plugin</artifactId>-->
+                <!--                    <version>3.0-r1756463</version>-->
+                <!--                    <executions>-->
+                <!--                        <execution>-->
+                <!--                            <id>tomcat-run</id>-->
+                <!--                            <goals>-->
+                <!--                                &lt;!&ndash; 最终打包成可执行的jar包 &ndash;&gt;-->
+                <!--                                <goal>exec-war-only</goal>-->
+                <!--                            </goals>-->
+                <!--                            <phase>package</phase>-->
+                <!--                            <configuration>-->
+                <!--                                &lt;!&ndash; ServletContext 路径 &ndash;&gt;-->
+                <!--                                <path>/</path>-->
+                <!--                            </configuration>-->
+                <!--                        </execution>-->
+                <!--                    </executions>-->
+                <!--                </plugin>-->
             </plugins>
         </pluginManagement>
 

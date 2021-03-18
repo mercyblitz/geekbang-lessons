@@ -5,36 +5,33 @@ import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.ConfigValue;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.eclipse.microprofile.config.spi.Converter;
+import org.geektimes.configuration.microprofile.config.converter.Converters;
+import org.geektimes.configuration.microprofile.config.source.ConfigSources;
 
-import java.util.*;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
-public class JavaConfig implements Config {
+import static java.util.stream.StreamSupport.stream;
 
-    /**
-     * 内部可变的集合，不要直接暴露在外面
-     */
-    private List<ConfigSource> configSources = new LinkedList<>();
+class DefaultConfig implements Config {
 
-    private static Comparator<ConfigSource> configSourceComparator = new Comparator<ConfigSource>() {
-        @Override
-        public int compare(ConfigSource o1, ConfigSource o2) {
-            return Integer.compare(o2.getOrdinal(), o1.getOrdinal());
-        }
-    };
+    private final ConfigSources configSources;
 
-    public JavaConfig() {
-        ClassLoader classLoader = getClass().getClassLoader();
-        ServiceLoader<ConfigSource> serviceLoader = ServiceLoader.load(ConfigSource.class, classLoader);
-        serviceLoader.forEach(configSources::add);
-        // 排序
-        configSources.sort(configSourceComparator);
+    private final Converters converters;
+
+    DefaultConfig(ConfigSources configSources, Converters converters) {
+        this.configSources = configSources;
+        this.converters = converters;
     }
 
     @Override
     public <T> T getValue(String propertyName, Class<T> propertyType) {
         String propertyValue = getPropertyValue(propertyName);
         // String 转换成目标类型
-        return null;
+        Converter<T> converter = doGetConverter(propertyType);
+        return converter == null ? null : converter.convert(propertyValue);
     }
 
     @Override
@@ -61,17 +58,25 @@ public class JavaConfig implements Config {
 
     @Override
     public Iterable<String> getPropertyNames() {
-        return null;
+        return stream(configSources.spliterator(), false)
+                .map(ConfigSource::getPropertyNames)
+                .collect(LinkedHashSet::new, Set::addAll, Set::addAll);
     }
 
     @Override
     public Iterable<ConfigSource> getConfigSources() {
-        return Collections.unmodifiableList(configSources);
+        return configSources;
     }
 
     @Override
     public <T> Optional<Converter<T>> getConverter(Class<T> forType) {
-        return Optional.empty();
+        Converter converter = doGetConverter(forType);
+        return converter == null ? Optional.empty() : Optional.of(converter);
+    }
+
+    protected <T> Converter<T> doGetConverter(Class<T> forType) {
+        List<Converter> converters = this.converters.getConverters(forType);
+        return converters.isEmpty() ? null : converters.get(0);
     }
 
     @Override
