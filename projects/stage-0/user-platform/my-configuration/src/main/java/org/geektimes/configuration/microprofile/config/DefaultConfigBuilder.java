@@ -35,12 +35,14 @@ public class DefaultConfigBuilder implements ConfigBuilder {
 
     @Override
     public ConfigBuilder addDiscoveredConverters() {
+        converters.addDiscoveredConverters();
         return this;
     }
 
     @Override
     public ConfigBuilder forClassLoader(ClassLoader loader) {
         configSources.setClassLoader(loader);
+        converters.setClassLoader(loader);
         return this;
     }
 
@@ -58,6 +60,7 @@ public class DefaultConfigBuilder implements ConfigBuilder {
 
     @Override
     public <T> ConfigBuilder withConverter(Class<T> type, int priority, Converter<T> converter) {
+        this.converters.addConverter(converter, priority, type);
         return this;
     }
 
