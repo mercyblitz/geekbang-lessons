@@ -19,8 +19,9 @@ public class ConfigProviderResolverDemo {
      */
     @Test
     public void test() {
-        ConfigProviderResolver providerResolver = new DefaultConfigProviderResolver();
-        Config config = providerResolver.getConfig();
+        ConfigProviderResolver providerResolver = ConfigProviderResolver.instance();
+        Config config = providerResolver.getBuilder().addDefaultSources().addDiscoveredSources().addDiscoveredConverters().build();
+        providerResolver.registerConfig(config, null);
         for (String propertyName : config.getPropertyNames()) {
             System.out.println(propertyName + "=" + config.getValue(propertyName, String.class));
         }
@@ -33,8 +34,9 @@ public class ConfigProviderResolverDemo {
     public void test2() {
         String propertyName = "application.name";
 
-        ConfigProviderResolver providerResolver = new DefaultConfigProviderResolver();
-        Config config = providerResolver.getConfig();
+        ConfigProviderResolver providerResolver = ConfigProviderResolver.instance();
+        Config config = providerResolver.getBuilder().addDefaultSources().addDiscoveredSources().addDiscoveredConverters().build();
+        providerResolver.registerConfig(config, null);
         System.out.println(propertyName + "=" + config.getValue(propertyName, String.class));
     }
 
@@ -48,8 +50,9 @@ public class ConfigProviderResolverDemo {
         String propertyName = "convert.value";
         Class type = Long.class;
 
-        ConfigProviderResolver providerResolver = new DefaultConfigProviderResolver();
-        Config config = providerResolver.getConfig();
+        ConfigProviderResolver providerResolver = ConfigProviderResolver.instance();
+        Config config = providerResolver.getBuilder().addDefaultSources().addDiscoveredSources().addDiscoveredConverters().build();
+        providerResolver.registerConfig(config, null);
         System.out.println(propertyName + "=" + config.getValue(propertyName, type));
     }
 

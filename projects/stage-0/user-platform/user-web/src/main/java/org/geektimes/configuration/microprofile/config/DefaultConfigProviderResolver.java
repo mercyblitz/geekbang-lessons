@@ -64,8 +64,11 @@ public class DefaultConfigProviderResolver extends ConfigProviderResolver {
     }
 
     public static void main(String[] args) {
-        ConfigProviderResolver providerResolver = new DefaultConfigProviderResolver();
-        Config config = providerResolver.getConfig();
+        ConfigProviderResolver providerResolver = ConfigProviderResolver.instance();
+        Config config2 = providerResolver.getConfig();
+        Config config = providerResolver.getBuilder().addDefaultSources().addDiscoveredSources().addDiscoveredConverters().build();
+        providerResolver.registerConfig(config, null);
+        providerResolver.registerConfig(config2, null);
         config.getPropertyNames().forEach(System.out::println);
     }
 }
