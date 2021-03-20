@@ -21,7 +21,7 @@ public class ConfigProviderResolverDemo {
     public void test() {
         ConfigProviderResolver providerResolver = ConfigProviderResolver.instance();
         Config config = providerResolver.getBuilder().addDefaultSources().addDiscoveredSources().addDiscoveredConverters().build();
-        providerResolver.registerConfig(config, null);
+        providerResolver.registerConfig(config, this.getClass().getClassLoader());
         for (String propertyName : config.getPropertyNames()) {
             System.out.println(propertyName + "=" + config.getValue(propertyName, String.class));
         }
@@ -36,7 +36,7 @@ public class ConfigProviderResolverDemo {
 
         ConfigProviderResolver providerResolver = ConfigProviderResolver.instance();
         Config config = providerResolver.getBuilder().addDefaultSources().addDiscoveredSources().addDiscoveredConverters().build();
-        providerResolver.registerConfig(config, null);
+        providerResolver.registerConfig(config, this.getClass().getClassLoader());
         System.out.println(propertyName + "=" + config.getValue(propertyName, String.class));
     }
 
@@ -52,7 +52,7 @@ public class ConfigProviderResolverDemo {
 
         ConfigProviderResolver providerResolver = ConfigProviderResolver.instance();
         Config config = providerResolver.getBuilder().addDefaultSources().addDiscoveredSources().addDiscoveredConverters().build();
-        providerResolver.registerConfig(config, null);
+        providerResolver.registerConfig(config, this.getClass().getClassLoader());
         System.out.println(propertyName + "=" + config.getValue(propertyName, type));
     }
 
