@@ -22,6 +22,13 @@
             <version>${revision}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.geekbang.projects</groupId>
+            <artifactId>my-configuration</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+
         <!-- Servlet API -->
         <dependency>
             <groupId>javax.servlet</groupId>
@@ -79,10 +86,6 @@
             <version>3.0.1-b11</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.eclipse.microprofile.config</groupId>
-            <artifactId>microprofile-config-api</artifactId>
-        </dependency>
 
         <dependency>
             <groupId>junit</groupId>

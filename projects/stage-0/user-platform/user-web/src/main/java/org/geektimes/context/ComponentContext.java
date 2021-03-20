@@ -132,7 +132,11 @@ public class ComponentContext {
     }
 
     private void processPreDestroy() {
-        // TODO
+        // TODO: 通过 ShutdownHook 实现
+        Runtime.getRuntime().addShutdownHook(new Thread(()->{
+            // 逐一调用这
+            componentsMap.values();
+        }));
     }
 
     /**

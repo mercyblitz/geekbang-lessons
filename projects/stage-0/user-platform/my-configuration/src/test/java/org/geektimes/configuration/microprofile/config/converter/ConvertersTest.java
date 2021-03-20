@@ -2,6 +2,7 @@ package org.geektimes.configuration.microprofile.config.converter;
 
 
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -12,6 +13,11 @@ import static org.junit.Assert.assertEquals;
 public class ConvertersTest {
 
     private Converters converters;
+
+    @BeforeClass
+    public static void prepare() {
+
+    }
 
     @Before
     public void init() {

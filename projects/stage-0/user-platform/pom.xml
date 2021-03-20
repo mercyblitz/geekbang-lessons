@@ -13,6 +13,8 @@
     <modules>
         <module>my-web-mvc</module>
         <module>user-web</module>
+        <module>my-configuration</module>
+        <module>my-depedency-injection</module>
     </modules>
 
     <properties>
