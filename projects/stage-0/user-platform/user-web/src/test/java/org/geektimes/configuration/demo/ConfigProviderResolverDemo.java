@@ -3,7 +3,6 @@ package org.geektimes.configuration.demo;
 
 import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
-import org.geektimes.configuration.microprofile.config.DefaultConfigProviderResolver;
 import org.geektimes.configuration.microprofile.config.source.LocalConfigSource;
 import org.geektimes.configuration.microprofile.config.source.SystemEnvironmentConfigSource;
 import org.junit.Test;
