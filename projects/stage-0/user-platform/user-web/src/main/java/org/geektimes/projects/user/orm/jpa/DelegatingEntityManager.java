@@ -17,6 +17,9 @@ import java.util.Properties;
 
 /**
  * 委派实现（静态 AOP 实现）
+ * 保持容器内单例
+ * 目前实现 DelegatingEntityManager : EntityManager = 1:1
+ * DelegatingEntityManager : EntityManager = 1:N
  */
 public class DelegatingEntityManager implements EntityManager {
 
@@ -24,14 +27,26 @@ public class DelegatingEntityManager implements EntityManager {
 
     private String propertiesLocation;
 
-    private EntityManager entityManager;
+    private EntityManagerFactory entityManagerFactory;
 
     @PostConstruct
     public void init() {
-        EntityManagerFactory entityManagerFactory =
+        this.entityManagerFactory =
                 Persistence.createEntityManagerFactory(persistenceUnitName, loadProperties(propertiesLocation));
-        this.entityManager = entityManagerFactory.createEntityManager();
     }
+
+    /**
+     * 如果存在多态的情况，尽可能保持方法是 protected
+     * @return
+     */
+    protected EntityManager getEntityManager(){ // 每个线程获取的 EntityManager 实例，原型实例
+        return entityManagerFactory.createEntityManager();
+    }
+
+    // 假设子类
+//    protected protected EntityManager getEntityManager(){
+//        return this.entityManager; // wrap 一个同步实现
+//    }
 
     private Map loadProperties(String propertiesLocation) {
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -72,257 +87,257 @@ public class DelegatingEntityManager implements EntityManager {
 
     @Override
     public void persist(Object entity) {
-        entityManager.persist(entity);
+        getEntityManager().persist(entity);
     }
 
     @Override
     public <T> T merge(T entity) {
-        return entityManager.merge(entity);
+        return getEntityManager().merge(entity);
     }
 
     @Override
     public void remove(Object entity) {
-        entityManager.remove(entity);
+        getEntityManager().remove(entity);
     }
 
     @Override
     public <T> T find(Class<T> entityClass, Object primaryKey) {
-        return entityManager.find(entityClass, primaryKey);
+        return getEntityManager().find(entityClass, primaryKey);
     }
 
     @Override
     public <T> T find(Class<T> entityClass, Object primaryKey, Map<String, Object> properties) {
-        return entityManager.find(entityClass, primaryKey, properties);
+        return getEntityManager().find(entityClass, primaryKey, properties);
     }
 
     @Override
     public <T> T find(Class<T> entityClass, Object primaryKey, LockModeType lockMode) {
-        return entityManager.find(entityClass, primaryKey, lockMode);
+        return getEntityManager().find(entityClass, primaryKey, lockMode);
     }
 
     @Override
     public <T> T find(Class<T> entityClass, Object primaryKey, LockModeType lockMode, Map<String, Object> properties) {
-        return entityManager.find(entityClass, primaryKey, lockMode, properties);
+        return getEntityManager().find(entityClass, primaryKey, lockMode, properties);
     }
 
     @Override
     public <T> T getReference(Class<T> entityClass, Object primaryKey) {
-        return entityManager.getReference(entityClass, primaryKey);
+        return getEntityManager().getReference(entityClass, primaryKey);
     }
 
     @Override
     public void flush() {
-        entityManager.flush();
+        getEntityManager().flush();
     }
 
     @Override
     public void setFlushMode(FlushModeType flushMode) {
-        entityManager.setFlushMode(flushMode);
+        getEntityManager().setFlushMode(flushMode);
     }
 
     @Override
     public FlushModeType getFlushMode() {
-        return entityManager.getFlushMode();
+        return getEntityManager().getFlushMode();
     }
 
     @Override
     public void lock(Object entity, LockModeType lockMode) {
-        entityManager.lock(entity, lockMode);
+        getEntityManager().lock(entity, lockMode);
     }
 
     @Override
     public void lock(Object entity, LockModeType lockMode, Map<String, Object> properties) {
-        entityManager.lock(entity, lockMode, properties);
+        getEntityManager().lock(entity, lockMode, properties);
     }
 
     @Override
     public void refresh(Object entity) {
-        entityManager.refresh(entity);
+        getEntityManager().refresh(entity);
     }
 
     @Override
     public void refresh(Object entity, Map<String, Object> properties) {
-        entityManager.refresh(entity, properties);
+        getEntityManager().refresh(entity, properties);
     }
 
     @Override
     public void refresh(Object entity, LockModeType lockMode) {
-        entityManager.refresh(entity, lockMode);
+        getEntityManager().refresh(entity, lockMode);
     }
 
     @Override
     public void refresh(Object entity, LockModeType lockMode, Map<String, Object> properties) {
-        entityManager.refresh(entity, lockMode, properties);
+        getEntityManager().refresh(entity, lockMode, properties);
     }
 
     @Override
     public void clear() {
-        entityManager.clear();
+        getEntityManager().clear();
     }
 
     @Override
     public void detach(Object entity) {
-        entityManager.detach(entity);
+        getEntityManager().detach(entity);
     }
 
     @Override
     public boolean contains(Object entity) {
-        return entityManager.contains(entity);
+        return getEntityManager().contains(entity);
     }
 
     @Override
     public LockModeType getLockMode(Object entity) {
-        return entityManager.getLockMode(entity);
+        return getEntityManager().getLockMode(entity);
     }
 
     @Override
     public void setProperty(String propertyName, Object value) {
-        entityManager.setProperty(propertyName, value);
+        getEntityManager().setProperty(propertyName, value);
     }
 
     @Override
     public Map<String, Object> getProperties() {
-        return entityManager.getProperties();
+        return getEntityManager().getProperties();
     }
 
     @Override
     public Query createQuery(String qlString) {
-        return entityManager.createQuery(qlString);
+        return getEntityManager().createQuery(qlString);
     }
 
     @Override
     public <T> TypedQuery<T> createQuery(CriteriaQuery<T> criteriaQuery) {
-        return entityManager.createQuery(criteriaQuery);
+        return getEntityManager().createQuery(criteriaQuery);
     }
 
     @Override
     public Query createQuery(CriteriaUpdate updateQuery) {
-        return entityManager.createQuery(updateQuery);
+        return getEntityManager().createQuery(updateQuery);
     }
 
     @Override
     public Query createQuery(CriteriaDelete deleteQuery) {
-        return entityManager.createQuery(deleteQuery);
+        return getEntityManager().createQuery(deleteQuery);
     }
 
     @Override
     public <T> TypedQuery<T> createQuery(String qlString, Class<T> resultClass) {
-        return entityManager.createQuery(qlString, resultClass);
+        return getEntityManager().createQuery(qlString, resultClass);
     }
 
     @Override
     public Query createNamedQuery(String name) {
-        return entityManager.createNamedQuery(name);
+        return getEntityManager().createNamedQuery(name);
     }
 
     @Override
     public <T> TypedQuery<T> createNamedQuery(String name, Class<T> resultClass) {
-        return entityManager.createNamedQuery(name, resultClass);
+        return getEntityManager().createNamedQuery(name, resultClass);
     }
 
     @Override
     public Query createNativeQuery(String sqlString) {
-        return entityManager.createNativeQuery(sqlString);
+        return getEntityManager().createNativeQuery(sqlString);
     }
 
     @Override
     public Query createNativeQuery(String sqlString, Class resultClass) {
-        return entityManager.createNativeQuery(sqlString, resultClass);
+        return getEntityManager().createNativeQuery(sqlString, resultClass);
     }
 
     @Override
     public Query createNativeQuery(String sqlString, String resultSetMapping) {
-        return entityManager.createNativeQuery(sqlString, resultSetMapping);
+        return getEntityManager().createNativeQuery(sqlString, resultSetMapping);
     }
 
     @Override
     public StoredProcedureQuery createNamedStoredProcedureQuery(String name) {
-        return entityManager.createNamedStoredProcedureQuery(name);
+        return getEntityManager().createNamedStoredProcedureQuery(name);
     }
 
     @Override
     public StoredProcedureQuery createStoredProcedureQuery(String procedureName) {
-        return entityManager.createStoredProcedureQuery(procedureName);
+        return getEntityManager().createStoredProcedureQuery(procedureName);
     }
 
     @Override
     public StoredProcedureQuery createStoredProcedureQuery(String procedureName, Class... resultClasses) {
-        return entityManager.createStoredProcedureQuery(procedureName, resultClasses);
+        return getEntityManager().createStoredProcedureQuery(procedureName, resultClasses);
     }
 
     @Override
     public StoredProcedureQuery createStoredProcedureQuery(String procedureName, String... resultSetMappings) {
-        return entityManager.createStoredProcedureQuery(procedureName, resultSetMappings);
+        return getEntityManager().createStoredProcedureQuery(procedureName, resultSetMappings);
     }
 
     @Override
     public void joinTransaction() {
-        entityManager.joinTransaction();
+        getEntityManager().joinTransaction();
     }
 
     @Override
     public boolean isJoinedToTransaction() {
-        return entityManager.isJoinedToTransaction();
+        return getEntityManager().isJoinedToTransaction();
     }
 
     @Override
     public <T> T unwrap(Class<T> cls) {
-        return entityManager.unwrap(cls);
+        return getEntityManager().unwrap(cls);
     }
 
     @Override
     public Object getDelegate() {
-        return entityManager.getDelegate();
+        return getEntityManager().getDelegate();
     }
 
     @Override
     public void close() {
-        entityManager.close();
+        getEntityManager().close();
     }
 
     @Override
     public boolean isOpen() {
-        return entityManager.isOpen();
+        return getEntityManager().isOpen();
     }
 
     @Override
     public EntityTransaction getTransaction() {
-        return entityManager.getTransaction();
+        return getEntityManager().getTransaction();
     }
 
     @Override
     public EntityManagerFactory getEntityManagerFactory() {
-        return entityManager.getEntityManagerFactory();
+        return getEntityManager().getEntityManagerFactory();
     }
 
     @Override
     public CriteriaBuilder getCriteriaBuilder() {
-        return entityManager.getCriteriaBuilder();
+        return getEntityManager().getCriteriaBuilder();
     }
 
     @Override
     public Metamodel getMetamodel() {
-        return entityManager.getMetamodel();
+        return getEntityManager().getMetamodel();
     }
 
     @Override
     public <T> EntityGraph<T> createEntityGraph(Class<T> rootType) {
-        return entityManager.createEntityGraph(rootType);
+        return getEntityManager().createEntityGraph(rootType);
     }
 
     @Override
     public EntityGraph<?> createEntityGraph(String graphName) {
-        return entityManager.createEntityGraph(graphName);
+        return getEntityManager().createEntityGraph(graphName);
     }
 
     @Override
     public EntityGraph<?> getEntityGraph(String graphName) {
-        return entityManager.getEntityGraph(graphName);
+        return getEntityManager().getEntityGraph(graphName);
     }
 
     @Override
     public <T> List<EntityGraph<? super T>> getEntityGraphs(Class<T> entityClass) {
-        return entityManager.getEntityGraphs(entityClass);
+        return getEntityManager().getEntityGraphs(entityClass);
     }
 
 }

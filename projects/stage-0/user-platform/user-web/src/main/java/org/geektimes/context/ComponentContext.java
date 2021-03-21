@@ -132,7 +132,11 @@ public class ComponentContext {
     }
 
     private void processPreDestroy() {
-        // TODO
+        // TODO: 通过 ShutdownHook 实现
+        Runtime.getRuntime().addShutdownHook(new Thread(()->{
+            // 逐一调用这
+            componentsMap.values();
+        }));
     }
 
     /**
@@ -175,7 +179,7 @@ public class ComponentContext {
         return result;
     }
 
-    protected <C> C lookupComponent(String name) {
+    public <C> C lookupComponent(String name) {
         return executeInContext(context -> (C) context.lookup(name));
     }
 
