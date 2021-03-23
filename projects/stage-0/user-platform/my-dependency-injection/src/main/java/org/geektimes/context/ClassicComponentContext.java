@@ -16,11 +16,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * 基于 JNDI实现的组件上下文
+ * Java 传统组件上下文（基于 JNDI实现）
  */
-public class JndiComponentContext implements ComponentContext {
+public class ClassicComponentContext implements ComponentContext {
 
-    public static final String CONTEXT_NAME = JndiComponentContext.class.getName();
+    public static final String CONTEXT_NAME = ClassicComponentContext.class.getName();
 
     private static final String COMPONENT_ENV_CONTEXT_NAME = "java:comp/env";
 
@@ -53,12 +53,12 @@ public class JndiComponentContext implements ComponentContext {
      *
      * @return
      */
-    public static JndiComponentContext getInstance() {
-        return (JndiComponentContext) servletContext.getAttribute(CONTEXT_NAME);
+    public static ClassicComponentContext getInstance() {
+        return (ClassicComponentContext) servletContext.getAttribute(CONTEXT_NAME);
     }
 
     public void init(ServletContext servletContext) throws RuntimeException {
-        JndiComponentContext.servletContext = servletContext;
+        ClassicComponentContext.servletContext = servletContext;
         servletContext.setAttribute(CONTEXT_NAME, this);
         this.init();
     }
