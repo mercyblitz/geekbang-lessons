@@ -28,6 +28,11 @@
             <version>${revision}</version>
         </dependency>
 
+        <dependency>
+            <groupId>org.geekbang.projects</groupId>
+            <artifactId>my-dependency-injection</artifactId>
+            <version>${revision}</version>
+        </dependency>
 
         <!-- Servlet API -->
         <dependency>
