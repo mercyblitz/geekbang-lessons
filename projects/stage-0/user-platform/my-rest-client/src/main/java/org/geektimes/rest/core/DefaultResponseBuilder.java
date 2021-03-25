@@ -1,4 +1,4 @@
-package org.geektimes.rest.client;
+package org.geektimes.rest.core;
 
 import javax.ws.rs.core.*;
 import java.lang.annotation.Annotation;

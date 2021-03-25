@@ -1,4 +1,4 @@
-package org.geektimes.rest.client;
+package org.geektimes.rest;
 
 import javax.ws.rs.core.*;
 import javax.ws.rs.ext.RuntimeDelegate;
