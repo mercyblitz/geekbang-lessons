@@ -41,11 +41,12 @@ public class DefaultUriBuilderTest {
                 .path("/{a}/{b}/{c}")
                 .queryParam("x", "a")
                 .queryParam("y", "b", "c")
-                .fragment("{d}");
+                .fragment("{d}")
+                .resolveTemplates(Maps.of("a", 1, "b", 2, "c", 3, "d", 4));
 
-        Map<String, Object> values = Maps.of("a", 1, "b", 2, "c", 3, "d", 4);
+//        Map<String, Object> values = Maps.of("a", 1, "b", 2, "c", 3, "d", 4);
 
-        URI uri = builder.buildFromMap(values);
+        URI uri = builder.build();
 
         assertEquals("http", uri.getScheme());
         assertEquals("127.0.0.1", uri.getHost());

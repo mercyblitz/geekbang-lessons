@@ -16,10 +16,19 @@
  */
 package org.geektimes.rest.core;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.io.IOUtils;
+
 import javax.ws.rs.core.*;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.annotation.Annotation;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.util.*;
+
+import static org.geektimes.rest.util.URLUtils.DEFAULT_ENCODING;
 
 /**
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
@@ -37,7 +46,7 @@ public class DefaultResponse extends Response {
 
     private CacheControl cacheControl;
 
-    private String encoding;
+    private String encoding = DEFAULT_ENCODING;
 
     private MultivaluedMap<String, Object> headers = new MultivaluedHashMap<>();
 
@@ -64,6 +73,12 @@ public class DefaultResponse extends Response {
     private EntityTag entityTag;
 
     private Set<Link> links = new LinkedHashSet<>();
+
+    private HttpURLConnection connection;
+
+    public void setConnection(HttpURLConnection connection) {
+        this.connection = connection;
+    }
 
     public void setStatus(int status) {
         this.status = status;
@@ -158,7 +173,23 @@ public class DefaultResponse extends Response {
 
     @Override
     public <T> T readEntity(Class<T> entityType) {
-        return null;
+        T entity = null;
+        try {
+            InputStream inputStream = connection.getInputStream();
+            // 参考 HttpMessageConverter 实现，实现运行时动态判断
+            if (String.class.equals(entityType)) {
+                Object value = IOUtils.toString(inputStream, encoding);
+                entity = (T) value;
+            } else {
+                ObjectMapper objectMapper = new ObjectMapper();
+                entity = objectMapper.readValue(new InputStreamReader(inputStream, encoding), entityType);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } finally {
+            connection.disconnect();
+        }
+        return entity;
     }
 
     @Override

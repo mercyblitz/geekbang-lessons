@@ -1,7 +1,5 @@
 package org.geektimes.rest.client;
 
-import org.geektimes.rest.core.DefaultResponseBuilder;
-
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.client.AsyncInvoker;
 import javax.ws.rs.client.Entity;
@@ -244,7 +242,7 @@ public class DefaultInvocationBuilder implements Invocation.Builder {
 
     @Override
     public Invocation buildGet() {
-        return null;
+        return new HttpGetInvocation(uriBuilder.build(), headers);
     }
 
     @Override

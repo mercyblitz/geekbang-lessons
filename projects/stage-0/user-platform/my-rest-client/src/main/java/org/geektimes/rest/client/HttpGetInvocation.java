@@ -16,6 +16,8 @@
  */
 package org.geektimes.rest.client;
 
+import org.geektimes.rest.core.DefaultResponse;
+
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.client.InvocationCallback;
@@ -23,8 +25,10 @@ import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.*;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -66,15 +70,25 @@ class HttpGetInvocation implements Invocation {
             connection.setRequestMethod(HttpMethod.GET);
             setRequestHeaders(connection);
             // TODO Set the cookies
-            InputStream responseInputStream = connection.getInputStream();
-            int status = connection.getResponseCode();
-            Response.ResponseBuilder responseBuilder = Response.status(status);
+            int statusCode = connection.getResponseCode();
+//            Response.ResponseBuilder responseBuilder = Response.status(statusCode);
+//
+//            responseBuilder.build();
+            DefaultResponse response = new DefaultResponse();
+            response.setConnection(connection);
+            response.setStatus(statusCode);
+            return response;
+//            Response.Status status = Response.Status.fromStatusCode(statusCode);
+//            switch (status) {
+//                case Response.Status.OK:
+//
+//                    break;
+//                default:
+//                    break;
+//            }
+
         } catch (IOException e) {
             // TODO Error handler
-        } finally {
-            if (connection != null) {
-                connection.disconnect();
-            }
         }
         return null;
     }

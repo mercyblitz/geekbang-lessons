@@ -13,7 +13,9 @@ public class ImmutableWebTarget implements WebTarget {
     private final UriBuilder uriBuilder;
 
     public ImmutableWebTarget(UriBuilder uriBuilder) {
-        this.uriBuilder = uriBuilder.clone();
+        // uriBuilder 参数 #1
+//        this.uriBuilder = uriBuilder;
+        this.uriBuilder = uriBuilder.clone(); // #2
     }
 
     @Override
