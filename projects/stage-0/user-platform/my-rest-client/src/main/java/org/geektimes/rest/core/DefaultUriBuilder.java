@@ -1,8 +1,5 @@
 package org.geektimes.rest.core;
 
-import org.apache.commons.lang.StringUtils;
-import org.geektimes.rest.util.URLUtils;
-
 import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriBuilder;
@@ -10,11 +7,14 @@ import javax.ws.rs.core.UriBuilderException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.stream.Stream;
 
 import static java.util.Collections.singletonMap;
-import static org.geektimes.rest.util.PathUtils.*;
+import static org.geektimes.rest.util.PathUtils.buildPath;
+import static org.geektimes.rest.util.PathUtils.resolvePath;
 import static org.geektimes.rest.util.URLUtils.*;
 
 public class DefaultUriBuilder extends UriBuilder {
@@ -115,7 +115,7 @@ public class DefaultUriBuilder extends UriBuilder {
 
     @Override
     public UriBuilder path(String path) {
-        this.path = path;
+        this.path = buildPath(this.path, path);
         return this;
     }
 
