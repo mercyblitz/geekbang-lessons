@@ -84,6 +84,12 @@
             <artifactId>javax.el</artifactId>
         </dependency>
 
+        <!-- ActiveMQ -->
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-all</artifactId>
+        </dependency>
+
 
         <dependency>
             <groupId>junit</groupId>
