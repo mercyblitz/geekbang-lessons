@@ -1,4 +1,8 @@
-package org.geektimes.rest.client;
+package org.geektimes.rest;
+
+import org.geektimes.rest.client.DefaultVariantListBuilder;
+import org.geektimes.rest.core.DefaultResponseBuilder;
+import org.geektimes.rest.core.DefaultUriBuilder;
 
 import javax.ws.rs.core.*;
 import javax.ws.rs.ext.RuntimeDelegate;
@@ -7,17 +11,17 @@ public class DefaultRuntimeDelegate extends RuntimeDelegate {
 
     @Override
     public UriBuilder createUriBuilder() {
-        return null;
+        return new DefaultUriBuilder();
     }
 
     @Override
     public Response.ResponseBuilder createResponseBuilder() {
-        return null;
+        return new DefaultResponseBuilder();
     }
 
     @Override
     public Variant.VariantListBuilder createVariantListBuilder() {
-        return null;
+        return new DefaultVariantListBuilder();
     }
 
     @Override

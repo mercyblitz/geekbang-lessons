@@ -40,7 +40,7 @@ public class DefaultClientBuilder extends ClientBuilder {
 
     @Override
     public Client build() {
-        return null;
+        return new DefaultClient();
     }
 
     @Override

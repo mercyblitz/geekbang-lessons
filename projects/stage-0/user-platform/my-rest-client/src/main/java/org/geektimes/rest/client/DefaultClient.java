@@ -1,5 +1,7 @@
 package org.geektimes.rest.client;
 
+import org.geektimes.rest.core.DefaultUriBuilder;
+
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.client.Client;
@@ -20,17 +22,17 @@ public class DefaultClient implements Client {
 
     @Override
     public WebTarget target(String uri) {
-        return null;
+        return target(URI.create(uri));
     }
 
     @Override
     public WebTarget target(URI uri) {
-        return null;
+        return target(UriBuilder.fromUri(uri));
     }
 
     @Override
     public WebTarget target(UriBuilder uriBuilder) {
-        return null;
+        return new ImmutableWebTarget(uriBuilder);
     }
 
     @Override

@@ -10,74 +10,100 @@ import java.util.Map;
 
 public class ImmutableWebTarget implements WebTarget {
 
+    private final UriBuilder uriBuilder;
+
+    public ImmutableWebTarget(UriBuilder uriBuilder) {
+        // uriBuilder 参数 #1
+//        this.uriBuilder = uriBuilder;
+        this.uriBuilder = uriBuilder.clone(); // #2
+    }
+
     @Override
     public URI getUri() {
-        return null;
+        return uriBuilder.build();
     }
 
     @Override
     public UriBuilder getUriBuilder() {
-        return null;
+        return uriBuilder;
+    }
+
+    protected ImmutableWebTarget newWebTarget() {
+        return new ImmutableWebTarget(this.uriBuilder);
     }
 
     @Override
     public WebTarget path(String path) {
-        return null;
+        ImmutableWebTarget target = newWebTarget();
+        target.uriBuilder.path(path);
+        return target;
     }
 
     @Override
     public WebTarget resolveTemplate(String name, Object value) {
-        return null;
+        return resolveTemplate(name, value, false);
     }
 
     @Override
     public WebTarget resolveTemplate(String name, Object value, boolean encodeSlashInPath) {
-        return null;
+        ImmutableWebTarget target = newWebTarget();
+        target.uriBuilder.resolveTemplate(name, value, encodeSlashInPath);
+        return target;
     }
 
     @Override
     public WebTarget resolveTemplateFromEncoded(String name, Object value) {
-        return null;
+        ImmutableWebTarget target = newWebTarget();
+        target.uriBuilder.resolveTemplateFromEncoded(name, value);
+        return target;
     }
 
     @Override
     public WebTarget resolveTemplates(Map<String, Object> templateValues) {
-        return null;
+        return resolveTemplates(templateValues, false);
     }
 
     @Override
     public WebTarget resolveTemplates(Map<String, Object> templateValues, boolean encodeSlashInPath) {
-        return null;
+        ImmutableWebTarget target = newWebTarget();
+        target.uriBuilder.resolveTemplates(templateValues, encodeSlashInPath);
+        return target;
     }
 
     @Override
     public WebTarget resolveTemplatesFromEncoded(Map<String, Object> templateValues) {
-        return null;
+        ImmutableWebTarget target = newWebTarget();
+        target.uriBuilder.resolveTemplatesFromEncoded(templateValues);
+        return target;
     }
 
     @Override
     public WebTarget matrixParam(String name, Object... values) {
-        return null;
+        ImmutableWebTarget target = newWebTarget();
+        target.uriBuilder.matrixParam(name, values);
+        return target;
     }
 
     @Override
     public WebTarget queryParam(String name, Object... values) {
-        return null;
+        ImmutableWebTarget target = newWebTarget();
+        target.uriBuilder.queryParam(name, values);
+        return target;
     }
 
     @Override
     public Invocation.Builder request() {
-        return null;
+        return new DefaultInvocationBuilder(uriBuilder);
     }
 
     @Override
     public Invocation.Builder request(String... acceptedResponseTypes) {
-        return null;
+        return request().accept(acceptedResponseTypes);
     }
 
     @Override
     public Invocation.Builder request(MediaType... acceptedResponseTypes) {
-        return null;
+        return request().accept(acceptedResponseTypes);
     }
 
     @Override
