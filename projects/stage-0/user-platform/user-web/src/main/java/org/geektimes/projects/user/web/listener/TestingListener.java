@@ -1,13 +1,14 @@
 package org.geektimes.projects.user.web.listener;
 
-import org.geektimes.context.ComponentContext;
+import org.geektimes.context.ClassicComponentContext;
 import org.geektimes.projects.user.domain.User;
 import org.geektimes.projects.user.management.Address;
 import org.geektimes.projects.user.management.UserManager;
 import org.geektimes.projects.user.management.UserManagerInterface;
 import org.geektimes.projects.user.sql.DBConnectionManager;
 
-import javax.management.*;
+
+import javax.jms.*;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 import javax.servlet.ServletContext;
@@ -26,7 +27,7 @@ public class TestingListener implements ServletContextListener {
 
     @Override
     public void contextInitialized(ServletContextEvent sce) {
-        ComponentContext context = ComponentContext.getInstance();
+        ClassicComponentContext context = ClassicComponentContext.getInstance();
         DBConnectionManager dbConnectionManager = context.getComponent("bean/DBConnectionManager");
         dbConnectionManager.getConnection();
 
@@ -38,29 +39,8 @@ public class TestingListener implements ServletContextListener {
         context.getComponentNames().forEach(logger::info);
         logger.info("]");
 
-        registerMBean();
-    }
-
-    private void registerMBean() {
-        try {
-            MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
-            User user = new User();
-            user.setId(9527L);
-            user.setName("suiyuanfeng");
-            user.setEmail("1713716445@qq.com");
-            user.setPhoneNumber("15705113753");
-            user.setPassword("*******");
-            Address address = new Address();
-            address.setPro("上海市");
-            address.setArea("宝山区");
-            // 将静态的 MBean 接口转化成 DynamicMBean
-            ObjectName objectName = new ObjectName("org.geektimes.projects.user.management:type=User");
-            StandardMBean standardMBean = new StandardMBean(new UserManager(user, address), UserManagerInterface.class);
-
-            mBeanServer.registerMBean(standardMBean, objectName);
-        } catch (Exception e) {
-            logger.severe(e.getMessage());
-        }
+        ConnectionFactory connectionFactory = context.getComponent("jms/activemq-factory");
+        testJms(connectionFactory);
     }
 
     private void testPropertyFromServletContext(ServletContext servletContext) {
@@ -69,7 +49,7 @@ public class TestingListener implements ServletContextListener {
                 + servletContext.getInitParameter(propertyName));
     }
 
-    private void testPropertyFromJNDI(ComponentContext context) {
+    private void testPropertyFromJNDI(ClassicComponentContext context) {
         String propertyName = "maxValue";
         logger.info("JNDI Property[" + propertyName + "] : "
                 + context.lookupComponent(propertyName));
@@ -85,7 +65,48 @@ public class TestingListener implements ServletContextListener {
         transaction.begin();
         entityManager.persist(user);
         transaction.commit();
-        System.out.println(entityManager.find(User.class, user.getId()));
+    }
+
+    private void testJms(ConnectionFactory connectionFactory) {
+
+        try {
+            // Create a Connection
+            Connection connection = connectionFactory.createConnection();
+            connection.start();
+
+            // Create a Session
+            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+            // Create the destination (Topic or Queue)
+            Destination destination = session.createQueue("TEST.FOO");
+
+            // Create a MessageProducer from the Session to the Topic or Queue
+            MessageProducer producer = session.createProducer(destination);
+            producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+
+            // Create a messages
+            String text = "Hello world! From: " + Thread.currentThread().getName() + " : " + this.hashCode();
+            TextMessage message = session.createTextMessage(text);
+
+            // Tell the producer to send the message
+            System.out.println("Sent message: " + message.hashCode() + " : " + Thread.currentThread().getName());
+            producer.send(message);
+
+            // Create a MessageConsumer from the Session to the Topic or Queue
+            MessageConsumer consumer = session.createConsumer(destination);
+
+            // Wait for a message
+            message = (TextMessage) consumer.receive(1000);
+
+            System.out.println("Received: " + message.getText());
+
+            // Clean up
+            session.close();
+            connection.close();
+        } catch (JMSException e) {
+
+        }
+
     }
 
     @Override
