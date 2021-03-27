@@ -10,8 +10,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>my-dependency-injection</artifactId>
-    <name>My Dependency Injection Framework ${revision}</name>
+    <artifactId>my-reactive-messaging</artifactId>
+    <name>My Reactive Messaging Framework ${revision}</name>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -19,12 +19,27 @@
     </properties>
 
     <dependencies>
-        <!-- Servlet API -->
+
         <dependency>
-            <groupId>javax.servlet</groupId>
-            <artifactId>javax.servlet-api</artifactId>
-            <scope>provided</scope>
+            <groupId>org.eclipse.microprofile.reactive.messaging</groupId>
+            <artifactId>microprofile-reactive-messaging-api</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>javax.inject</groupId>
+            <artifactId>javax.inject</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.enterprise</groupId>
+            <artifactId>cdi-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.activemq</groupId>
+            <artifactId>activemq-all</artifactId>
+        </dependency>
+
     </dependencies>
 
 </project>
