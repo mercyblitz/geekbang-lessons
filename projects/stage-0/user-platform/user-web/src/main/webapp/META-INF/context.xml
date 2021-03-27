@@ -58,7 +58,7 @@
               type="org.apache.activemq.ActiveMQConnectionFactory"
               description="JMS Connection Factory"
               factory="org.apache.activemq.jndi.JNDIReferenceFactory"
-              brokerURL="vm://localhost"
+              brokerURL="tcp://127.0.0.1:61616"
               brokerName="LocalActiveMQBroker"
               useEmbeddedBroker="false"/>
 
@@ -67,4 +67,12 @@
               type="org.apache.activemq.command.ActiveMQTopic"
               factory="org.apache.activemq.jndi.JNDIReferenceFactory"
               physicalName="activemq-topic"/>
+
+    <Resource name="jms/message-producer"
+              auth="Container"
+              type="javax.jms.MessageProducer"
+              factory="org.geektimes.projects.user.message.MessageProducerFactory"
+              connectionFactoryJndiName="jms/activemq-factory"
+              queueName="TEST.FOO"
+    />
 </Context>

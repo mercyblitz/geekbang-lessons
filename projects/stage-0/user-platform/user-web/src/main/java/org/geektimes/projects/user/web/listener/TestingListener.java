@@ -1,6 +1,7 @@
 package org.geektimes.projects.user.web.listener;
 
 import org.geektimes.context.ClassicComponentContext;
+import org.geektimes.function.ThrowableAction;
 import org.geektimes.projects.user.domain.User;
 import org.geektimes.projects.user.sql.DBConnectionManager;
 
@@ -61,46 +62,70 @@ public class TestingListener implements ServletContextListener {
     }
 
     private void testJms(ConnectionFactory connectionFactory) {
+        ThrowableAction.execute(() -> {
+//            testMessageProducer(connectionFactory);
+            testMessageConsumer(connectionFactory);
+        });
+    }
 
-        try {
-            // Create a Connection
-            Connection connection = connectionFactory.createConnection();
-            connection.start();
+    private void testMessageProducer(ConnectionFactory connectionFactory) throws JMSException {
+        // Create a Connection
+        Connection connection = connectionFactory.createConnection();
+        connection.start();
 
-            // Create a Session
-            Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+        // Create a Session
+        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
 
-            // Create the destination (Topic or Queue)
-            Destination destination = session.createQueue("TEST.FOO");
+        // Create the destination (Topic or Queue)
+        Destination destination = session.createQueue("TEST.FOO");
 
-            // Create a MessageProducer from the Session to the Topic or Queue
-            MessageProducer producer = session.createProducer(destination);
-            producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
+        // Create a MessageProducer from the Session to the Topic or Queue
+        MessageProducer producer = session.createProducer(destination);
+        producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
 
-            // Create a messages
-            String text = "Hello world! From: " + Thread.currentThread().getName() + " : " + this.hashCode();
-            TextMessage message = session.createTextMessage(text);
+        // Create a messages
+        String text = "Hello world! From: " + Thread.currentThread().getName() + " : " + this.hashCode();
+        TextMessage message = session.createTextMessage(text);
 
-            // Tell the producer to send the message
-            System.out.println("Sent message: " + message.hashCode() + " : " + Thread.currentThread().getName());
-            producer.send(message);
+        // Tell the producer to send the message
+        producer.send(message);
+        System.out.printf("[Thread : %s] Sent message : %s\n", Thread.currentThread().getName(), message.getText());
 
-            // Create a MessageConsumer from the Session to the Topic or Queue
-            MessageConsumer consumer = session.createConsumer(destination);
-
-            // Wait for a message
-            message = (TextMessage) consumer.receive(1000);
-
-            System.out.println("Received: " + message.getText());
-
-            // Clean up
-            session.close();
-            connection.close();
-        } catch (JMSException e) {
-
-        }
+        // Clean up
+        session.close();
+        connection.close();
 
     }
+
+    private void testMessageConsumer(ConnectionFactory connectionFactory) throws JMSException {
+
+        // Create a Connection
+        Connection connection = connectionFactory.createConnection();
+        connection.start();
+
+        // Create a Session
+        Session session = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+
+        // Create the destination (Topic or Queue)
+        Destination destination = session.createQueue("TEST.FOO");
+
+        // Create a MessageConsumer from the Session to the Topic or Queue
+        MessageConsumer consumer = session.createConsumer(destination);
+
+        consumer.setMessageListener(m -> {
+            TextMessage tm = (TextMessage) m;
+            try {
+                System.out.printf("[Thread : %s] Received : %s\n", Thread.currentThread().getName(), tm.getText());
+            } catch (JMSException e) {
+                throw new RuntimeException(e);
+            }
+        });
+
+        // Clean up
+        // session.close();
+        // connection.close();
+    }
+
 
     @Override
     public void contextDestroyed(ServletContextEvent sce) {
