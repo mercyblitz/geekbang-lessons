@@ -82,17 +82,27 @@ public class ClassicComponentContext implements ComponentContext {
      * </ol>
      */
     protected void initializeComponents() {
-        componentsCache.values().forEach(component -> {
-            Class<?> componentClass = component.getClass();
-            // 注入阶段 - {@link Resource}
-            injectComponents(component, componentClass);
-            // 查询候选方法
-            List<Method> candidateMethods = findCandidateMethods(componentClass);
-            // 初始阶段 - {@link PostConstruct}
-            processPostConstruct(component, candidateMethods);
-            // 本阶段处理 {@link PreDestroy} 方法元数据
-            processPreDestroyMetadata(component, candidateMethods);
-        });
+        componentsCache.values().forEach(this::initializeComponent);
+    }
+
+    /**
+     * 初始化组件（支持 Java 标准 Commons Annotation 生命周期）
+     * <ol>
+     *  <li>注入阶段 - {@link Resource}</li>
+     *  <li>初始阶段 - {@link PostConstruct}</li>
+     *  <li>销毁阶段 - {@link PreDestroy}</li>
+     * </ol>
+     */
+    public void initializeComponent(Object component) {
+        Class<?> componentClass = component.getClass();
+        // 注入阶段 - {@link Resource}
+        injectComponent(component, componentClass);
+        // 查询候选方法
+        List<Method> candidateMethods = findCandidateMethods(componentClass);
+        // 初始阶段 - {@link PostConstruct}
+        processPostConstruct(component, candidateMethods);
+        // 本阶段处理 {@link PreDestroy} 方法元数据
+        processPreDestroyMetadata(component, candidateMethods);
     }
 
     /**
@@ -117,7 +127,11 @@ public class ClassicComponentContext implements ComponentContext {
         }));
     }
 
-    private void injectComponents(Object component, Class<?> componentClass) {
+    public void injectComponent(Object component) {
+        injectComponent(component, component.getClass());
+    }
+
+    protected void injectComponent(Object component, Class<?> componentClass) {
         Stream.of(componentClass.getDeclaredFields())
                 .filter(field -> {
                     int mods = field.getModifiers();
