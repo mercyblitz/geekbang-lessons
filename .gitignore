@@ -46,3 +46,8 @@ compiler/.gradle/*
 
 # Tomcat
 .extract
+
+# Others
+db/
+activemq-data/
+
