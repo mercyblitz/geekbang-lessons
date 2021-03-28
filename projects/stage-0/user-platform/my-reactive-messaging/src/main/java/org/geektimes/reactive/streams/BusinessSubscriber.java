@@ -14,9 +14,9 @@ public class BusinessSubscriber<T> implements Subscriber<T> {
 
     private int count = 0;
 
-    private final int maxRequest;
+    private final long maxRequest;
 
-    public BusinessSubscriber(int maxRequest) {
+    public BusinessSubscriber(long maxRequest) {
         this.maxRequest = maxRequest;
     }
 
