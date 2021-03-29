@@ -1,51 +1,78 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Context> <!-- 上下文资源/组件声明（类似于 Spring 上下文）-->
 
-	<!-- Apache Commons Digester (Read-Only) 表达式（规则） -->
-	<!-- Apache Commons DataSource Connection Pool(DBCP) 1.x -->
-	<!--
-	JNDI : Java Naming and Directory Interface
-	ENV -> java:comp/env
-					    /bean
-					    	 /DBConnectionManager
+    <!-- Apache Commons Digester (Read-Only) 表达式（规则） -->
+    <!-- Apache Commons DataSource Connection Pool(DBCP) 1.x -->
+    <!--
+    JNDI : Java Naming and Directory Interface
+    ENV -> java:comp/env
+                        /bean
+                             /DBConnectionManager
 
-	=      java:comp/env/bean/DBConnectionManager
+    =      java:comp/env/bean/DBConnectionManager
 
-	Tomcat JNDI : http://tomcat.apache.org/tomcat-7.0-doc/jndi-resources-howto.html
-	-->
-	<!-- 资源或者组件类似于 Spring Bean -->
-	<Resource name="jdbc/UserPlatformDB"
-              type="javax.sql.DataSource"  auth="Container"
+    Tomcat JNDI : http://tomcat.apache.org/tomcat-7.0-doc/jndi-resources-howto.html
+    -->
+    <!-- 资源或者组件类似于 Spring Bean -->
+    <Resource name="jdbc/UserPlatformDB"
+              type="javax.sql.DataSource" auth="Container"
               description="Derby database for User Platform"
               maxActive="100" maxIdle="30" maxWait="10000"
-              username="" password="" 
+              username="" password=""
               driverClassName="org.apache.derby.jdbc.EmbeddedDriver"
-              url="jdbc:derby:/db/user-platform;create=true"/>
+              url="jdbc:derby:db/user-platform;create=true"/>
 
-	<!-- FactoryBean -->
-	<Resource name="bean/DBConnectionManager" auth="Container"
-			  type="org.geektimes.projects.user.sql.DBConnectionManager"
-			  factory="org.apache.naming.factory.BeanFactory" />
+    <!-- FactoryBean -->
+    <Resource name="bean/DBConnectionManager" auth="Container"
+              type="org.geektimes.projects.user.sql.DBConnectionManager"
+              factory="org.apache.naming.factory.BeanFactory"/>
 
-	<!--
-	缺少指定 interface 类型的属性
-	目标注入的类型：javax.persistence.EntityManager
-	-->
-	<Resource name="bean/EntityManager" auth="Container"
-			  type="org.geektimes.projects.user.orm.jpa.DelegatingEntityManager"
-			  persistenceUnitName="emf"
-			  propertiesLocation="META-INF/jpa-datasource.properties"
-			  factory="org.apache.naming.factory.BeanFactory" />
+    <!--
+    缺少指定 interface 类型的属性
+    目标注入的类型：javax.persistence.EntityManager
+    -->
+    <Resource name="bean/EntityManager" auth="Container"
+              type="org.geektimes.projects.user.orm.jpa.DelegatingEntityManager"
+              persistenceUnitName="emf"
+              propertiesLocation="META-INF/jpa-datasource.properties"
+              factory="org.apache.naming.factory.BeanFactory"/>
 
-	<Resource name="bean/Validator" auth="Container"
-			  type="org.geektimes.projects.user.validator.bean.validation.DelegatingValidator"
-			  factory="org.apache.naming.factory.BeanFactory" />
+    <Resource name="bean/Validator" auth="Container"
+              type="org.geektimes.projects.user.validator.bean.validation.DelegatingValidator"
+              factory="org.apache.naming.factory.BeanFactory"/>
 
-	<Resource name="bean/UserService" auth="Container"
-			  type="org.geektimes.projects.user.service.UserServiceImpl"
-			  factory="org.apache.naming.factory.BeanFactory" />
+    <Resource name="bean/UserService" auth="Container"
+              type="org.geektimes.projects.user.service.UserServiceImpl"
+              factory="org.apache.naming.factory.BeanFactory"/>
 
-	<!-- Tomcat JNDI 配置 -->
-	<Environment name="maxValue" value="12"
-				 type="java.lang.Integer" override="false"/>
+    <!-- Tomcat JNDI 配置 -->
+    <Environment name="maxValue" value="12"
+                 type="java.lang.Integer" override="false"/>
+
+    <Resource name="bean/TestingComponent" auth="Container"
+              type="org.geektimes.projects.user.web.listener.TestingComponent"
+              factory="org.apache.naming.factory.BeanFactory"/>
+
+    <Resource name="jms/activemq-factory"
+              auth="Container"
+              type="org.apache.activemq.ActiveMQConnectionFactory"
+              description="JMS Connection Factory"
+              factory="org.apache.activemq.jndi.JNDIReferenceFactory"
+              brokerURL="tcp://127.0.0.1:61616"
+              brokerName="LocalActiveMQBroker"
+              useEmbeddedBroker="false"/>
+
+    <Resource name="jms/activemq-topic"
+              auth="Container"
+              type="org.apache.activemq.command.ActiveMQTopic"
+              factory="org.apache.activemq.jndi.JNDIReferenceFactory"
+              physicalName="activemq-topic"/>
+
+    <Resource name="jms/message-producer"
+              auth="Container"
+              type="javax.jms.MessageProducer"
+              factory="org.geektimes.projects.user.message.MessageProducerFactory"
+              connectionFactoryJndiName="jms/activemq-factory"
+              queueName="TEST.FOO"
+    />
 </Context>
