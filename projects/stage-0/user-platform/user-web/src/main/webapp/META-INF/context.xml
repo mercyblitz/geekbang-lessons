@@ -58,7 +58,7 @@
               type="org.apache.activemq.ActiveMQConnectionFactory"
               description="JMS Connection Factory"
               factory="org.apache.activemq.jndi.JNDIReferenceFactory"
-              brokerURL="tcp://127.0.0.1:61616"
+              brokerURL="vm://localhost"
               brokerName="LocalActiveMQBroker"
               useEmbeddedBroker="false"/>
 
@@ -72,7 +72,46 @@
               auth="Container"
               type="javax.jms.MessageProducer"
               factory="org.geektimes.projects.user.message.MessageProducerFactory"
-              connectionFactoryJndiName="jms/activemq-factory"
+              connectionFactoryJndiName="activemq-factory"
               queueName="TEST.FOO"
     />
+
+    <!--    <Resource name="jdbc/realm-db"-->
+    <!--              auth="Container"-->
+    <!--              type="javax.sql.DataSource"-->
+    <!--              factory="org.apache.commons.dbcp.BasicDataSourceFactory"-->
+    <!--              maxActive="10"-->
+    <!--              maxIdle="30" maxWait="10000"-->
+    <!--              username="" password=""-->
+    <!--              driverClassName="org.apache.derby.jdbc.EmbeddedDriver"-->
+    <!--              url="jdbc:derby:db/realm-auth;create=true"-->
+    <!--              initConnectionSqls="-->
+
+    <!--                CREATE TABLE auth.users(-->
+    <!--                    user_name VARCHAR(16) NOT NULL PRIMARY KEY,-->
+    <!--                    user_pass VARCHAR(16) NOT NULL-->
+    <!--                );-->
+
+    <!--                CREATE TABLE auth.user_roles(-->
+    <!--                    user_name VARCHAR(16) NOT NULL,-->
+    <!--                    role_name VARCHAR(16) NOT NULL,-->
+    <!--                    PRIMARY KEY(user_name,role_name)-->
+    <!--                );-->
+
+    <!--                INSERT INTO auth.users(user_name,user_pass) VALUES ('tomcat','tomcat');-->
+
+    <!--                INSERT INTO auth.user_roles(user_name,role_name) VALUES ('tomcat','tomcat');-->
+    <!--              "-->
+    <!--    />-->
+
+    <!--    <Realm className="org.apache.catalina.realm.DataSourceRealm"-->
+    <!--           dataSourceName="jdbc/realm-db"-->
+    <!--           localDataSource="true"-->
+    <!--           userTable="auth.users" userNameCol="user_name" userCredCol="user_pass"-->
+    <!--           userRoleTable="auth.user_roles" roleNameCol="role_name"/>-->
+
+    <Realm className="org.apache.catalina.realm.LockOutRealm">
+        <Realm className="org.apache.catalina.realm.MemoryRealm"
+               pathname="conf/tomcat-users.xml"/>
+    </Realm>
 </Context>
