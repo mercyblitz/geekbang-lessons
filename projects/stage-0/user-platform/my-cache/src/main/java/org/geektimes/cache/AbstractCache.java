@@ -17,6 +17,7 @@
 package org.geektimes.cache;
 
 import org.geektimes.cache.configuration.ConfigurationUtils;
+import org.geektimes.cache.event.CacheEntryEventPublisher;
 import org.geektimes.cache.integration.CompositeFallbackStorage;
 import org.geektimes.cache.integration.FallbackStorage;
 
@@ -32,6 +33,8 @@ import javax.cache.processor.EntryProcessorException;
 import javax.cache.processor.EntryProcessorResult;
 import java.util.*;
 import java.util.logging.Logger;
+
+import static org.geektimes.cache.event.GenericCacheEntryEvent.*;
 
 /**
  * The abstract non-thread-safe implementation of {@link Cache}
@@ -51,13 +54,16 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
 
     protected final FallbackStorage fallbackStorage;
 
+    private final CacheEntryEventPublisher entryEventPublisher;
+
     private volatile boolean closed = false;
 
     protected AbstractCache(CacheManager cacheManager, String cacheName, Configuration<K, V> configuration) {
         this.cacheManager = cacheManager;
         this.cacheName = cacheName;
-        this.configuration = ConfigurationUtils.valueOf(configuration);
+        this.configuration = ConfigurationUtils.completeConfiguration(configuration);
         this.fallbackStorage = new CompositeFallbackStorage(cacheManager.getClassLoader());
+        this.entryEventPublisher = new CacheEntryEventPublisher();
     }
 
     @Override
@@ -118,19 +124,34 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
         assertNotNull(key, "key");
         assertNotNull(value, "value");
         try {
-            doPut(key, value);
+            V oldValue = doPut(key, value);
+            if (oldValue == null) {
+                publishCreatedEvent(key, value);
+            } else {
+                publishUpdatedEvent(key, oldValue, value);
+            }
         } finally {
             writeIfWriteThrough(key, value);
         }
     }
 
-    private void writeIfWriteThrough(K key, V value) {
-        if (configuration.isWriteThrough()) {
-            fallbackStorage.write(EntryAdapter.of(key, value));
-        }
-    }
-
-    protected abstract void doPut(K key, V value) throws CacheException, ClassCastException;
+    /**
+     * Associates the specified value with the specified key in this Cache
+     * (optional operation).  If the map previously contained a mapping for
+     * the key, the old value is replaced by the specified value.  (A map
+     * <tt>m</tt> is said to contain a mapping for a key <tt>k</tt> if and only
+     * if {@link #containsKey(Object) m.containsKey(k)} would return
+     * <tt>true</tt>.)
+     *
+     * @param key   key with which the specified value is to be associated
+     * @param value value to be associated with the specified key
+     * @return the previous value associated with <tt>key</tt>, or
+     * <tt>null</tt> if there was no mapping for <tt>key</tt>.
+     * (A <tt>null</tt> return can also indicate that the map
+     * previously associated <tt>null</tt> with <tt>key</tt>,
+     * if the implementation supports <tt>null</tt> values.)
+     */
+    protected abstract V doPut(K key, V value) throws CacheException, ClassCastException;
 
     @Override
     public V getAndPut(K key, V value) {
@@ -160,11 +181,17 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
     public boolean remove(K key) {
         assertNotClosed();
         assertNotNull(key, "key");
+        boolean removed = false;
         try {
-            return doRemove(key);
+            V oldValue = doRemove(key);
+            removed = oldValue != null;
+            if (removed) {
+                publishRemovedEvent(key, oldValue);
+            }
         } finally {
             deleteIfWriteThrough(key);
         }
+        return removed;
     }
 
     private void deleteIfWriteThrough(K key) {
@@ -173,7 +200,7 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
         }
     }
 
-    protected abstract boolean doRemove(K key) throws CacheException, ClassCastException;
+    protected abstract V doRemove(K key) throws CacheException, ClassCastException;
 
     @Override
     public boolean remove(K key, V oldValue) {
@@ -250,7 +277,7 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
     @Override
     public <C extends Configuration<K, V>> C getConfiguration(Class<C> clazz) {
         Configuration<K, V> configuration = unwrap(clazz);
-        return (C) ConfigurationUtils.valueOf(configuration);
+        return (C) ConfigurationUtils.completeConfiguration(configuration);
     }
 
     @Override
@@ -268,14 +295,12 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
 
     @Override
     public void registerCacheEntryListener(CacheEntryListenerConfiguration<K, V> cacheEntryListenerConfiguration) {
-        // TODO
-        throw new UnsupportedOperationException("This feature will be supported in the future");
+        entryEventPublisher.registerCacheEntryListener(cacheEntryListenerConfiguration);
     }
 
     @Override
     public void deregisterCacheEntryListener(CacheEntryListenerConfiguration<K, V> cacheEntryListenerConfiguration) {
-        // TODO
-        throw new UnsupportedOperationException("This feature will be supported in the future");
+        entryEventPublisher.deregisterCacheEntryListener(cacheEntryListenerConfiguration);
     }
 
     @Override
@@ -325,6 +350,29 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
     @Override
     public final boolean isClosed() {
         return closed;
+    }
+
+
+    private void publishCreatedEvent(K key, V value) {
+        entryEventPublisher.publish(createdEvent(this, key, value));
+    }
+
+    private void publishUpdatedEvent(K key, V oldValue, V value) {
+        entryEventPublisher.publish(updatedEvent(this, key, oldValue, value));
+    }
+
+    private void publishExpiredEvent(K key, V oldValue) {
+        entryEventPublisher.publish(expiredEvent(this, key, oldValue));
+    }
+
+    private void publishRemovedEvent(K key, V oldValue) {
+        entryEventPublisher.publish(removedEvent(this, key, oldValue));
+    }
+
+    private void writeIfWriteThrough(K key, V value) {
+        if (configuration.isWriteThrough()) {
+            fallbackStorage.write(EntryAdapter.of(key, value));
+        }
     }
 
     private void assertNotClosed() {

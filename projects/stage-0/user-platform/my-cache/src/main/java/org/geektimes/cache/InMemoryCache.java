@@ -17,26 +17,13 @@
 package org.geektimes.cache;
 
 
-import org.geektimes.cache.integration.CompositeFallbackStorage;
-import org.geektimes.cache.integration.FallbackStorage;
-
 import javax.cache.Cache;
 import javax.cache.CacheException;
 import javax.cache.CacheManager;
-import javax.cache.configuration.CacheEntryListenerConfiguration;
-import javax.cache.configuration.CompleteConfiguration;
 import javax.cache.configuration.Configuration;
-import javax.cache.integration.CompletionListener;
-import javax.cache.processor.EntryProcessor;
-import javax.cache.processor.EntryProcessorException;
-import javax.cache.processor.EntryProcessorResult;
-import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * In Memory no-thread-safe {@link Cache}
@@ -59,13 +46,13 @@ public class InMemoryCache<K, V> extends AbstractCache<K, V> {
     }
 
     @Override
-    protected void doPut(K key, V value) throws CacheException, ClassCastException {
-        cache.put(key, value);
+    protected V doPut(K key, V value) throws CacheException, ClassCastException {
+        return cache.put(key, value);
     }
 
     @Override
-    protected boolean doRemove(K key) throws CacheException, ClassCastException {
-        return cache.remove(key) != null;
+    protected V doRemove(K key) throws CacheException, ClassCastException {
+        return cache.remove(key);
     }
 
     @Override

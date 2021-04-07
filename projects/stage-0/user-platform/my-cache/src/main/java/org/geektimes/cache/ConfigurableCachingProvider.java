@@ -43,6 +43,7 @@ import static java.lang.String.format;
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @see Caching#getCachingProvider()
+ * @see AbstractCacheManager
  * @since 1.0
  */
 public class ConfigurableCachingProvider implements CachingProvider {

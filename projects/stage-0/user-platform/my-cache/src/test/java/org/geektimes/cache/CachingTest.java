@@ -16,6 +16,7 @@
  */
 package org.geektimes.cache;
 
+import org.geektimes.cache.event.TestCacheEntryListener;
 import org.junit.Test;
 
 import javax.cache.Cache;
@@ -26,6 +27,7 @@ import javax.cache.expiry.AccessedExpiryPolicy;
 import javax.cache.spi.CachingProvider;
 
 import static javax.cache.expiry.Duration.ONE_HOUR;
+import static org.geektimes.cache.configuration.ConfigurationUtils.cacheEntryListenerConfiguration;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
@@ -44,16 +46,23 @@ public class CachingTest {
         // configure the cache
         MutableConfiguration<String, Integer> config =
                 new MutableConfiguration<String, Integer>()
-                        .setTypes(String.class, Integer.class)
-                        .setExpiryPolicyFactory(AccessedExpiryPolicy.factoryOf(ONE_HOUR))
-                        .setStatisticsEnabled(true);
+                        .setTypes(String.class, Integer.class);
 
         // create the cache
         Cache<String, Integer> cache = cacheManager.createCache("simpleCache", config);
+
+        // add listener
+        cache.registerCacheEntryListener(cacheEntryListenerConfiguration(new TestCacheEntryListener<>()));
+
         // cache operations
         String key = "key";
         Integer value1 = 1;
         cache.put("key", value1);
+
+        // update
+        value1 = 2;
+        cache.put("key", value1);
+
         Integer value2 = cache.get(key);
         assertEquals(value1, value2);
         cache.remove(key);
