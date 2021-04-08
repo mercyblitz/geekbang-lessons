@@ -57,6 +57,16 @@
     </servlet-mapping>
 
     <filter>
+        <filter-name>HttpSessionFilter</filter-name>
+        <filter-class>org.geektimes.projects.user.web.filter.HttpSessionFilter</filter-class>
+        <init-param>
+            <!-- Filter ÅäÖÃ = FilterConfig -->
+            <param-name>javax.cache.CacheManager.uri</param-name>
+            <param-value>redis://127.0.0.1:6379/</param-value>
+        </init-param>
+    </filter>
+
+    <filter>
         <filter-name>CharsetEncodingFilter</filter-name>
         <filter-class>org.geektimes.projects.user.web.filter.CharsetEncodingFilter</filter-class>
         <init-param>
