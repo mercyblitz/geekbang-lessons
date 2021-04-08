@@ -17,6 +17,7 @@
         <module>my-dependency-injection</module>
         <module>my-rest-client</module>
         <module>my-reactive-messaging</module>
+        <module>my-cache</module>
     </modules>
 
     <properties>
@@ -31,6 +32,7 @@
         <javax.annotation-api.version>1.3.2</javax.annotation-api.version>
         <javax.inject.version>1</javax.inject.version>
         <javax.cdi-api.version>2.0</javax.cdi-api.version>
+        <javax.cache-api.version>1.1.1</javax.cache-api.version>
 
         <!-- MicroProfile 版本-->
         <microprofile-config-api.version>2.0</microprofile-config-api.version>
@@ -49,6 +51,7 @@
         <glassfish-el.version>3.0.1-b08</glassfish-el.version>
         <jackson.version>2.9.5</jackson.version>
         <activemq.version>5.9.1</activemq.version>
+        <tomcat7.version>7.0.37</tomcat7.version>
 
         <!-- Testing 版本 -->
         <junit.version>4.13</junit.version>
@@ -108,6 +111,13 @@
                 <groupId>javax.enterprise</groupId>
                 <artifactId>cdi-api</artifactId>
                 <version>${javax.cdi-api.version}</version>
+            </dependency>
+
+            <!-- Java Cache API -->
+            <dependency>
+                <groupId>javax.cache</groupId>
+                <artifactId>cache-api</artifactId>
+                <version>${javax.cache-api.version}</version>
             </dependency>
 
 
@@ -225,6 +235,26 @@
                 <artifactId>activemq-all</artifactId>
                 <version>${activemq.version}</version>
             </dependency>
+
+            <!-- Apache Tomcat -->
+            <dependency>
+                <groupId>org.apache.tomcat</groupId>
+                <artifactId>tomcat-catalina-ha</artifactId>
+                <version>${tomcat7.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.tomcat</groupId>
+                <artifactId>tomcat-dbcp</artifactId>
+                <version>${tomcat7.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.tomcat</groupId>
+                <artifactId>tomcat-jdbc</artifactId>
+                <version>${tomcat7.version}</version>
+            </dependency>
+
 
             <!-- Testing Dependencies -->
 
