@@ -148,7 +148,7 @@ public abstract class AbstractCacheManager implements CacheManager {
     }
 
     @Override
-    public void close() {
+    public final void close() {
         if (isClosed()) {
             logger.warning("The CacheManager has been closed, current close operation will be ignored!");
             return;
@@ -156,7 +156,14 @@ public abstract class AbstractCacheManager implements CacheManager {
         for (Map<KeyValueTypePair, Cache> cacheMap : cacheRepository.values()) {
             iterateCaches(cacheMap.values(), CLOSE_CACHE_OPERATION);
         }
+        doClose();
         this.closed = true;
+    }
+
+    /**
+     * Subclass may override this method
+     */
+    protected void doClose() {
     }
 
     protected void iterateCaches(Iterable<Cache> caches, Consumer<Cache>... cacheOperations) {
