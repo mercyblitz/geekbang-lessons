@@ -52,6 +52,8 @@
         <jackson.version>2.9.5</jackson.version>
         <activemq.version>5.9.1</activemq.version>
         <tomcat7.version>7.0.37</tomcat7.version>
+        <lettuce.version>6.1.0.RELEASE</lettuce.version>
+        <jedis.version>3.5.2</jedis.version>
 
         <!-- Testing 版本 -->
         <junit.version>4.13</junit.version>
@@ -255,6 +257,18 @@
                 <version>${tomcat7.version}</version>
             </dependency>
 
+            <!-- Redis Java Client - Lettuce -->
+            <dependency>
+                <groupId>io.lettuce</groupId>
+                <artifactId>lettuce-core</artifactId>
+                <version>${lettuce.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>redis.clients</groupId>
+                <artifactId>jedis</artifactId>
+                <version>${jedis.version}</version>
+            </dependency>
 
             <!-- Testing Dependencies -->
 
