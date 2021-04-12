@@ -19,6 +19,7 @@ package org.geektimes.cache;
 import org.geektimes.cache.event.CacheEntryEventPublisher;
 import org.geektimes.cache.integration.CompositeFallbackStorage;
 import org.geektimes.cache.integration.FallbackStorage;
+import org.geektimes.cache.processor.MutableEntryAdapter;
 
 import javax.cache.Cache;
 import javax.cache.CacheException;
@@ -32,17 +33,23 @@ import javax.cache.event.EventType;
 import javax.cache.expiry.Duration;
 import javax.cache.expiry.EternalExpiryPolicy;
 import javax.cache.expiry.ExpiryPolicy;
+import javax.cache.integration.CacheLoader;
+import javax.cache.integration.CacheWriter;
 import javax.cache.integration.CompletionListener;
 import javax.cache.processor.EntryProcessor;
 import javax.cache.processor.EntryProcessorException;
 import javax.cache.processor.EntryProcessorResult;
+import javax.cache.processor.MutableEntry;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ForkJoinPool;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 import static org.geektimes.cache.ExpirableEntry.requireKeyNotNull;
 import static org.geektimes.cache.ExpirableEntry.requireValueNotNull;
-import static org.geektimes.cache.configuration.ConfigurationUtils.completeConfiguration;
+import static org.geektimes.cache.configuration.ConfigurationUtils.immutableConfiguration;
 import static org.geektimes.cache.event.GenericCacheEntryEvent.*;
 
 /**
@@ -67,25 +74,82 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
 
     private final CacheEntryEventPublisher entryEventPublisher;
 
+    private final Executor executor;
+
     private volatile boolean closed = false;
 
     protected AbstractCache(CacheManager cacheManager, String cacheName, Configuration<K, V> configuration) {
         this.cacheManager = cacheManager;
         this.cacheName = cacheName;
-        this.configuration = completeConfiguration(configuration);
+        this.configuration = immutableConfiguration(configuration);
         this.expiryPolicy = getExpiryPolicy(this.configuration);
         this.fallbackStorage = new CompositeFallbackStorage(cacheManager.getClassLoader());
         this.entryEventPublisher = new CacheEntryEventPublisher();
+        this.executor = ForkJoinPool.commonPool();
+        registerCacheEntryListenersFromConfiguration();
     }
 
+    /**
+     * Determines if the {@link Cache} contains an entry for the specified key.
+     * <p>
+     * More formally, returns <tt>true</tt> if and only if this cache contains a
+     * mapping for a key <tt>k</tt> such that <tt>key.equals(k)</tt>.
+     * (There can be at most one such mapping.)</p>
+     * <p>
+     * If the cache is configured read-through the associated {@link CacheLoader}
+     * is not called. Only the cache is checked.
+     * </p>
+     * <p>
+     * Current method calls the methods of {@link ExpiryPolicy}:
+     * <ul>
+     *     <li>No {@link ExpiryPolicy#getExpiryForCreation}</li>
+     *     <li>No {@link ExpiryPolicy#getExpiryForAccess}</li>
+     *     <li>No {@link ExpiryPolicy#getExpiryForUpdate}</li>
+     * </ul>
+     *
+     * @param key key whose presence in this cache is to be tested.
+     * @param key the specified key
+     * @return <tt>true</tt> if this map contains a mapping for the specified key
+     * @return
+     * @throws NullPointerException  if key is null
+     * @throws IllegalStateException if the cache is {@link #isClosed()}
+     * @throws CacheException        it there is a problem checking the mapping
+     * @throws ClassCastException    if the implementation is configured to perform
+     *                               runtime-type-checking, and the key or value
+     *                               types are incompatible with those that have been
+     *                               configured for the {@link Cache}
+     */
     @Override
     public boolean containsKey(K key) {
         assertNotClosed();
         return containsEntry(key);
     }
 
-    protected abstract boolean containsEntry(K key) throws CacheException, ClassCastException;
-
+    /**
+     * Gets an entry from the cache.
+     * <p>
+     * If the cache is configured to use read-through, and get would return null
+     * because the entry is missing from the cache, the Cache's {@link CacheLoader}
+     * is called in an attempt to load the entry.
+     * <p>
+     * Current method calls the methods of {@link ExpiryPolicy}:
+     * <ul>
+     *     <li>No {@link ExpiryPolicy#getExpiryForCreation} ({@link #loadValue(Object, boolean) unless read-though caused a load)}</li>
+     *     <li>Yes {@link ExpiryPolicy#getExpiryForAccess}</li>
+     *     <li>No {@link ExpiryPolicy#getExpiryForUpdate}</li>
+     * </ul>
+     *
+     * @param key the key whose associated value is to be returned
+     * @param key the specified key
+     * @return the element, or null, if it does not exist.
+     * @throws IllegalStateException if the cache is {@link #isClosed()}
+     * @throws NullPointerException  if the key is null
+     * @throws CacheException        if there is a problem fetching the value
+     * @throws ClassCastException    if the implementation is configured to perform
+     *                               runtime-type-checking, and the key or value
+     *                               types are incompatible with those that have been
+     *                               configured for the {@link Cache}
+     */
     @Override
     public V get(K key) {
         assertNotClosed();
@@ -99,28 +163,43 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
         } catch (Throwable e) {
             logger.severe(e.getMessage());
         }
-        return loadValueIfReadThrough(entry);
+
+        // If cache missing and read-through enabled, try to load value by {@link CacheLoader}
+        if (entry == null && isReadThrough()) {
+            return loadValue(key, true);
+        }
+
+        return entry == null ? null : entry.getValue();
     }
 
-    protected abstract ExpirableEntry<K, V> getEntry(K key) throws CacheException, ClassCastException;
-
-    private V loadValueIfReadThrough(ExpirableEntry<K, V> entry) {
-        if (entry == null) {
-            return null;
-        }
-        K key = entry.getKey();
-        V value = entry.getValue();
-        V result = value;
-        if (value == null && configuration.isReadThrough()) {
-            result = (V) fallbackStorage.load(key);
-            // re-write into cache
-            if (result != null) {
-                put(key, result);
-            }
-        }
-        return result;
-    }
-
+    /**
+     * Gets a collection of entries from the {@link Cache}, returning them as
+     * {@link Map} of the values associated with the set of keys requested.
+     * <p>
+     * If the cache is configured read-through, and a get for a key would
+     * return null because an entry is missing from the cache, the Cache's
+     * {@link CacheLoader} is called in an attempt to load the entry. If an
+     * entry cannot be loaded for a given key, the key will not be present in
+     * the returned Map.
+     * <p>
+     * Current method calls the methods of {@link ExpiryPolicy}:
+     * <ul>
+     *     <li>No {@link ExpiryPolicy#getExpiryForCreation} ({@link #loadValue(Object, boolean) unless read-though caused a load)}</li>
+     *     <li>Yes {@link ExpiryPolicy#getExpiryForAccess}</li>
+     *     <li>No {@link ExpiryPolicy#getExpiryForUpdate}</li>
+     * </ul>
+     *
+     * @param keys The keys whose associated values are to be returned.
+     * @return A map of entries that were found for the given keys. Keys not found
+     * in the cache are not in the returned map.
+     * @throws NullPointerException  if keys is null or if keys contains a null
+     * @throws IllegalStateException if the cache is {@link #isClosed()}
+     * @throws CacheException        if there is a problem fetching the values
+     * @throws ClassCastException    if the implementation is configured to perform
+     *                               runtime-type-checking, and the key or value
+     *                               types are incompatible with those that have been
+     *                               configured for the {@link Cache}
+     */
     @Override
     public Map<K, V> getAll(Set<? extends K> keys) {
         // Keep the order of keys
@@ -131,6 +210,45 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
         return result;
     }
 
+    /**
+     * Associates the specified value with the specified key in this cache,
+     * returning an existing value if one existed.
+     * <p>
+     * If the cache previously contained a mapping for
+     * the key, the old value is replaced by the specified value.  (A cache
+     * <tt>c</tt> is said to contain a mapping for a key <tt>k</tt> if and only
+     * if {@link #containsKey(Object) c.containsKey(k)} would return
+     * <tt>true</tt>.)
+     * <p>
+     * The previous value is returned, or null if there was no value associated
+     * with the key previously.</p>
+     * <p>
+     * If the cache is configured write-through the associated
+     * {@link CacheWriter#write(Cache.Entry)} method will be called.
+     * </p>
+     * <p>
+     * Current method calls the methods of {@link ExpiryPolicy}:
+     * <ul>
+     *     <li>Yes {@link ExpiryPolicy#getExpiryForCreation} (when the key is not associated with an existing value)</li>
+     *     <li>No {@link ExpiryPolicy#getExpiryForAccess}</li>
+     *     <li>Yes {@link ExpiryPolicy#getExpiryForUpdate} (when the key is associated with an existing value)</li>
+     * </ul>
+     *
+     * @param key   key with which the specified value is to be associated
+     * @param value value to be associated with the specified key
+     * @return the value associated with the key at the start of the operation or
+     * null if none was associated
+     * @throws NullPointerException  if key is null or if value is null
+     * @throws IllegalStateException if the cache is {@link #isClosed()}
+     * @throws CacheException        if there is a problem doing the put
+     * @throws ClassCastException    if the implementation is configured to perform
+     *                               runtime-type-checking, and the key or value
+     *                               types are incompatible with those that have been
+     *                               configured for the {@link Cache}
+     * @see #put(Object, Object)
+     * @see #getAndReplace(Object, Object)
+     * @see CacheWriter#write(Cache.Entry)
+     */
     @Override
     public V getAndPut(K key, V value) {
         Entry<K, V> entry = getEntry(key);
@@ -138,14 +256,196 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
         return entry.getValue();
     }
 
+    /**
+     * Atomically removes the entry for a key only if currently mapped to some
+     * value.
+     * <p>
+     * This is equivalent to:
+     * <pre><code>
+     * if (cache.containsKey(key)) {
+     *   V oldValue = cache.get(key);
+     *   cache.remove(key);
+     *   return oldValue;
+     * } else {
+     *   return null;
+     * }
+     * </code></pre>
+     * except that the action is performed atomically.
+     * <p>
+     * If the cache is configured write-through the associated
+     * {@link CacheWriter#delete(Object)} method will be called.
+     * </p>
+     *
+     * <p>
+     * Current method calls the methods of {@link ExpiryPolicy}:
+     * <ul>
+     *     <li>No {@link ExpiryPolicy#getExpiryForCreation}</li>
+     *     <li>No {@link ExpiryPolicy#getExpiryForAccess}</li>
+     *     <li>No {@link ExpiryPolicy#getExpiryForUpdate}</li>
+     * </ul>
+     *
+     * @param key key with which the specified value is associated
+     * @return the value if one existed or null if no mapping existed for this key
+     * @throws NullPointerException  if the specified key or value is null.
+     * @throws IllegalStateException if the cache is {@link #isClosed()}
+     * @throws CacheException        if there is a problem during the remove
+     * @throws ClassCastException    if the implementation is configured to perform
+     *                               runtime-type-checking, and the key or value
+     *                               types are incompatible with those that have been
+     *                               configured for the {@link Cache}
+     * @see CacheWriter#delete
+     */
+    @Override
+    public V getAndRemove(K key) {
+        Entry<K, V> oldEntry = getEntry(key);
+        remove(key);
+        return oldEntry == null ? null : oldEntry.getValue();
+    }
+
+    /**
+     * Atomically replaces the value for a given key if and only if there is a
+     * value currently mapped by the key.
+     * <p>
+     * This is equivalent to
+     * <pre><code>
+     * if (cache.containsKey(key)) {
+     *   V oldValue = cache.get(key);
+     *   cache.put(key, value);
+     *   return oldValue;
+     * } else {
+     *   return null;
+     * }
+     * </code></pre>
+     * except that the action is performed atomically.
+     * <p>
+     * If the cache is configured write-through, and this method returns true,
+     * the associated {@link CacheWriter#write(Cache.Entry)} method will be called.
+     * </p>
+     *
+     * <p>
+     * Current method calls the methods of {@link ExpiryPolicy}:
+     * <ul>
+     *     <li>No {@link ExpiryPolicy#getExpiryForCreation}</li>
+     *     <li>No {@link ExpiryPolicy#getExpiryForAccess}</li>
+     *     <li>Yes {@link ExpiryPolicy#getExpiryForUpdate} (when the key is associated with an existing value)</li>
+     * </ul>
+     *
+     * @param key   key with which the specified value is associated
+     * @param value value to be associated with the specified key
+     * @return the previous value associated with the specified key, or
+     * <tt>null</tt> if there was no mapping for the key.
+     * @throws NullPointerException  if key is null or if value is null
+     * @throws IllegalStateException if the cache is {@link #isClosed()}
+     * @throws CacheException        if there is a problem during the replace
+     * @throws ClassCastException    if the implementation is configured to perform
+     *                               runtime-type-checking, and the key or value
+     *                               types are incompatible with those that have been
+     *                               configured for the {@link Cache}
+     * @see java.util.concurrent.ConcurrentMap#replace(Object, Object)
+     * @see CacheWriter#write
+     */
+    @Override
+    public V getAndReplace(K key, V value) {
+        Entry<K, V> oldEntry = getEntry(key);
+        if (oldEntry != null) {
+            put(key, value);
+            return oldEntry.getValue();
+        }
+        return null;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * The ordering of iteration over entries is undefined.
+     * <p>
+     * During iteration, any entries that are removed will have their appropriate
+     * CacheEntryRemovedListeners notified.
+     * <p>
+     * When iterating over a cache it must be assumed that the underlying
+     * cache may be changing, with entries being added, removed, evicted
+     * and expiring. {@link java.util.Iterator#next()} may therefore return
+     * null.
+     *
+     * <p>
+     * Current method calls the methods of {@link ExpiryPolicy}:
+     * <ul>
+     *     <li>No {@link ExpiryPolicy#getExpiryForCreation}</li>
+     *     <li>Yes {@link ExpiryPolicy#getExpiryForAccess} (when an entry is visited by an iterator)</li>
+     *     <li>No {@link ExpiryPolicy#getExpiryForUpdate}</li>
+     * </ul>
+     *
+     * @throws IllegalStateException if the cache is {@link #isClosed()}
+     */
+    @Override
+    public Iterator<Entry<K, V>> iterator() {
+        assertNotClosed();
+        List<Entry<K, V>> entries = new LinkedList<>();
+        for (K key : keySet()) {
+            V value = get(key);
+            entries.add(ExpirableEntry.of(key, value));
+        }
+        return entries.iterator();
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Current method calls the methods of {@link ExpiryPolicy}:
+     * <ul>
+     *     <li>Yes {@link ExpiryPolicy#getExpiryForCreation} (when the key is not associated with an existing value)</li>
+     *     <li>No {@link ExpiryPolicy#getExpiryForAccess}</li>
+     *     <li>Yes {@link ExpiryPolicy#getExpiryForUpdate} (when the key is associated with a loaded value and the value
+     *     should be replaced)</li>
+     * </ul>
+     */
     @Override
     public void loadAll(Set<? extends K> keys, boolean replaceExistingValues,
                         CompletionListener completionListener) {
         assertNotClosed();
-        // TODO
-        throw new UnsupportedOperationException("This feature will be supported in the future");
+        // If no loader is configured for the cache, no objects will be loaded.
+        if (!configuration.isReadThrough()) {
+            return;
+        }
+
+        // Asynchronously loads the specified entries into the cache using the configured
+        // CacheLoader for the given keys.
+        CompletableFuture.runAsync(() -> {
+            // Implementations may choose to load multiple keys from the provided Set in parallel.
+            // Iteration however must not occur in parallel, thus allow for non-thread-safe Sets to be used.
+            for (K key : keys) {
+                // If an entry for a key already exists in the Cache, a value will be loaded
+                // if and only if replaceExistingValues is true.
+                V value = loadValue(key, false);
+                if (replaceExistingValues) {
+                    replace(key, value);
+                } else {
+                    put(key, value);
+                }
+            }
+        }, executor).whenComplete((v, e) -> {
+            // the CompletionListener may be null
+            if (completionListener != null) {
+                // completed exceptionally
+                if (e instanceof Exception) {
+                    completionListener.onException((Exception) e);
+                } else {
+                    completionListener.onCompletion();
+                }
+            }
+        });
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Current method calls the methods of {@link ExpiryPolicy}:
+     * <ul>
+     *     <li>Yes {@link ExpiryPolicy#getExpiryForCreation} (when the key is not associated with an existing value)</li>
+     *     <li>No {@link ExpiryPolicy#getExpiryForAccess}</li>
+     *     <li>Yes {@link ExpiryPolicy#getExpiryForUpdate} (when the key is associated with an existing value)</li>
+     * </ul>
+     */
     @Override
     public void put(K key, V value) {
         assertNotClosed();
@@ -158,9 +458,301 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
                 entry = updateEntry(key, value);
             }
         } finally {
-            writeIfWriteThrough(entry);
+            writeEntryIfWriteThrough(entry);
         }
     }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Current method calls the methods of {@link ExpiryPolicy}:
+     * <ul>
+     *     <li>Yes {@link ExpiryPolicy#getExpiryForCreation} (when the key is not associated with an existing value)</li>
+     *     <li>No {@link ExpiryPolicy#getExpiryForAccess}</li>
+     *     <li>Yes {@link ExpiryPolicy#getExpiryForUpdate} (when the key is associated with an existing value)</li>
+     * </ul>
+     */
+    @Override
+    public void putAll(Map<? extends K, ? extends V> map) {
+        for (Map.Entry<? extends K, ? extends V> entry : map.entrySet()) {
+            put(entry.getKey(), entry.getValue());
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Current method calls the methods of {@link ExpiryPolicy}:
+     * <ul>
+     *     <li>Yes {@link ExpiryPolicy#getExpiryForCreation} (when the key is not associated with an existing value)</li>
+     *     <li>No {@link ExpiryPolicy#getExpiryForAccess}</li>
+     *     <li>No {@link ExpiryPolicy#getExpiryForUpdate}</li>
+     * </ul>
+     */
+    @Override
+    public boolean putIfAbsent(K key, V value) {
+        if (!containsKey(key)) {
+            put(key, value);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Current method calls the methods of {@link ExpiryPolicy}:
+     * <ul>
+     *     <li>No {@link ExpiryPolicy#getExpiryForCreation}</li>
+     *     <li>No {@link ExpiryPolicy#getExpiryForAccess}</li>
+     *     <li>No {@link ExpiryPolicy#getExpiryForUpdate}</li>
+     * </ul>
+     */
+    @Override
+    public boolean remove(K key) {
+        assertNotClosed();
+        requireKeyNotNull(key);
+        boolean removed = false;
+        try {
+            ExpirableEntry<K, V> oldEntry = removeEntry(key);
+            removed = oldEntry != null;
+            if (removed) {
+                publishRemovedEvent(key, oldEntry.getValue());
+            }
+        } finally {
+            deleteIfWriteThrough(key);
+        }
+        return removed;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Current method calls the methods of {@link ExpiryPolicy}:
+     * <ul>
+     *     <li>No {@link ExpiryPolicy#getExpiryForCreation}</li>
+     *     <li>Yes {@link ExpiryPolicy#getExpiryForAccess} ((when the old value does not match the existing value)</li>
+     *     <li>No {@link ExpiryPolicy#getExpiryForUpdate}</li>
+     * </ul>
+     */
+    @Override
+    public boolean remove(K key, V oldValue) {
+        if (containsKey(key) && Objects.equals(get(key), oldValue)) {
+            remove(key);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Current method calls the methods of {@link ExpiryPolicy}:
+     * <ul>
+     *     <li>No {@link ExpiryPolicy#getExpiryForCreation}</li>
+     *     <li>No {@link ExpiryPolicy#getExpiryForAccess}</li>
+     *     <li>No {@link ExpiryPolicy#getExpiryForUpdate}</li>
+     * </ul>
+     */
+    @Override
+    public void removeAll() {
+        removeAll(keySet());
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Current method calls the methods of {@link ExpiryPolicy}:
+     * <ul>
+     *     <li>No {@link ExpiryPolicy#getExpiryForCreation}</li>
+     *     <li>No {@link ExpiryPolicy#getExpiryForAccess}</li>
+     *     <li>No {@link ExpiryPolicy#getExpiryForUpdate}</li>
+     * </ul>
+     */
+    @Override
+    public void removeAll(Set<? extends K> keys) {
+        for (K key : keys) {
+            remove(key);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Current method calls the methods of {@link ExpiryPolicy}:
+     * <ul>
+     *     <li>Yes {@link ExpiryPolicy#getExpiryForCreation} (for the following cases:
+     *     (1) setValue called and an entry did not exist for key before invoke was called.
+     *     (2) if read-through enabled and getValue() is called and causes a new entry to be loaded for key)
+     *     </li>
+     *     <li>Yes {@link ExpiryPolicy#getExpiryForAccess} (when getValue was called and no other mutations
+     *     occurred during entry processor execution. note: Create, modify or remove take precedence over Access)
+     *     </li>
+     *     <li>Yes {@link ExpiryPolicy#getExpiryForUpdate} (when setValue was called and the entry already existed
+     *     before entry processor was called)</li>
+     * </ul>
+     */
+    @Override
+    public <T> T invoke(K key, EntryProcessor<K, V, T> entryProcessor, Object... arguments) throws EntryProcessorException {
+        MutableEntry<K, V> mutableEntry = MutableEntryAdapter.of(key, this);
+        return entryProcessor.process(mutableEntry, arguments);
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Current method calls the methods of {@link ExpiryPolicy}:
+     * <ul>
+     *     <li>Yes {@link ExpiryPolicy#getExpiryForCreation} (for the following cases:
+     *     (1) setValue called and an entry did not exist for key before invoke was called.
+     *     (2) if read-through enabled and getValue() is called and causes a new entry to be loaded for key)
+     *     </li>
+     *     <li>Yes {@link ExpiryPolicy#getExpiryForAccess} (when getValue was called and no other mutations
+     *     occurred during entry processor execution. note: Create, modify or remove take precedence over Access)
+     *     </li>
+     *     <li>Yes {@link ExpiryPolicy#getExpiryForUpdate} (when setValue was called and the entry already existed
+     *     before entry processor was called)</li>
+     * </ul>
+     */
+    @Override
+    public <T> Map<K, EntryProcessorResult<T>> invokeAll(Set<? extends K> keys, EntryProcessor<K, V, T> entryProcessor, Object... arguments) {
+        // "resultMap" keeps the order of keys
+        Map<K, EntryProcessorResult<T>> resultMap = new LinkedHashMap<>();
+        for (K key : keys) {
+            resultMap.put(key, () -> invoke(key, entryProcessor, arguments));
+        }
+        return resultMap;
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Current method calls the methods of {@link ExpiryPolicy}:
+     * <ul>
+     *     <li>No {@link ExpiryPolicy#getExpiryForCreation}</li>
+     *     <li>No {@link ExpiryPolicy#getExpiryForAccess}</li>
+     *     <li>No {@link ExpiryPolicy#getExpiryForUpdate} (when the key is associated with an existing value)</li>
+     * </ul>
+     */
+    @Override
+    public boolean replace(K key, V value) {
+        if (containsKey(key)) {
+            put(key, value);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Current method calls the methods of {@link ExpiryPolicy}:
+     * <ul>
+     *     <li>No {@link ExpiryPolicy#getExpiryForCreation}</li>
+     *     <li>Yes {@link ExpiryPolicy#getExpiryForAccess} (when the old value does not match the existing value)</li>
+     *     <li>Yes {@link ExpiryPolicy#getExpiryForUpdate} (when value is replaced)</li>
+     * </ul>
+     */
+    @Override
+    public boolean replace(K key, V oldValue, V newValue) {
+        requireValueNotNull(oldValue);
+        if (containsKey(key) && Objects.equals(get(key), oldValue)) {
+            put(key, newValue);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Override
+    public final void clear() {
+        assertNotClosed();
+        clearEntries();
+    }
+
+    @Override
+    public <C extends Configuration<K, V>> C getConfiguration(Class<C> clazz) {
+        if (!Configuration.class.isAssignableFrom(clazz)) {
+            throw new IllegalArgumentException("The class must be inherited of " + Configuration.class.getName());
+        }
+        return (C) immutableConfiguration(configuration);
+    }
+
+    @Override
+    public void registerCacheEntryListener(CacheEntryListenerConfiguration<K, V> cacheEntryListenerConfiguration) {
+        entryEventPublisher.registerCacheEntryListener(cacheEntryListenerConfiguration);
+    }
+
+    @Override
+    public void deregisterCacheEntryListener(CacheEntryListenerConfiguration<K, V> cacheEntryListenerConfiguration) {
+        entryEventPublisher.deregisterCacheEntryListener(cacheEntryListenerConfiguration);
+    }
+
+    @Override
+    public <T> T unwrap(Class<T> clazz) {
+        T value = null;
+        try {
+            value = clazz.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+        return value;
+    }
+
+    @Override
+    public final String getName() {
+        return cacheName;
+    }
+
+    @Override
+    public final CacheManager getCacheManager() {
+        return cacheManager;
+    }
+
+    @Override
+    public final void close() {
+        if (isClosed()) {
+            return;
+        }
+        doClose();
+        closed = true;
+    }
+
+    /**
+     * Subclass could override this method.
+     */
+    protected void doClose() {
+    }
+
+    @Override
+    public final boolean isClosed() {
+        return closed;
+    }
+
+
+    // Operations of CompleteConfiguration
+
+    protected final boolean isReadThrough() {
+        return configuration.isReadThrough();
+    }
+
+    protected final boolean isWriteThrough() {
+        return configuration.isWriteThrough();
+    }
+
+    protected final boolean isStatisticsEnabled() {
+        return configuration.isStatisticsEnabled();
+    }
+
+    protected final boolean isManagementEnabled() {
+        return configuration.isManagementEnabled();
+    }
+
+
+    // Operations of Cache.Entry and ExpirableEntry
 
     private Entry<K, V> createAndPutEntry(K key, V value) {
         // Create Cache.Entry
@@ -197,6 +789,123 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
 
         return oldEntry;
     }
+
+    /**
+     * Contains the {@link Cache.Entry} by the specified key or not.
+     *
+     * @param key the key of {@link Cache.Entry}
+     * @return <code>true</code> if contains, or <code>false</code>
+     * @throws CacheException     it there is a problem checking the mapping
+     * @throws ClassCastException if the implementation is configured to perform
+     *                            runtime-type-checking, and the key or value
+     *                            types are incompatible with those that have been
+     *                            configured for the {@link Cache}
+     */
+    protected abstract boolean containsEntry(K key) throws CacheException, ClassCastException;
+
+    /**
+     * Get the {@link Cache.Entry} by the specified key
+     *
+     * @param key the key of {@link Entry}
+     * @return the existed {@link Cache.Entry} associated with the given key
+     * @throws CacheException     if there is a problem fetching the value
+     * @throws ClassCastException if the implementation is configured to perform
+     *                            runtime-type-checking, and the key or value
+     *                            types are incompatible with those that have been
+     *                            configured for the {@link Cache}
+     */
+    protected abstract ExpirableEntry<K, V> getEntry(K key) throws CacheException, ClassCastException;
+
+    /**
+     * Put the specified {@link javax.cache.Cache.Entry} into cache.
+     *
+     * @param entry The new instance of {@link Entry<K,V>} is created by {@link Cache}
+     * @throws CacheException     if there is a problem doing the put
+     * @throws ClassCastException if the implementation is configured to perform
+     *                            runtime-type-checking, and the key or value
+     *                            types are incompatible with those that have been
+     *                            configured for the {@link Cache}
+     */
+    protected abstract void putEntry(ExpirableEntry<K, V> entry) throws CacheException, ClassCastException;
+
+    /**
+     * Remove the specified {@link Cache.Entry} from cache.
+     *
+     * @param key the key of {@link Entry}
+     * @return the removed {@link Cache.Entry} associated with the given key
+     * @throws CacheException     if there is a problem doing the remove
+     * @throws ClassCastException if the implementation is configured to perform
+     *                            runtime-type-checking, and the key or value
+     *                            types are incompatible with those that have been
+     *                            configured for the {@link Cache}
+     */
+    protected abstract ExpirableEntry<K, V> removeEntry(K key) throws CacheException, ClassCastException;
+
+    /**
+     * Clear all {@link Cache.Entry enties} from cache.
+     *
+     * @throws CacheException if there is a problem doing the clear
+     */
+    protected abstract void clearEntries() throws CacheException;
+
+    /**
+     * Get all keys of {@link Cache.Entry} in the {@link Cache}
+     *
+     * @return the non-null read-only {@link Set}
+     */
+    protected abstract Set<K> keySet();
+
+
+    // Operations of CacheLoader and CacheWriter
+
+    private V loadValue(K key) {
+        return (V) fallbackStorage.load(key);
+    }
+
+    private V loadValue(K key, boolean storedEntry) {
+        V value = loadValue(key);
+        if (storedEntry && value != null) {
+            put(key, value);
+        }
+        return value;
+    }
+
+    private void writeEntryIfWriteThrough(Entry<K, V> entry) {
+        if (entry != null && isWriteThrough()) {
+            fallbackStorage.write(entry);
+        }
+    }
+
+    private void deleteIfWriteThrough(K key) {
+        if (isWriteThrough()) {
+            fallbackStorage.delete(key);
+        }
+    }
+
+    // Operations of CacheEntryEvent and CacheEntryListenerConfiguration
+
+    private void registerCacheEntryListenersFromConfiguration() {
+        this.configuration.getCacheEntryListenerConfigurations()
+                .forEach(this::registerCacheEntryListener);
+    }
+
+    private void publishCreatedEvent(K key, V value) {
+        entryEventPublisher.publish(createdEvent(this, key, value));
+    }
+
+    private void publishUpdatedEvent(K key, V oldValue, V value) {
+        entryEventPublisher.publish(updatedEvent(this, key, oldValue, value));
+    }
+
+    private void publishExpiredEvent(K key, V oldValue) {
+        entryEventPublisher.publish(expiredEvent(this, key, oldValue));
+    }
+
+    private void publishRemovedEvent(K key, V oldValue) {
+        entryEventPublisher.publish(removedEvent(this, key, oldValue));
+    }
+
+    // Operations of ExpiryPolicy and Duration
 
     private boolean handleExpiryPolicyForCreation(ExpirableEntry<K, V> newEntry) {
         return handleExpiryPolicy(newEntry, getExpiryForCreation(), false);
@@ -250,207 +959,24 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
         return expired;
     }
 
-    /**
-     * Put the {@link javax.cache.Cache.Entry} into cache.
-     *
-     * @param newEntry The new instance of {@link Cache.Entry<K,V>} is created by {@link Cache}
-     * @throws CacheException
-     * @throws ClassCastException
-     */
-    protected abstract void putEntry(ExpirableEntry<K, V> newEntry) throws CacheException, ClassCastException;
-
-    @Override
-    public void putAll(Map<? extends K, ? extends V> map) {
-        for (Map.Entry<? extends K, ? extends V> entry : map.entrySet()) {
-            put(entry.getKey(), entry.getValue());
-        }
-    }
-
-    @Override
-    public boolean putIfAbsent(K key, V value) {
-        if (!containsKey(key)) {
-            put(key, value);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    @Override
-    public boolean remove(K key) {
-        assertNotClosed();
-        requireKeyNotNull(key);
-        boolean removed = false;
-        try {
-            ExpirableEntry<K, V> oldEntry = removeEntry(key);
-            removed = oldEntry != null;
-            if (removed) {
-                publishRemovedEvent(key, oldEntry.getValue());
-            }
-        } finally {
-            deleteIfWriteThrough(key);
-        }
-        return removed;
-    }
-
-    protected abstract ExpirableEntry<K, V> removeEntry(K key) throws CacheException, ClassCastException;
-
-    @Override
-    public boolean remove(K key, V oldValue) {
-        if (containsKey(key) && Objects.equals(get(key), oldValue)) {
-            remove(key);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    @Override
-    public V getAndRemove(K key) {
-        V oldValue = get(key);
-        remove(key);
-        return oldValue;
-    }
-
-    @Override
-    public boolean replace(K key, V oldValue, V newValue) {
-        requireValueNotNull(oldValue);
-        if (Objects.equals(get(key), oldValue)) {
-            put(key, newValue);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    @Override
-    public boolean replace(K key, V value) {
-        if (containsKey(key)) {
-            put(key, value);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    @Override
-    public V getAndReplace(K key, V value) {
-        V oldValue = get(key);
-        if (oldValue != null) {
-            put(key, value);
-        }
-        return oldValue;
-    }
-
-    @Override
-    public void removeAll(Set<? extends K> keys) {
-        for (K key : keys) {
-            remove(key);
-        }
-    }
-
-    @Override
-    public void removeAll() {
-        Iterator<Entry<K, V>> iterator = iterator();
-        while (iterator.hasNext()) {
-            Entry<K, V> entry = iterator.next();
-            K key = entry.getKey();
-            remove(key);
-        }
-    }
-
-    @Override
-    public void clear() {
-        assertNotClosed();
-        doClear();
-    }
-
-    protected abstract void doClear() throws CacheException;
-
-    @Override
-    public <C extends Configuration<K, V>> C getConfiguration(Class<C> clazz) {
-        Configuration<K, V> configuration = unwrap(clazz);
-        return (C) completeConfiguration(configuration);
-    }
-
-    @Override
-    public <T> T invoke(K key, EntryProcessor<K, V, T> entryProcessor, Object... arguments) throws EntryProcessorException {
-        // TODO
-        throw new UnsupportedOperationException("This feature will be supported in the future");
-    }
-
-    @Override
-    public <T> Map<K, EntryProcessorResult<T>> invokeAll(Set<? extends K> keys, EntryProcessor<K, V, T> entryProcessor, Object... arguments) {
-        // TODO
-        throw new UnsupportedOperationException("This feature will be supported in the future");
-    }
-
-
-    @Override
-    public void registerCacheEntryListener(CacheEntryListenerConfiguration<K, V> cacheEntryListenerConfiguration) {
-        entryEventPublisher.registerCacheEntryListener(cacheEntryListenerConfiguration);
-    }
-
-    @Override
-    public void deregisterCacheEntryListener(CacheEntryListenerConfiguration<K, V> cacheEntryListenerConfiguration) {
-        entryEventPublisher.deregisterCacheEntryListener(cacheEntryListenerConfiguration);
-    }
-
-    @Override
-    public Iterator<Entry<K, V>> iterator() {
-        assertNotClosed();
-        return newIterator();
-    }
-
-    protected abstract Iterator<Entry<K, V>> newIterator();
-
-    @Override
-    public <T> T unwrap(Class<T> clazz) {
-        T value = null;
-        try {
-            value = clazz.newInstance();
-        } catch (InstantiationException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-        return value;
-    }
-
-    @Override
-    public final String getName() {
-        return cacheName;
-    }
-
-    @Override
-    public final CacheManager getCacheManager() {
-        return cacheManager;
-    }
-
-    @Override
-    public final void close() {
-        if (isClosed()) {
-            return;
-        }
-        doClose();
-        closed = true;
-    }
-
-    /**
-     * Subclass could override this method.
-     */
-    protected void doClose() {
-    }
-
-
-    protected Duration getExpiryForCreation() {
+    protected final Duration getExpiryForCreation() {
         return getDuration(expiryPolicy::getExpiryForCreation);
     }
 
-    protected Duration getExpiryForAccess() {
+    protected final Duration getExpiryForAccess() {
         return getDuration(expiryPolicy::getExpiryForAccess);
     }
 
-    protected Duration getExpiryForUpdate() {
+    protected final Duration getExpiryForUpdate() {
         return getDuration(expiryPolicy::getExpiryForUpdate);
+    }
+
+    private ExpiryPolicy getExpiryPolicy(CompleteConfiguration<?, ?> configuration) {
+        Factory<ExpiryPolicy> expiryPolicyFactory = configuration.getExpiryPolicyFactory();
+        if (expiryPolicyFactory == null) {
+            expiryPolicyFactory = EternalExpiryPolicy::new;
+        }
+        return expiryPolicyFactory.create();
     }
 
     private Duration getDuration(Supplier<Duration> durationSupplier) {
@@ -464,50 +990,11 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
         return duration;
     }
 
-    @Override
-    public final boolean isClosed() {
-        return closed;
-    }
 
-    private void publishCreatedEvent(K key, V value) {
-        entryEventPublisher.publish(createdEvent(this, key, value));
-    }
-
-    private void publishUpdatedEvent(K key, V oldValue, V value) {
-        entryEventPublisher.publish(updatedEvent(this, key, oldValue, value));
-    }
-
-    private void deleteIfWriteThrough(K key) {
-        if (configuration.isWriteThrough()) {
-            fallbackStorage.delete(key);
-        }
-    }
-
-    private void publishExpiredEvent(K key, V oldValue) {
-        entryEventPublisher.publish(expiredEvent(this, key, oldValue));
-    }
-
-    private void publishRemovedEvent(K key, V oldValue) {
-        entryEventPublisher.publish(removedEvent(this, key, oldValue));
-    }
-
-    private void writeIfWriteThrough(Entry<K, V> entry) {
-        if (entry != null && configuration.isWriteThrough()) {
-            fallbackStorage.write(entry);
-        }
-    }
-
+    // Other Operations
     private void assertNotClosed() {
         if (isClosed()) {
             throw new IllegalStateException("Current cache has been closed! No operation should be executed.");
         }
-    }
-
-    private static ExpiryPolicy getExpiryPolicy(CompleteConfiguration<?, ?> configuration) {
-        Factory<ExpiryPolicy> expiryPolicyFactory = configuration.getExpiryPolicyFactory();
-        if (expiryPolicyFactory == null) {
-            expiryPolicyFactory = EternalExpiryPolicy::new;
-        }
-        return expiryPolicyFactory.create();
     }
 }
