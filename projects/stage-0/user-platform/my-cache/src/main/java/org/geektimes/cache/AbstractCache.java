@@ -49,7 +49,7 @@ import java.util.logging.Logger;
 
 import static org.geektimes.cache.ExpirableEntry.requireKeyNotNull;
 import static org.geektimes.cache.ExpirableEntry.requireValueNotNull;
-import static org.geektimes.cache.configuration.ConfigurationUtils.completeConfiguration;
+import static org.geektimes.cache.configuration.ConfigurationUtils.immutableConfiguration;
 import static org.geektimes.cache.event.GenericCacheEntryEvent.*;
 
 /**
@@ -81,11 +81,12 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
     protected AbstractCache(CacheManager cacheManager, String cacheName, Configuration<K, V> configuration) {
         this.cacheManager = cacheManager;
         this.cacheName = cacheName;
-        this.configuration = completeConfiguration(configuration);
+        this.configuration = immutableConfiguration(configuration);
         this.expiryPolicy = getExpiryPolicy(this.configuration);
         this.fallbackStorage = new CompositeFallbackStorage(cacheManager.getClassLoader());
         this.entryEventPublisher = new CacheEntryEventPublisher();
         this.executor = ForkJoinPool.commonPool();
+        registerCacheEntryListenersFromConfiguration();
     }
 
     /**
@@ -677,7 +678,7 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
         if (!Configuration.class.isAssignableFrom(clazz)) {
             throw new IllegalArgumentException("The class must be inherited of " + Configuration.class.getName());
         }
-        return (C) completeConfiguration(configuration);
+        return (C) immutableConfiguration(configuration);
     }
 
     @Override
@@ -883,6 +884,11 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
 
     // Operations of CacheEntryEvent and CacheEntryListenerConfiguration
 
+    private void registerCacheEntryListenersFromConfiguration() {
+        this.configuration.getCacheEntryListenerConfigurations()
+                .forEach(this::registerCacheEntryListener);
+    }
+
     private void publishCreatedEvent(K key, V value) {
         entryEventPublisher.publish(createdEvent(this, key, value));
     }
@@ -983,6 +989,7 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
         }
         return duration;
     }
+
 
     // Other Operations
     private void assertNotClosed() {

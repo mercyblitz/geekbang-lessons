@@ -37,7 +37,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 /**
- * {@link CachingProvider}
+ * {@link Caching} Test
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since
