@@ -37,7 +37,7 @@ public abstract class ConfigurationUtils {
      * @return non-null
      * @see ImmutableCompleteConfiguration
      */
-    public static <K, V> CompleteConfiguration<K, V> completeConfiguration(Configuration<K, V> configuration) {
+    public static <K, V> CompleteConfiguration<K, V> immutableConfiguration(Configuration<K, V> configuration) {
         return new ImmutableCompleteConfiguration(configuration);
     }
 

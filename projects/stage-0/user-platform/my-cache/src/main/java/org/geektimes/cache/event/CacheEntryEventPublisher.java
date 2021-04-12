@@ -42,9 +42,7 @@ public class CacheEntryEventPublisher {
     }
 
     public <K, V> void publish(CacheEntryEvent<? extends K, ? extends V> event) {
-        listeners.forEach(listener -> {
-            listener.onEvent(event);
-        });
+        listeners.forEach(listener -> listener.onEvent(event));
     }
 
 
