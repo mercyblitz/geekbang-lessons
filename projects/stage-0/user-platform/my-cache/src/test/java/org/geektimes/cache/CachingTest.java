@@ -73,12 +73,6 @@ public class CachingTest {
         assertEquals(value1, value2);
         cache.remove(key);
         assertNull(cache.get(key));
-
-        try {
-            Thread.sleep(Long.MAX_VALUE);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
     }
 
     @Test
