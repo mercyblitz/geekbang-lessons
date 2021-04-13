@@ -49,6 +49,7 @@ import static org.geektimes.cache.ExpirableEntry.requireValueNotNull;
 import static org.geektimes.cache.configuration.ConfigurationUtils.immutableConfiguration;
 import static org.geektimes.cache.configuration.ConfigurationUtils.mutableConfiguration;
 import static org.geektimes.cache.event.GenericCacheEntryEvent.*;
+import static org.geektimes.cache.management.ManagementUtils.registerCacheMXBeanIfRequired;
 
 /**
  * The abstract non-thread-safe implementation of {@link Cache}
@@ -91,6 +92,7 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
         this.entryEventPublisher = new CacheEntryEventPublisher();
         this.executor = ForkJoinPool.commonPool();
         registerCacheEntryListenersFromConfiguration();
+        registerCacheMXBeanIfRequired(this);
     }
 
     /**
