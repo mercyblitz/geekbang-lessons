@@ -24,10 +24,11 @@ import org.junit.Test;
 import javax.cache.Cache;
 import javax.cache.CacheManager;
 import javax.cache.Caching;
-import javax.cache.configuration.CacheEntryListenerConfiguration;
 import javax.cache.configuration.CompleteConfiguration;
 import javax.cache.configuration.Configuration;
 import javax.cache.configuration.MutableConfiguration;
+import javax.cache.event.CacheEntryEvent;
+import javax.cache.event.EventType;
 import javax.cache.expiry.Duration;
 import javax.cache.integration.CacheLoader;
 import javax.cache.integration.CacheLoaderException;
@@ -43,7 +44,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import static java.util.Collections.singleton;
 import static java.util.Collections.singletonMap;
 import static javax.cache.expiry.CreatedExpiryPolicy.factoryOf;
-import static org.geektimes.cache.configuration.ConfigurationUtils.cacheEntryListenerConfiguration;
 import static org.junit.Assert.*;
 
 /**
@@ -62,15 +62,14 @@ public class AbstractCacheTest {
 
     MutableConfiguration<String, Integer> config;
 
-    private TestCacheEntryListener cacheEntryListener;
-
-    private CacheEntryListenerConfiguration cacheEntryListenerConfiguration;
+    private TestCacheEntryListener<String, Integer> cacheEntryListener;
 
     Cache<String, Integer> cache;
 
     private String cacheName = "testCache";
 
     String key = "test-key";
+
     Integer value = 2;
 
 
@@ -79,7 +78,6 @@ public class AbstractCacheTest {
         cachingProvider = Caching.getCachingProvider();
         cacheManager = cachingProvider.getCacheManager();
         cacheEntryListener = new TestCacheEntryListener();
-        cacheEntryListenerConfiguration = cacheEntryListenerConfiguration(cacheEntryListener);
         config = new MutableConfiguration<String, Integer>()
                 // Key and Value types
                 .setTypes(String.class, Integer.class)
@@ -88,7 +86,7 @@ public class AbstractCacheTest {
                 .setManagementEnabled(true)
                 .setStatisticsEnabled(true)
                 // CacheEntryListener
-                .addCacheEntryListenerConfiguration(cacheEntryListenerConfiguration);
+                .addCacheEntryListenerConfiguration(cacheEntryListener);
         // create the cache
         this.cache = cacheManager.createCache(cacheName, config);
     }
@@ -141,14 +139,26 @@ public class AbstractCacheTest {
         assertFalse(cache.containsKey(key));
         // test put if create Cache.Entry
         cache.put(key, value);
+        assertCacheEntryEvent(EventType.CREATED, key, value, null);
         assertTrue(cache.containsKey(key));
+    }
+
+    void assertCacheEntryEvent(EventType eventType, String key, Integer value, Integer oldValue) {
+        CacheEntryEvent<String, Integer> event = getCacheEntryEvent();
+        assertEquals(cache, event.getSource());
+        assertEquals(eventType, event.getEventType());
+        assertEquals(key, event.getKey());
+        assertEquals(value, event.getValue());
+        assertEquals(oldValue, event.getOldValue());
     }
 
     @Test
     public void testPutIfAbsent() {
         // test putIfAbsent
         assertTrue(cache.putIfAbsent(key, value));
+        assertCacheEntryEvent(EventType.CREATED, key, value, null);
         assertFalse(cache.putIfAbsent(key, value));
+        assertNull(getCacheEntryEvent());
     }
 
     @Test
@@ -156,22 +166,35 @@ public class AbstractCacheTest {
         // test putAll
         cache.putAll(singletonMap(key, value));
         assertTrue(cache.containsKey(key));
+        assertCacheEntryEvent(EventType.CREATED, key, value, null);
+        assertNull(getCacheEntryEvent());
     }
 
     @Test
     public void testGetOps() {
         // test get
         assertNull(cache.get(key));
+
         // test getAndPut
         assertNull(cache.getAndPut(key, value));
+        assertCacheEntryEvent(EventType.CREATED, key, value, null);
         assertEquals(value, cache.getAndPut(key, value));
+        assertCacheEntryEvent(EventType.UPDATED, key, value, value);
+
         // test getAndRemove
         assertEquals(value, cache.getAndRemove(key));
+        assertCacheEntryEvent(EventType.REMOVED, key, value, value);
+
         // test getAndReplace
         assertNull(cache.getAndReplace(key, value));
+        assertNull(getCacheEntryEvent());
         assertNull(cache.getAndPut(key, value));
+        assertCacheEntryEvent(EventType.CREATED, key, value, null);
         assertEquals(value, cache.getAndReplace(key, 1));
+        assertCacheEntryEvent(EventType.UPDATED, key, 1, value);
         assertEquals(Integer.valueOf(1), cache.getAndReplace(key, value));
+        assertCacheEntryEvent(EventType.UPDATED, key, value, 1);
+
         // test getAll
         assertEquals(singletonMap(key, value), cache.getAll(singleton(key)));
     }
@@ -179,35 +202,57 @@ public class AbstractCacheTest {
     @Test
     public void testRemove() {
         cache.put(key, value);
+        assertCacheEntryEvent(EventType.CREATED, key, value, null);
+
         // test remove
         assertTrue(cache.remove(key));
+        assertCacheEntryEvent(EventType.REMOVED, key, value, value);
 
         cache.put(key, value);
+        assertCacheEntryEvent(EventType.CREATED, key, value, null);
+
         assertFalse(cache.remove(key, 1));
+        assertNull(getCacheEntryEvent());
+
         assertTrue(cache.remove(key, value));
+        assertCacheEntryEvent(EventType.REMOVED, key, value, value);
     }
 
     @Test
     public void testRemoveAll() {
         // test removeAll
         assertTrue(cache.putIfAbsent(key, value));
+        assertCacheEntryEvent(EventType.CREATED, key, value, null);
         cache.removeAll();
+        assertCacheEntryEvent(EventType.REMOVED, key, value, value);
         assertFalse(cache.containsKey(key));
 
         assertTrue(cache.putIfAbsent(key, value));
+        assertCacheEntryEvent(EventType.CREATED, key, value, null);
+
         cache.removeAll(singleton(key));
+        assertCacheEntryEvent(EventType.REMOVED, key, value, value);
         assertFalse(cache.containsKey(key));
     }
 
     @Test
     public void testReplace() {
         cache.put(key, value);
+        assertCacheEntryEvent(EventType.CREATED, key, value, null);
+
         // test replace
         assertFalse(cache.replace("#", 1));
+        assertNull(getCacheEntryEvent());
+
         assertTrue(cache.replace(key, 1));
+        assertCacheEntryEvent(EventType.UPDATED, key, 1, value);
+
         assertEquals(Integer.valueOf(1), cache.get(key));
         assertFalse(cache.replace(key, value, value));
+        assertNull(getCacheEntryEvent());
+
         assertTrue(cache.replace(key, 1, value));
+        assertCacheEntryEvent(EventType.UPDATED, key, value, 1);
     }
 
     @Test
@@ -373,40 +418,41 @@ public class AbstractCacheTest {
 
     @Test
     public void testDeregisterCacheEntryListener() {
-        cache.deregisterCacheEntryListener(cacheEntryListenerConfiguration);
+        cache.deregisterCacheEntryListener(cacheEntryListener);
     }
 
     @Test
     public void testExpiryPolicy() throws Exception {
         MutableConfiguration<String, Integer> config = new MutableConfiguration<>(this.config)
                 .setExpiryPolicyFactory(factoryOf(Duration.ZERO));
-        String cacheName = "testCache-ExpiryPolicy";
-        Cache<String, Integer> cache = cacheManager.createCache(cacheName, config);
+        cacheManager.destroyCache(cacheName);
+        cache = cacheManager.createCache(cacheName, config);
 
         // test CreatedExpiryPolicy with Duration.ZERO
-        cache.clear();
         cache.put(key, value);
         assertFalse(cache.containsKey(key));
         assertNull(cache.get(key));
-        cacheManager.destroyCache(cacheName);
+        assertNull(getCacheEntryEvent());
 
         // test CreatedExpiryPolicy with Duration 1 second
         config = new MutableConfiguration<>(this.config)
                 .setExpiryPolicyFactory(factoryOf(new Duration(TimeUnit.SECONDS, 1L)));
+        cacheManager.destroyCache(cacheName);
         cache = cacheManager.createCache(cacheName, config);
 
         cache.put(key, value);
         assertTrue(cache.containsKey(key));
         assertEquals(value, cache.get(key));
+        assertCacheEntryEvent(EventType.CREATED, key, value, null);
 
-        Thread.sleep(TimeUnit.SECONDS.toMillis(1));
+        Thread.sleep(TimeUnit.SECONDS.toMillis(2));
 
         assertTrue(cache.containsKey(key));
         assertNull(cache.get(key));
+        assertCacheEntryEvent(EventType.EXPIRED, key, value, value);
+    }
 
-
-        cacheManager.destroyCache(cacheName);
-
-
+    private CacheEntryEvent<String, Integer> getCacheEntryEvent() {
+        return cacheEntryListener.getCacheEntryEvent();
     }
 }
