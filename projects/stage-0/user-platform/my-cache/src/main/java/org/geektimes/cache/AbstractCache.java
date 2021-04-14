@@ -19,6 +19,9 @@ package org.geektimes.cache;
 import org.geektimes.cache.event.CacheEntryEventPublisher;
 import org.geektimes.cache.integration.CompositeFallbackStorage;
 import org.geektimes.cache.integration.FallbackStorage;
+import org.geektimes.cache.management.CacheStatistics;
+import org.geektimes.cache.management.DummyCacheStatistics;
+import org.geektimes.cache.management.SimpleCacheStatistics;
 import org.geektimes.cache.processor.MutableEntryAdapter;
 
 import javax.cache.Cache;
@@ -77,6 +80,8 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
 
     private final CacheEntryEventPublisher entryEventPublisher;
 
+    private final CacheStatistics cacheStatistics;
+
     private final Executor executor;
 
     private volatile boolean closed = false;
@@ -90,6 +95,7 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
         this.cacheLoader = resolveCacheLoader(getConfiguration(), getClassLoader());
         this.cacheWriter = resolveCacheWriter(getConfiguration(), getClassLoader());
         this.entryEventPublisher = new CacheEntryEventPublisher();
+        this.cacheStatistics = resolveCacheStatistic();
         this.executor = ForkJoinPool.commonPool();
         registerCacheEntryListenersFromConfiguration();
         registerCacheMXBeanIfRequired(this);
@@ -461,6 +467,7 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
     public void put(K key, V value) {
         assertNotClosed();
         Entry<K, V> entry = null;
+        long startTime = System.currentTimeMillis();
         try {
             if (!containsKey(key)) {
                 // Put the new Cache.Entry
@@ -469,6 +476,8 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
                 entry = updateEntry(key, value);
             }
         } finally {
+            cacheStatistics.cachePuts();
+            cacheStatistics.cachePutsTime(System.currentTimeMillis() - startTime);
             writeEntryIfWriteThrough(entry);
         }
     }
@@ -769,6 +778,11 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
     }
 
 
+    private CacheStatistics resolveCacheStatistic() {
+        return isStatisticsEnabled() ?
+                new SimpleCacheStatistics() : DummyCacheStatistics.INSTANCE;
+    }
+
     // Operations of Cache.Entry and ExpirableEntry
 
     private Entry<K, V> createAndPutEntry(K key, V value) {
@@ -1050,7 +1064,6 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
         }
         return duration;
     }
-
 
     // Other Operations
 
