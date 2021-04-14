@@ -29,6 +29,30 @@ import javax.cache.event.CacheEntryListener;
 public abstract class ConfigurationUtils {
 
     /**
+     * As an instance of {@link MutableConfiguration}
+     *
+     * @param configuration {@link Configuration}
+     * @param <K>           the type of key
+     * @param <V>           the type of value
+     * @return non-null
+     * @see MutableConfiguration
+     */
+    public static <K, V> MutableConfiguration<K, V> mutableConfiguration(Configuration<K, V> configuration) {
+        MutableConfiguration mutableConfiguration = null;
+        if (configuration instanceof MutableConfiguration) {
+            mutableConfiguration = (MutableConfiguration) configuration;
+        } else if (configuration instanceof CompleteConfiguration) {
+            CompleteConfiguration config = (CompleteConfiguration) configuration;
+            mutableConfiguration = new MutableConfiguration<>(config);
+        } else {
+            mutableConfiguration = new MutableConfiguration<K, V>()
+                    .setTypes(configuration.getKeyType(), configuration.getValueType())
+                    .setStoreByValue(configuration.isStoreByValue());
+        }
+        return mutableConfiguration;
+    }
+
+    /**
      * As an immutable instance of {@link CompleteConfiguration}
      *
      * @param configuration {@link Configuration}
@@ -37,7 +61,7 @@ public abstract class ConfigurationUtils {
      * @return non-null
      * @see ImmutableCompleteConfiguration
      */
-    public static <K, V> CompleteConfiguration<K, V> completeConfiguration(Configuration<K, V> configuration) {
+    public static <K, V> CompleteConfiguration<K, V> immutableConfiguration(Configuration<K, V> configuration) {
         return new ImmutableCompleteConfiguration(configuration);
     }
 

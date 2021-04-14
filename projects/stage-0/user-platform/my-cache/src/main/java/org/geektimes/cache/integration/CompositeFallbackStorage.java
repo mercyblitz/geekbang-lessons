@@ -19,14 +19,10 @@ package org.geektimes.cache.integration;
 import javax.cache.Cache;
 import javax.cache.integration.CacheLoaderException;
 import javax.cache.integration.CacheWriterException;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.StreamSupport.stream;
@@ -79,5 +75,10 @@ public class CompositeFallbackStorage extends AbstractFallbackStorage<Object, Ob
     @Override
     public void delete(Object key) throws CacheWriterException {
         fallbackStorages.forEach(fallbackStorage -> fallbackStorage.delete(key));
+    }
+
+    @Override
+    public void destroy() {
+        fallbackStorages.forEach(FallbackStorage::destroy);
     }
 }
