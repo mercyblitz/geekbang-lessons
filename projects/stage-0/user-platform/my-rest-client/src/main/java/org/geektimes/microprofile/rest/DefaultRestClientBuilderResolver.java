@@ -14,39 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.cache.integration;
+package org.geektimes.microprofile.rest;
 
-import javax.cache.integration.CacheLoader;
-import javax.cache.integration.CacheWriter;
-import java.util.Comparator;
+import org.eclipse.microprofile.rest.client.RestClientBuilder;
+import org.eclipse.microprofile.rest.client.spi.RestClientBuilderResolver;
 
 /**
- * Fallback Storage that only extends {@link CacheLoader} and {@link CacheWriter}
+ * Default {@link RestClientBuilderResolver} implementation
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
- * @since 1.0
+ * @since 1.0.0
+ * Date : 2021-04-14
  */
-public interface FallbackStorage<K, V> extends CacheLoader<K, V>, CacheWriter<K, V> {
+public class DefaultRestClientBuilderResolver extends RestClientBuilderResolver {
 
-    Comparator<FallbackStorage> PRIORITY_COMPARATOR = new PriorityComparator();
-
-    /**
-     * Get the priority of current {@link FallbackStorage}.
-     *
-     * @return the less value , the more priority.
-     */
-    int getPriority();
-
-    /**
-     * Destroy
-     */
-    void destroy();
-
-    class PriorityComparator implements Comparator<FallbackStorage> {
-
-        @Override
-        public int compare(FallbackStorage o1, FallbackStorage o2) {
-            return Integer.compare(o2.getPriority(), o1.getPriority());
-        }
+    @Override
+    public RestClientBuilder newBuilder() {
+        return new DefaultRestClientBuilder(getClass().getClassLoader());
     }
 }

@@ -14,39 +14,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.cache.integration;
+package org.geektimes.microprofile.rest;
 
-import javax.cache.integration.CacheLoader;
-import javax.cache.integration.CacheWriter;
-import java.util.Comparator;
+import org.eclipse.microprofile.rest.client.RestClientBuilder;
+import org.junit.Test;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 /**
- * Fallback Storage that only extends {@link CacheLoader} and {@link CacheWriter}
+ * {@link DefaultRestClientBuilder} Test
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
- * @since 1.0
+ * @since 1.0.0
+ * Date : 2021-04-14
  */
-public interface FallbackStorage<K, V> extends CacheLoader<K, V>, CacheWriter<K, V> {
+public class DefaultRestClientBuilderTest {
 
-    Comparator<FallbackStorage> PRIORITY_COMPARATOR = new PriorityComparator();
+    @Test
+    public void test() throws MalformedURLException {
+        HellWorld hellWorld = RestClientBuilder.newBuilder()
+                .baseUrl(new URL("http://127.0.0.1:8080"))
+                .build(HellWorld.class);
 
-    /**
-     * Get the priority of current {@link FallbackStorage}.
-     *
-     * @return the less value , the more priority.
-     */
-    int getPriority();
-
-    /**
-     * Destroy
-     */
-    void destroy();
-
-    class PriorityComparator implements Comparator<FallbackStorage> {
-
-        @Override
-        public int compare(FallbackStorage o1, FallbackStorage o2) {
-            return Integer.compare(o2.getPriority(), o1.getPriority());
-        }
+        System.out.println(hellWorld.helloWorld());
     }
 }
+
+@Path("/hello")
+interface HellWorld {
+
+    @GET
+    @Path("/world")
+    String helloWorld();
+}
+
+
