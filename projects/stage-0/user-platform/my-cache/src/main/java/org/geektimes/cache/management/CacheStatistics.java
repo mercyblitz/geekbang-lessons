@@ -14,40 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.cache.integration;
-
-import org.geektimes.cache.ExpirableEntry;
-import org.junit.After;
-import org.junit.Test;
-
-import java.util.Map;
-
-import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
+package org.geektimes.cache.management;
 
 /**
- * {@link CompositeFallbackStorage} Test
+ * Cache Statistics
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
- * @since
+ * @since 1.0.0
+ * Date : 2021-04-13
  */
-public class CompositeFallbackStorageTest {
+public interface CacheStatistics {
 
-    private CompositeFallbackStorage instance = new CompositeFallbackStorage();
+    CacheStatistics reset();
 
-    @Test
-    public void writeAllAndLoadAll() {
-        instance.writeAll(asList(ExpirableEntry.of("a", 1), ExpirableEntry.of("b", 2), ExpirableEntry.of("c", 3)));
+    CacheStatistics cacheHits();
 
-        Map map = instance.loadAll(asList("a", "b", "c"));
-        assertEquals(1, map.get("a"));
-        assertEquals(2, map.get("b"));
-        assertEquals(3, map.get("c"));
-    }
+    CacheStatistics cacheGets();
 
-    @After
-    public void deleteAll() {
-        instance.deleteAll(asList("a", "b", "c"));
-    }
+    CacheStatistics cachePuts();
 
+    CacheStatistics cacheRemovals();
+
+    CacheStatistics cacheEvictions();
+
+    CacheStatistics cacheGetsTime(long costTime);
+
+    CacheStatistics cachePutsTime(long costTime);
+
+    CacheStatistics cacheRemovesTime(long costTime);
 }
