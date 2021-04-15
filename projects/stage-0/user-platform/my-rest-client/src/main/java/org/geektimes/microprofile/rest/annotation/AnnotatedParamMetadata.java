@@ -53,7 +53,7 @@ public class AnnotatedParamMetadata {
     /**
      * The index of the method parameter.
      */
-    private String parameterIndex;
+    private int parameterIndex;
 
     public Class<? extends Annotation> getAnnotationType() {
         return annotationType;
@@ -79,11 +79,11 @@ public class AnnotatedParamMetadata {
         this.defaultValue = defaultValue;
     }
 
-    public String getParameterIndex() {
+    public int getParameterIndex() {
         return parameterIndex;
     }
 
-    public void setParameterIndex(String parameterIndex) {
+    public void setParameterIndex(int parameterIndex) {
         this.parameterIndex = parameterIndex;
     }
 }
