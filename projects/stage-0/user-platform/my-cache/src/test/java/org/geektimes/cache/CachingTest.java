@@ -37,7 +37,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
 /**
- * {@link CachingProvider}
+ * {@link Caching} Test
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since
@@ -51,6 +51,7 @@ public class CachingTest {
         // configure the cache
         MutableConfiguration<String, Integer> config =
                 new MutableConfiguration<String, Integer>()
+                        .setManagementEnabled(true)
                         .setTypes(String.class, Integer.class);
 
         // create the cache

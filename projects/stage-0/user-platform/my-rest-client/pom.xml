@@ -20,19 +20,29 @@
 
     <dependencies>
 
-        <dependency>
-            <groupId>commons-lang</groupId>
-            <artifactId>commons-lang</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-        </dependency>
-
+        <!-- MicroProfile Rest Client -->
         <dependency>
             <groupId>org.eclipse.microprofile.rest.client</groupId>
             <artifactId>microprofile-rest-client-api</artifactId>
+        </dependency>
+
+        <!-- MicroProfile Config API -->
+        <dependency>
+            <groupId>org.eclipse.microprofile.config</groupId>
+            <artifactId>microprofile-config-api</artifactId>
+        </dependency>
+
+        <!-- MicroProfile Config Implementation -->
+        <dependency>
+            <groupId>org.geekbang.projects</groupId>
+            <artifactId>my-configuration</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <!-- MicroProfile Fault Tolerance -->
+        <dependency>
+            <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
+            <artifactId>microprofile-fault-tolerance-api</artifactId>
         </dependency>
 
         <!-- JAX-RS API -->
@@ -47,10 +57,29 @@
             <artifactId>javax.annotation-api</artifactId>
         </dependency>
 
+        <!-- Java CDI -->
+        <dependency>
+            <groupId>javax.enterprise</groupId>
+            <artifactId>cdi-api</artifactId>
+        </dependency>
+
+        <!-- Apache Commons -->
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+        </dependency>
+
+        <!-- Jackson -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
         </dependency>
+
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
