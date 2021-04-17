@@ -14,35 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.cache.management;
+package org.geektimes.spring.jdbc;
 
-import javax.cache.management.CacheStatisticsMXBean;
+import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.ResultSetExtractor;
+
+import java.sql.ResultSet;
+import java.sql.SQLException;
 
 /**
- * Cache Statistics
+ * 用户名内容  {@link ResultSetExtractor}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
- * @since 1.0.0
- * Date : 2021-04-13
+ * @since TODO
+ * Date : 2021-04-15
  */
-public interface CacheStatistics extends CacheStatisticsMXBean {
-
-    CacheStatistics reset();
-
-    CacheStatistics cacheHits();
-
-    CacheStatistics cacheGets();
-
-    CacheStatistics cachePuts();
-
-    CacheStatistics cacheRemovals();
-
-    CacheStatistics cacheEvictions();
-
-    CacheStatistics cacheGetsTime(long costTime);
-
-    CacheStatistics cachePutsTime(long costTime);
-
-    CacheStatistics cacheRemovesTime(long costTime);
-
+public class UserNameResultSetExtractor implements ResultSetExtractor<String> {
+    @Override
+    public String extractData(ResultSet rs) throws SQLException, DataAccessException {
+        return rs.getString("name");
+    }
 }
