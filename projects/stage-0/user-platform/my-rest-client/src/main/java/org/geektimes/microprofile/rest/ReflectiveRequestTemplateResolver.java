@@ -73,8 +73,8 @@ public class ReflectiveRequestTemplateResolver implements RequestTemplateResolve
         List<AnnotatedParamMetadata> metadataList = new LinkedList<>();
 
         Parameter[] parameters = resourceMethod.getParameters();
-        for (int i = 0; i < parameters.length; i++) {
-            Parameter parameter = parameters[i];
+        for (int index = 0; index < parameters.length; index++) {
+            Parameter parameter = parameters[index];
             Annotation paramAnnotation = null;
             for (Class<? extends Annotation> annotationType : SUPPORTED_PARAM_ANNOTATION_TYPES) {
                 paramAnnotation = parameter.getAnnotation(annotationType);
@@ -90,6 +90,7 @@ public class ReflectiveRequestTemplateResolver implements RequestTemplateResolve
                 metadata.setAnnotationType(annotationType);
                 metadata.setParamName(paramName);
                 metadata.setDefaultValue(defaultValue);
+                metadata.setParameterIndex(index);
                 metadataList.add(metadata);
             }
         }
