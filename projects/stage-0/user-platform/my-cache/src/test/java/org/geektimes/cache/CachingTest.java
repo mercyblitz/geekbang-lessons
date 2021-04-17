@@ -69,7 +69,6 @@ public class CachingTest {
         assertEquals(value1, value2);
         cache.remove(key);
         assertNull(cache.get(key));
-        System.in.read();
     }
 
 //    @Test

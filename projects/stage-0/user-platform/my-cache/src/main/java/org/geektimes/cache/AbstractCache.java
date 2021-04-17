@@ -787,11 +787,6 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
         return configuration.isStatisticsEnabled();
     }
 
-    protected final boolean isManagementEnabled() {
-        return configuration.isManagementEnabled();
-    }
-
-
     private CacheStatistics resolveCacheStatistic() {
         return isStatisticsEnabled() ?
                 new SimpleCacheStatistics() : DummyCacheStatistics.INSTANCE;
