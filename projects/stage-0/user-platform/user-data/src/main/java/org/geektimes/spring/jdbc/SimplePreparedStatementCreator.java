@@ -14,35 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.cache.management;
+package org.geektimes.spring.jdbc;
 
-import javax.cache.management.CacheStatisticsMXBean;
+import org.springframework.jdbc.core.PreparedStatementCreator;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 /**
- * Cache Statistics
+ * {@link PreparedStatementCreator}Impl
+ * <p>
+ * DefaultPreparedStatementCreator
+ * SimplePreparedStatementCreator
+ * GenericPreparedStatementCreator
+ * ConfigurablePreparedStatementCreator
+ * DelegatingPreparedStatementCreator
+ * DeclaredPreparedStatementCreator
+ * PreparedStatementCreatorImpl(业务）
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
- * Date : 2021-04-13
+ * Date : 2021-04-15
  */
-public interface CacheStatistics extends CacheStatisticsMXBean {
+public class SimplePreparedStatementCreator implements PreparedStatementCreator {
 
-    CacheStatistics reset();
-
-    CacheStatistics cacheHits();
-
-    CacheStatistics cacheGets();
-
-    CacheStatistics cachePuts();
-
-    CacheStatistics cacheRemovals();
-
-    CacheStatistics cacheEvictions();
-
-    CacheStatistics cacheGetsTime(long costTime);
-
-    CacheStatistics cachePutsTime(long costTime);
-
-    CacheStatistics cacheRemovesTime(long costTime);
-
+    @Override
+    public PreparedStatement createPreparedStatement(Connection con) throws SQLException {
+        return con.prepareStatement("SELECT name from user WHERE id=?");
+    }
 }

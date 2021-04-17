@@ -118,6 +118,9 @@ public class SimpleCacheStatistics implements CacheStatisticsMXBean, CacheStatis
 
     @Override
     public float getCacheHitPercentage() {
+        if (getCacheGets() < 1) {
+            return 0.0f;
+        }
         return (getCacheHits() / getCacheGets()) / 100.0f;
     }
 
@@ -128,6 +131,9 @@ public class SimpleCacheStatistics implements CacheStatisticsMXBean, CacheStatis
 
     @Override
     public float getCacheMissPercentage() {
+        if (getCacheGets() < 1) {
+            return 0.0f;
+        }
         return (getCacheMisses() / getCacheGets()) / 100.0f;
     }
 

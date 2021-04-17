@@ -27,9 +27,6 @@ import java.lang.management.ManagementFactory;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.util.Hashtable;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Properties;
 
 /**
  * Cache JMX Utilities class
@@ -40,7 +37,7 @@ import java.util.Properties;
  */
 public abstract class ManagementUtils {
 
-    public static CacheMXBean createCacheMXBean(CompleteConfiguration<?, ?> configuration) {
+    public static CacheMXBean adaptCacheMXBean(CompleteConfiguration<?, ?> configuration) {
         return new CacheMXBeanAdapter(configuration);
     }
 
@@ -78,18 +75,35 @@ public abstract class ManagementUtils {
         }
     }
 
-    public static void registerCacheMXBeanIfRequired(Cache<?, ?> cache) {
+    public static void registerMBeansIfRequired(Cache<?, ?> cache, CacheStatistics cacheStatistics) {
         CompleteConfiguration configuration = cache.getConfiguration(CompleteConfiguration.class);
         if (configuration.isManagementEnabled()) {
-            ObjectName objectName = createObjectName(cache, "CacheConfiguration");
             MBeanServer mBeanServer = ManagementFactory.getPlatformMBeanServer();
-            try {
-                if (!mBeanServer.isRegistered(objectName)) {
-                    mBeanServer.registerMBean(createCacheMXBean(configuration), objectName);
-                }
-            } catch (Exception e) {
-                throw new IllegalStateException(e);
+            registerCacheMXBeanIfRequired(cache, configuration, mBeanServer);
+            registerCacheStatisticsMXBeanIfRequired(cache, configuration, mBeanServer, cacheStatistics);
+        }
+    }
+
+    private static void registerCacheStatisticsMXBeanIfRequired(Cache<?, ?> cache, CompleteConfiguration configuration,
+                                                                MBeanServer mBeanServer, CacheStatistics cacheStatistics) {
+        if (configuration.isStatisticsEnabled()) {
+            ObjectName objectName = createObjectName(cache, "CacheStatistics");
+            registerMBean(objectName, cacheStatistics, mBeanServer);
+        }
+    }
+
+    private static void registerCacheMXBeanIfRequired(Cache<?, ?> cache, CompleteConfiguration configuration, MBeanServer mBeanServer) {
+        ObjectName objectName = createObjectName(cache, "CacheConfiguration");
+        registerMBean(objectName, adaptCacheMXBean(configuration), mBeanServer);
+    }
+
+    private static void registerMBean(ObjectName objectName, Object object, MBeanServer mBeanServer) {
+        try {
+            if (!mBeanServer.isRegistered(objectName)) {
+                mBeanServer.registerMBean(object, objectName);
             }
+        } catch (Exception e) {
+            throw new IllegalStateException(e);
         }
     }
 }
