@@ -39,9 +39,7 @@ public class CacheEntryEventListenerAdapterTest {
     public void testOnEvent() {
         TestCacheEntryListener listener = new TestCacheEntryListener();
 
-        CacheEntryListenerConfiguration configuration = new MutableCacheEntryListenerConfiguration(listener, null, true, false);
-
-        CacheEntryEventListenerAdapter listenerAdapter = new CacheEntryEventListenerAdapter(configuration);
+        CacheEntryEventListenerAdapter listenerAdapter = new CacheEntryEventListenerAdapter(listener);
 
         Cache cache = newCacheProxy();
 

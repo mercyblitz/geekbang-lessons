@@ -22,6 +22,8 @@ import javax.cache.integration.CacheLoader;
 import javax.cache.integration.CacheWriter;
 import java.util.Objects;
 
+import static org.geektimes.cache.configuration.ConfigurationUtils.mutableConfiguration;
+
 /**
  * Immutable {@link CompleteConfiguration}
  *
@@ -34,16 +36,7 @@ public class ImmutableCompleteConfiguration<K, V> implements CompleteConfigurati
     private final CompleteConfiguration<K, V> configuration;
 
     public ImmutableCompleteConfiguration(Configuration configuration) {
-        final MutableConfiguration<K, V> completeConfiguration;
-        if (configuration instanceof CompleteConfiguration) {
-            CompleteConfiguration config = (CompleteConfiguration) configuration;
-            completeConfiguration = new MutableConfiguration<>(config);
-        } else {
-            completeConfiguration = new MutableConfiguration<K, V>()
-                    .setTypes(configuration.getKeyType(), configuration.getValueType())
-                    .setStoreByValue(configuration.isStoreByValue());
-        }
-        this.configuration = completeConfiguration;
+        this.configuration = mutableConfiguration(configuration);
     }
 
     @Override

@@ -51,6 +51,7 @@ public class CachingTest {
         // configure the cache
         MutableConfiguration<String, Integer> config =
                 new MutableConfiguration<String, Integer>()
+                        .setManagementEnabled(true)
                         .setTypes(String.class, Integer.class);
 
         // create the cache
