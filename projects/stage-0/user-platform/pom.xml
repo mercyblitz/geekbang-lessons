@@ -19,6 +19,7 @@
         <module>my-reactive-messaging</module>
         <module>my-cache</module>
         <module>my-interceptor</module>
+        <module>user-data</module>
     </modules>
 
     <properties>
@@ -58,6 +59,9 @@
         <lettuce.version>6.1.0.RELEASE</lettuce.version>
         <jedis.version>3.5.2</jedis.version>
 
+        <!-- Spring 依赖版本 -->
+        <spring-boot.version>2.4.5</spring-boot.version>
+
         <!-- Testing 版本 -->
         <junit.version>4.13</junit.version>
 
@@ -76,6 +80,16 @@
     <dependencyManagement>
 
         <dependencies>
+
+            <!-- Spring Boot Dependencies -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <!-- Servlet 3.1 API -->
             <dependency>
                 <groupId>javax.servlet</groupId>

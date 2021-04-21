@@ -151,26 +151,7 @@ public class CacheEntryEventListenerAdapter<K, V> implements ConditionalCacheEnt
         }
         return unmodifiableMap(eventTypeMethods);
     }
-
-    private Object[] determineEventTypeAndHandleMethod(CacheEntryListener<? super K, ? super V> cacheEntryListener) {
-        Class<?> cacheEntryListenerClass = cacheEntryListener.getClass();
-        Object[] eventTypeAndHandleMethod = new Object[2];
-        for (int i = 0; i < eventTypesAndHandleMethodNames.size(); ) {
-            EventType eventType = (EventType) eventTypesAndHandleMethodNames.get(i++);
-            String handleMethodName = (String) eventTypesAndHandleMethodNames.get(i++);
-            try {
-                Method handleMethod = cacheEntryListenerClass.getMethod(handleMethodName, Iterable.class);
-                if (handleMethod != null) {
-                    eventTypeAndHandleMethod[0] = eventType;
-                    eventTypeAndHandleMethod[1] = handleMethod;
-                }
-            } catch (NoSuchMethodException ignored) {
-            }
-
-        }
-        return eventTypeAndHandleMethod;
-    }
-
+    
     private Executor getExecutor(CacheEntryListenerConfiguration<K, V> configuration) {
         Executor executor = null;
         if (configuration.isSynchronous()) {

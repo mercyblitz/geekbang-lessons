@@ -14,35 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.cache.management;
+package org.geektimes.spring.orm;
 
-import javax.cache.management.CacheStatisticsMXBean;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.query.Query;
+
+import java.util.List;
 
 /**
- * Cache Statistics
+ * TODO Comment
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
- * @since 1.0.0
- * Date : 2021-04-13
+ * @since TODO
+ * Date : 2021-04-15
  */
-public interface CacheStatistics extends CacheStatisticsMXBean {
+public class HibernateDemo {
 
-    CacheStatistics reset();
+    public static void main(String[] args) {
+        SessionFactory sessionFactory = getSessionFactory();
+        Session session = sessionFactory.openSession();
+        Query query = session.createQuery("from USER where id=:id", Object.class);
+        // 1 -> Integer -> 需要 Long = Integer#longValue();
+        query.setParameter("id", 1L);
+        query.executeUpdate();
+        List<Object> resultList = query.getResultList();
+    }
 
-    CacheStatistics cacheHits();
-
-    CacheStatistics cacheGets();
-
-    CacheStatistics cachePuts();
-
-    CacheStatistics cacheRemovals();
-
-    CacheStatistics cacheEvictions();
-
-    CacheStatistics cacheGetsTime(long costTime);
-
-    CacheStatistics cachePutsTime(long costTime);
-
-    CacheStatistics cacheRemovesTime(long costTime);
-
+    private static SessionFactory getSessionFactory() {
+        return null;
+    }
 }
