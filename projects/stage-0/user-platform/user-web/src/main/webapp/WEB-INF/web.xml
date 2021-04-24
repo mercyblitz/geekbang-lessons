@@ -2,8 +2,8 @@
 <web-app xmlns="http://java.sun.com/xml/ns/javaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
-         http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-         metadata-complete="true" version="2.5">
+         http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+         metadata-complete="true" version="3.0">
 
     <!-- ServletContext ÅäÖÃ²ÎÊý -->
     <context-param>
@@ -43,6 +43,18 @@
     <servlet-mapping>
         <servlet-name>default</servlet-name>
         <url-pattern>*.js</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
+        <servlet-name>AsyncServlet</servlet-name>
+        <servlet-class>org.geektimes.projects.user.web.servlet.AsyncServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+        <async-supported>true</async-supported>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>AsyncServlet</servlet-name>
+        <url-pattern>/async.servlet</url-pattern>
     </servlet-mapping>
 
     <servlet>
