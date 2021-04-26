@@ -10,12 +10,12 @@ import java.util.Map;
 
 public class ImmutableWebTarget implements WebTarget {
 
-    private final UriBuilder uriBuilder;
+    private final UriBuilder uriBuilder; // N ImmutableWebTarget : 1 uriBuilder
 
     public ImmutableWebTarget(UriBuilder uriBuilder) {
         // uriBuilder 参数 #1
 //        this.uriBuilder = uriBuilder;
-        this.uriBuilder = uriBuilder.clone(); // #2
+        this.uriBuilder = uriBuilder.clone(); // #2 1 ImmutableWebTarget :  1 UriBuilder
     }
 
     @Override

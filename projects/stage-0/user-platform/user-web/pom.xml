@@ -16,6 +16,17 @@
 
 
     <dependencies>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webflux</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jms</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>org.geekbang.projects</groupId>
             <artifactId>my-web-mvc</artifactId>

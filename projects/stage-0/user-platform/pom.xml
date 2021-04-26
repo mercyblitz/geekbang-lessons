@@ -18,6 +18,8 @@
         <module>my-rest-client</module>
         <module>my-reactive-messaging</module>
         <module>my-cache</module>
+        <module>my-interceptor</module>
+        <module>user-data</module>
     </modules>
 
     <properties>
@@ -33,10 +35,12 @@
         <javax.inject.version>1</javax.inject.version>
         <javax.cdi-api.version>2.0</javax.cdi-api.version>
         <javax.cache-api.version>1.1.1</javax.cache-api.version>
+        <javax.interceptor-api.version>1.2</javax.interceptor-api.version>
 
         <!-- MicroProfile 版本-->
         <microprofile-config-api.version>2.0</microprofile-config-api.version>
         <microprofile-rest-client-api.version>2.0</microprofile-rest-client-api.version>
+        <microprofile-fault-tolerance-api.version>3.0</microprofile-fault-tolerance-api.version>
         <microprofile-reactive-messaging-api.version>1.0</microprofile-reactive-messaging-api.version>
 
         <!-- 第三方开源依赖版本-->
@@ -54,6 +58,9 @@
         <tomcat7.version>7.0.37</tomcat7.version>
         <lettuce.version>6.1.0.RELEASE</lettuce.version>
         <jedis.version>3.5.2</jedis.version>
+
+        <!-- Spring 依赖版本 -->
+        <spring-boot.version>2.4.5</spring-boot.version>
 
         <!-- Testing 版本 -->
         <junit.version>4.13</junit.version>
@@ -73,6 +80,16 @@
     <dependencyManagement>
 
         <dependencies>
+
+            <!-- Spring Boot Dependencies -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-dependencies</artifactId>
+                <version>${spring-boot.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
             <!-- Servlet 3.1 API -->
             <dependency>
                 <groupId>javax.servlet</groupId>
@@ -122,6 +139,13 @@
                 <version>${javax.cache-api.version}</version>
             </dependency>
 
+            <!-- Java Interceptor API -->
+            <dependency>
+                <groupId>javax.interceptor</groupId>
+                <artifactId>javax.interceptor-api</artifactId>
+                <version>${javax.interceptor-api.version}</version>
+            </dependency>
+
 
             <!-- MicroProfile -->
             <dependency>
@@ -134,6 +158,12 @@
                 <groupId>org.eclipse.microprofile.rest.client</groupId>
                 <artifactId>microprofile-rest-client-api</artifactId>
                 <version>${microprofile-rest-client-api.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.eclipse.microprofile.fault-tolerance</groupId>
+                <artifactId>microprofile-fault-tolerance-api</artifactId>
+                <version>${microprofile-fault-tolerance-api.version}</version>
             </dependency>
 
             <dependency>
