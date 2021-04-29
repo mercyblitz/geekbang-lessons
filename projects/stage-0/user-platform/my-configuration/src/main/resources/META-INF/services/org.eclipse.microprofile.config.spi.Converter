@@ -9,3 +9,4 @@ org.geektimes.configuration.microprofile.config.converter.IntegerConverter
 org.geektimes.configuration.microprofile.config.converter.LongConverter
 org.geektimes.configuration.microprofile.config.converter.ShortConverter
 org.geektimes.configuration.microprofile.config.converter.StringConverter
+org.geektimes.configuration.microprofile.config.converter.URIConverter

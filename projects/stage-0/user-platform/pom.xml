@@ -20,6 +20,8 @@
         <module>my-cache</module>
         <module>my-interceptor</module>
         <module>user-data</module>
+        <module>my-commons</module>
+        <module>my-session</module>
     </modules>
 
     <properties>
