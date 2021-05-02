@@ -70,7 +70,7 @@
 
     <filter>
         <filter-name>HttpSessionFilter</filter-name>
-        <filter-class>org.geektimes.projects.user.web.filter.HttpSessionFilter</filter-class>
+        <filter-class>org.geektimes.session.servlet.http.DistributedCacheSessionFilter</filter-class>
         <init-param>
             <!-- Filter ÅäÖÃ = FilterConfig -->
             <param-name>javax.cache.CacheManager.uri</param-name>

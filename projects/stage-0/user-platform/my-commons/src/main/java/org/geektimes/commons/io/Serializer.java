@@ -14,13 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.cache.io;
+package org.geektimes.commons.io;
 
 import java.io.IOException;
 
 /**
  * Serializer
  *
+ * @param <S> the type to be serialized
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  * Date : 2021-05-01

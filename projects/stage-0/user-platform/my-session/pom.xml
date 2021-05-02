@@ -10,7 +10,7 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>my-http-session</artifactId>
+    <artifactId>my-session</artifactId>
     <name>My Session Framework ${revision}</name>
 
     <properties>

@@ -14,18 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.cache.io;
+package org.geektimes.commons.io;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 /**
- * Deserializer
+ * String {@link Serializer}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
- * Date : 2021-05-01
  */
-public interface Deserializer<T> {
+public class StringSerializer implements Serializer<String> {
 
-    T deserialize(byte[] bytes) throws IOException;
+    @Override
+    public byte[] serialize(String source) throws IOException {
+        return source.getBytes(StandardCharsets.UTF_8);
+    }
 }

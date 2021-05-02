@@ -14,35 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.cache.io;
+package org.geektimes.cache.file;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import org.geektimes.cache.AbstractCacheManager;
+
+import javax.cache.Cache;
+import javax.cache.CacheManager;
+import javax.cache.configuration.Configuration;
+import javax.cache.spi.CachingProvider;
+import java.net.URI;
+import java.util.Properties;
 
 /**
- * Default Serializer implementation based on Java Standard Serialization.
+ * File-System {@link CacheManager}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
- * @see ObjectOutputStream
- * @see Serializable
- * Date : 2021-05-02
  * @since 1.0.0
  */
-public class DefaultSerializer implements Serializer<Object> {
+public class FileSystemCacheManager extends AbstractCacheManager {
+
+    public FileSystemCacheManager(CachingProvider cachingProvider, URI uri, ClassLoader classLoader,
+                                  Properties properties) {
+        super(cachingProvider, uri, classLoader, properties);
+    }
 
     @Override
-    public byte[] serialize(Object source) throws IOException {
-        byte[] bytes = null;
-        try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-             ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream)
-        ) {
-            // Key -> byte[]
-            objectOutputStream.writeObject(source);
-            bytes = outputStream.toByteArray();
-        }
-        return bytes;
+    protected <K, V, C extends Configuration<K, V>> Cache doCreateCache(String cacheName, C configuration) {
+        return new FileSystemCache(this, cacheName, configuration);
     }
 }
-

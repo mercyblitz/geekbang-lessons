@@ -21,7 +21,6 @@ import javax.cache.CacheManager;
 import javax.cache.configuration.MutableConfiguration;
 import javax.cache.expiry.Duration;
 import javax.cache.expiry.ExpiryPolicy;
-import javax.cache.expiry.TouchedExpiryPolicy;
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -58,7 +57,7 @@ public class DistributedHttpSession implements HttpSession {
         this.source = source;
         this.cacheManager = cacheManager;
         this.sessionInfo = resolveSessionInfo();
-        this.attributesCache = getCache();
+        this.attributesCache = buildAttributesCache();
         // set self into Session context
         source.setAttribute(ATTRIBUTE_NAME, this);
     }
@@ -82,10 +81,6 @@ public class DistributedHttpSession implements HttpSession {
 //    public SessionInfo getSessionInfo() {
 //        return sessionInfo;
 //    }
-
-    public Cache<String, Object> getAttributesCache() {
-        return attributesCache;
-    }
 
     private SessionInfo resolveSessionInfo() {
         SessionInfo sessionInfo = null;
@@ -119,6 +114,10 @@ public class DistributedHttpSession implements HttpSession {
         sessionInfoCache.put(sessionInfo.getId(), sessionInfo);
     }
 
+    public Cache<String, Object> getAttributesCache() {
+        return attributesCache;
+    }
+
     /**
      * Get the {@link SessionInfo} from cache.
      *
@@ -131,54 +130,52 @@ public class DistributedHttpSession implements HttpSession {
         return sessionInfoCache.get(sessionId);
     }
 
+
     private Cache<String, SessionInfo> getSessionInfoCache() {
-        String cacheName = "SessionInfoCache";
+        String cacheName = "sessionInfoCache";
         Cache<String, SessionInfo> cache = cacheManager.getCache(cacheName, String.class, SessionInfo.class);
         if (cache == null) {
             MutableConfiguration<String, SessionInfo> configuration =
                     new MutableConfiguration<String, SessionInfo>()
                             .setTypes(String.class, SessionInfo.class)
-                            .setExpiryPolicyFactory(() -> new TouchedExpiryPolicy(Duration));
+                            .setExpiryPolicyFactory(this::createExpiryPolicy);
             cache = cacheManager.createCache(cacheName, configuration);
         }
         return cache;
     }
 
     private ExpiryPolicy createExpiryPolicy() {
-        return new ExpiryPolicy(){
+        return new ExpiryPolicy() {
 
             @Override
             public Duration getExpiryForCreation() {
-                return null;
+                return getDuration();
             }
 
             @Override
             public Duration getExpiryForAccess() {
-                return null;
+                return getDuration();
             }
 
             @Override
             public Duration getExpiryForUpdate() {
-                return null;
+                return getDuration();
             }
-        }
+
+            private Duration getDuration() {
+                return new Duration(TimeUnit.SECONDS, getMaxInactiveInterval());
+            }
+        };
     }
 
-    private Cache<String, Object> getCache() {
-        Cache<String, Object> cache = buildCache();
-        return cache;
-    }
-
-    private Cache<String, Object> buildCache() {
+    private Cache<String, Object> buildAttributesCache() {
         String sessionId = getId();
         String cacheName = "session-attributes-cache-" + sessionId;
         MutableConfiguration<String, Object> configuration = new MutableConfiguration<String, Object>()
                 .setTypes(String.class, Object.class)
-                .setExpiryPolicyFactory(() -> new TouchedExpiryPolicy(new Duration(TimeUnit.SECONDS, getMaxInactiveInterval())))
+                .setExpiryPolicyFactory(this::createExpiryPolicy)
                 .setStoreByValue(true);
-
-        Cache<String, Object> cache = cacheManager.createCache(cacheName, configuration);
-        return cache;
+        return cacheManager.createCache(cacheName, configuration);
     }
 
     @Override

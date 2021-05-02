@@ -14,39 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.cache.io;
+package org.geektimes.commons.io;
 
-import javax.cache.CacheException;
-import java.io.ByteArrayInputStream;
+import org.junit.Test;
+
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.Serializable;
+import java.nio.charset.StandardCharsets;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
 
 /**
- * Default {@link Deserializer} based on Java Standard Serialization.
+ * {@link DefaultSerializer} and {@link DefaultDeserializer} Test
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
- * @see ObjectInputStream
- * @see Serializable
- * Date : 2021-05-02
  * @since 1.0.0
  */
-public class DefaultDeserializer implements Deserializer<Object> {
+public class DefaultSerializerAndDeserializerTest {
 
-    @Override
-    public Object deserialize(byte[] bytes) throws IOException {
-        if (bytes == null) {
-            return null;
-        }
-        Object value = null;
-        try (ByteArrayInputStream inputStream = new ByteArrayInputStream(bytes);
-             ObjectInputStream objectInputStream = new ObjectInputStream(inputStream)
-        ) {
-            // byte[] -> Value
-            value = objectInputStream.readObject();
-        } catch (Exception e) {
-            throw new IOException(e);
-        }
-        return value;
+    private DefaultSerializer serializer = new DefaultSerializer();
+
+    private DefaultDeserializer deserializer = new DefaultDeserializer();
+
+    @Test
+    public void test() throws IOException {
+        String value = "Test";
+        byte[] bytes = serializer.serialize(value);
+        assertEquals(value, deserializer.deserialize(bytes));
     }
 }

@@ -50,61 +50,15 @@ public class DistributedServletRequestWrapper extends HttpServletRequestWrapper 
 
     @Override
     public HttpSession getSession(boolean create) {
-        // Get Session ID from request
-        String requestedSessionId = request.getRequestedSessionId();
 
         HttpSession session = super.getSession(create);
 
         if (session != null) {
             return new DistributedHttpSession(request, session, cacheManager);
-        }
-
-        if (session != null) {
-            if (requestedSessionId == null) { // First time access
-                if (session.isNew()) {
-                    SessionInfo sessionInfo = new SessionInfo(session);
-                }
-
-            } else if (request.isRequestedSessionIdValid()) { // current request accessed this server
-
-            } else {  // the requestedSessionId can't match current session id
-
-            }
-        }
-
-
-        if (session != null) {
-            SessionInfo sessionInfo = getSessionInfoFromCache(requestedSessionId);
-            return new DistributedHttpSession(cacheManager, session, sessionInfo);
         } else {
             // invalidate session
             return session;
         }
-    }
-
-    /**
-     * Get the {@link SessionInfo} from cache.
-     *
-     * @param sessionId session id
-     * @return if not null, it indicates that current requested associating distributed session is present
-     * in the cache, or current new session is a new one absolutely
-     */
-    private SessionInfo getSessionInfoFromCache(String sessionId) {
-        Cache<String, SessionInfo> sessionInfoCache = getSessionInfoCache();
-        return sessionInfoCache.get(sessionId);
-    }
-
-    private Cache<String, SessionInfo> getSessionInfoCache() {
-        String cacheName = "SessionInfoCache";
-        Cache<String, SessionInfo> cache = cacheManager.getCache(cacheName, String.class, SessionInfo.class);
-        if (cache == null) {
-            MutableConfiguration<String, SessionInfo> configuration = new MutableConfiguration<>();
-            configuration.setTypes(String.class, SessionInfo.class);
-            // TODO ExpiryPolicy
-            // configuration.setExpiryPolicyFactory();
-            cache = cacheManager.createCache(cacheName, configuration);
-        }
-        return cache;
     }
 
     /**
