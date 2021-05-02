@@ -30,7 +30,7 @@ import javax.servlet.http.HttpSession;
  * @since 1.0.0
  * Date : 2021-04-28
  */
-public class DistributedServletRequest extends HttpServletRequestWrapper {
+public class DistributedServletRequestWrapper extends HttpServletRequestWrapper {
 
     private final HttpServletRequest request;
 
@@ -42,7 +42,7 @@ public class DistributedServletRequest extends HttpServletRequestWrapper {
      * @param request HttpServletRequest
      * @throws IllegalArgumentException if the request is null
      */
-    public DistributedServletRequest(HttpServletRequest request, CacheManager cacheManager) {
+    public DistributedServletRequestWrapper(HttpServletRequest request, CacheManager cacheManager) {
         super(request);
         this.request = request;
         this.cacheManager = cacheManager;
@@ -56,11 +56,29 @@ public class DistributedServletRequest extends HttpServletRequestWrapper {
         HttpSession session = super.getSession(create);
 
         if (session != null) {
+            return new DistributedHttpSession(request, session, cacheManager);
+        }
+
+        if (session != null) {
+            if (requestedSessionId == null) { // First time access
+                if (session.isNew()) {
+                    SessionInfo sessionInfo = new SessionInfo(session);
+                }
+
+            } else if (request.isRequestedSessionIdValid()) { // current request accessed this server
+
+            } else {  // the requestedSessionId can't match current session id
+
+            }
+        }
+
+
+        if (session != null) {
             SessionInfo sessionInfo = getSessionInfoFromCache(requestedSessionId);
             return new DistributedHttpSession(cacheManager, session, sessionInfo);
         } else {
             // invalidate session
-            return null;
+            return session;
         }
     }
 
@@ -87,10 +105,6 @@ public class DistributedServletRequest extends HttpServletRequestWrapper {
             cache = cacheManager.createCache(cacheName, configuration);
         }
         return cache;
-    }
-
-    private Cache<String, Object> buildCache(HttpServletRequest request, HttpSession session) {
-        return null;
     }
 
     /**

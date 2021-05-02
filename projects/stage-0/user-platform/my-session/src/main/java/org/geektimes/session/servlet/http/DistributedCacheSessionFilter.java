@@ -71,7 +71,7 @@ public class DistributedCacheSessionFilter implements Filter {
     private CacheManager buildCacheManager(Config config, ClassLoader classLoader) {
         URI uri = config.getValue(CACHE_URI_PROPERTY_NAME, URI.class);
         CachingProvider cachingProvider = Caching.getCachingProvider(classLoader);
-        return cachingProvider.getCacheManager(uri, classLoader,new DelegatingPropertiesAdapter(config));
+        return cachingProvider.getCacheManager(uri, classLoader, new DelegatingPropertiesAdapter(config));
     }
 
     @Override
@@ -87,7 +87,9 @@ public class DistributedCacheSessionFilter implements Filter {
 
     protected void doFilter(HttpServletRequest request, HttpServletResponse response,
                             FilterChain chain) throws IOException, ServletException {
-
+        DistributedServletRequestWrapper requestWrapper = new DistributedServletRequestWrapper(request, cacheManager);
+        DistributedServletResponseWrapper responseWrapper = new DistributedServletResponseWrapper(response);
+        chain.doFilter(requestWrapper, responseWrapper);
     }
 
     @Override

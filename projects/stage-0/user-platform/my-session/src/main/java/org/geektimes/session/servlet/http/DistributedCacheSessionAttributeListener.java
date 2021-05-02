@@ -17,35 +17,25 @@
 package org.geektimes.session.servlet.http;
 
 import javax.cache.Cache;
-import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionAttributeListener;
 import javax.servlet.http.HttpSessionBindingEvent;
 
+import static org.geektimes.session.servlet.http.DistributedHttpSession.ATTRIBUTE_NAME;
+
 /**
- * TODO Comment
+ * The {@link HttpSessionAttributeListener} of {@link DistributedHttpSession}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
- * @since TODO
+ * @since 1.0.0
  * Date : 2021-04-29
  */
-public class DistributedHttpSessionAttributeListener implements
+public class DistributedCacheSessionAttributeListener implements
         HttpSessionAttributeListener {
-
-    /**
-     * 当前 Key 需要排除天际到 Cache
-     */
-    public static final String ATTRIBUTES_CACHE_ATTRIBUTE_NAME = "_attributesCache";
-
-
-    public Cache<String, Object> getAttributesCache(HttpSessionBindingEvent event) {
-        HttpSession session = event.getSession();
-        return (Cache<String, Object>) session.getAttribute(ATTRIBUTES_CACHE_ATTRIBUTE_NAME);
-    }
 
     @Override
     public void attributeAdded(HttpSessionBindingEvent event) {
         String name = event.getName();
-        if (ATTRIBUTES_CACHE_ATTRIBUTE_NAME.equals(name)) {
+        if (ATTRIBUTE_NAME.equals(name)) {
             return;
         }
         Object value = event.getValue();
@@ -62,8 +52,19 @@ public class DistributedHttpSessionAttributeListener implements
 
     @Override
     public void attributeReplaced(HttpSessionBindingEvent event) {
-        // 先删除缓存
+        String name = event.getName();
         Cache<String, Object> attributesCache = getAttributesCache(event);
-        //
+        // 先删除缓存
+        attributesCache.remove(name);
     }
+
+    private DistributedHttpSession getDistributedHttpSession(HttpSessionBindingEvent event) {
+        return DistributedHttpSession.get(event.getSession());
+    }
+
+    private Cache<String, Object> getAttributesCache(HttpSessionBindingEvent event) {
+        DistributedHttpSession session = getDistributedHttpSession(event);
+        return session.getAttributesCache();
+    }
+
 }

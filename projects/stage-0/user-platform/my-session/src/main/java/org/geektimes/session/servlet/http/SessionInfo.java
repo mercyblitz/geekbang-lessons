@@ -36,6 +36,20 @@ public class SessionInfo implements Serializable {
 
     private int maxInactiveInterval;
 
+    /**
+     * Default Constructor (for Serialization)
+     */
+    public SessionInfo() {
+    }
+
+    public SessionInfo(HttpSession source) {
+        setId(source.getId());
+        setCreationTime(source.getCreationTime());
+        setLastAccessedTime(source.getLastAccessedTime());
+        setMaxInactiveInterval(source.getMaxInactiveInterval());
+    }
+
+
     public String getId() {
         return id;
     }

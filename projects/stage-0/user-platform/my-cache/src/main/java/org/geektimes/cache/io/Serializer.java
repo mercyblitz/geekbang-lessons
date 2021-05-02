@@ -14,27 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.session.servlet.http;
+package org.geektimes.cache.io;
 
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
+import java.io.IOException;
 
 /**
- * The distributed {@link HttpServletResponse} implementation based on {@link HttpServletResponseWrapper}
+ * Serializer
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
- * Date : 2021-04-28
+ * Date : 2021-05-01
  */
-public class DistributedServletResponse extends HttpServletResponseWrapper {
+public interface Serializer<S> {
 
-    /**
-     * Constructs a response object wrapping the given response.
-     *
-     * @param response HttpServletResponse
-     * @throws IllegalArgumentException if the response is null
-     */
-    public DistributedServletResponse(HttpServletResponse response) {
-        super(response);
-    }
+    byte[] serialize(S source) throws IOException;
 }
