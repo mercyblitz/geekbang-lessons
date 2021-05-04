@@ -58,6 +58,20 @@ public class Serializers {
     }
 
     /**
+     * Get the most compatible instance of {@link Serializer} by the specified deserialized type
+     *
+     * @param serializedType the type to be serialized
+     * @return <code>null</code> if not found
+     */
+    public Serializer<?> getMostCompatible(Class<?> serializedType) {
+        Serializer<?> serializer = getHighestPriority(serializedType);
+        if (serializer == null) {
+            serializer = getLowestPriority(Object.class);
+        }
+        return serializer;
+    }
+
+    /**
      * Get the highest priority instance of {@link Serializer} by the specified serialized type
      *
      * @param serializedType the type to be serialized
@@ -67,6 +81,19 @@ public class Serializers {
     public <S> Serializer<S> getHighestPriority(Class<S> serializedType) {
         List<Serializer<S>> serializers = get(serializedType);
         return serializers.isEmpty() ? null : serializers.get(0);
+    }
+
+
+    /**
+     * Get the lowest priority instance of {@link Serializer} by the specified serialized type
+     *
+     * @param serializedType the type to be serialized
+     * @param <S>            the type to be serialized
+     * @return <code>null</code> if not found
+     */
+    public <S> Serializer<S> getLowestPriority(Class<S> serializedType) {
+        List<Serializer<S>> serializers = get(serializedType);
+        return serializers.isEmpty() ? null : serializers.get(serializers.size() - 1);
     }
 
     /**

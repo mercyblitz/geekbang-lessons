@@ -83,12 +83,25 @@ public class DistributedHttpSession implements HttpSession {
 //    }
 
     private SessionInfo resolveSessionInfo() {
+
+        String requestSessionId = request.getRequestedSessionId();
+
         SessionInfo sessionInfo = null;
-        if (isNewSession() || isReentrantSession()) { // First time access or re-access to the same server
-            sessionInfo = new SessionInfo(source);
-        } else { // Get the SessionInfo from cache if the session was created by another server in the cluster.
-            sessionInfo = getSessionInfo(request.getRequestedSessionId());
+
+        if (requestSessionId == null) { // First time access or re-access to the same server
+            if (isNewSession()) {
+                sessionInfo = new SessionInfo(source);
+                saveSessionInfo(sessionInfo);
+            }
+        } else {
+            // Get the SessionInfo from cache if the session was created by another server in the cluster.
+            sessionInfo = getSessionInfo(requestSessionId);
+            if (sessionInfo == null) {
+                sessionInfo = new SessionInfo(source);
+                saveSessionInfo(sessionInfo);
+            }
         }
+
         return sessionInfo;
     }
 
@@ -96,7 +109,7 @@ public class DistributedHttpSession implements HttpSession {
      * @return The requestedSessionId matches current session id and session is exited.
      */
     private boolean isReentrantSession() {
-        return request.isRequestedSessionIdValid() && !source.isNew();
+        return request.isRequestedSessionIdValid();
     }
 
     /**
@@ -105,7 +118,7 @@ public class DistributedHttpSession implements HttpSession {
      * @return
      */
     private boolean isNewSession() {
-        return request.getRequestedSessionId() == null && source.isNew();
+        return source.isNew();
     }
 
     public void saveSessionInfo(SessionInfo sessionInfo) {

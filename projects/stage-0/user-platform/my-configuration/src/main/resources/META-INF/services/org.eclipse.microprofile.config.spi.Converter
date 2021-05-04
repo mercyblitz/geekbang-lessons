@@ -7,6 +7,7 @@ org.geektimes.configuration.microprofile.config.converter.DoubleConverter
 org.geektimes.configuration.microprofile.config.converter.FloatConverter
 org.geektimes.configuration.microprofile.config.converter.IntegerConverter
 org.geektimes.configuration.microprofile.config.converter.LongConverter
+org.geektimes.configuration.microprofile.config.converter.ObjectConverter
 org.geektimes.configuration.microprofile.config.converter.ShortConverter
 org.geektimes.configuration.microprofile.config.converter.StringConverter
 org.geektimes.configuration.microprofile.config.converter.URIConverter

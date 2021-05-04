@@ -20,6 +20,10 @@
         <listener-class>org.geektimes.projects.user.web.listener.TestingListener</listener-class>
     </listener>
 
+    <listener>
+        <listener-class>org.geektimes.session.servlet.http.DistributedCacheSessionAttributeListener</listener-class>
+    </listener>
+
     <servlet>
         <servlet-name>default</servlet-name>
         <servlet-class>org.apache.catalina.servlets.DefaultServlet</servlet-class>
@@ -69,7 +73,7 @@
     </servlet-mapping>
 
     <filter>
-        <filter-name>HttpSessionFilter</filter-name>
+        <filter-name>DistributedCacheSessionFilter</filter-name>
         <filter-class>org.geektimes.session.servlet.http.DistributedCacheSessionFilter</filter-class>
         <init-param>
             <!-- Filter ÅäÖÃ = FilterConfig -->
@@ -77,6 +81,11 @@
             <param-value>redis://127.0.0.1:6379/</param-value>
         </init-param>
     </filter>
+
+    <filter-mapping>
+        <filter-name>DistributedCacheSessionFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
 
     <filter>
         <filter-name>CharsetEncodingFilter</filter-name>

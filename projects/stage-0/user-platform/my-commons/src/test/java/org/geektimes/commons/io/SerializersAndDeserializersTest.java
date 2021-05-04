@@ -46,12 +46,21 @@ public class SerializersAndDeserializersTest {
     }
 
     @Test
-    public void testGet() throws IOException {
+    public void testGetHighestPriority() throws IOException {
         Serializer<String> serializer = serializers.getHighestPriority(String.class);
         String value = "Test";
         byte[] bytes = serializer.serialize(value);
         assertArrayEquals(value.getBytes(StandardCharsets.UTF_8), bytes);
         Deserializer<String> deserializer = deserializers.getHighestPriority(String.class);
+        assertEquals(value, deserializer.deserialize(bytes));
+    }
+
+    @Test
+    public void testGetMostCompatible() throws IOException {
+        Serializer serializer = serializers.getMostCompatible(Integer.class);
+        Integer value = 1;
+        byte[] bytes = serializer.serialize(value);
+        Deserializer deserializer = deserializers.getMostCompatible(Integer.class);
         assertEquals(value, deserializer.deserialize(bytes));
     }
 }

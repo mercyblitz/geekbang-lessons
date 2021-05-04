@@ -14,36 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.commons.io;
+package org.geektimes.configuration.microprofile.config.converter;
 
-import org.junit.Test;
-
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
+import org.eclipse.microprofile.config.spi.Converter;
 
 /**
- * {@link DefaultSerializer} and {@link DefaultDeserializer} Test
+ * Object {@link Converter}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class DefaultSerializerAndDeserializerTest {
+public class ObjectConverter implements Converter<Object> {
 
-    private DefaultSerializer serializer = new DefaultSerializer();
-
-    private DefaultDeserializer deserializer = new DefaultDeserializer();
-
-    @Test
-    public void test() throws IOException {
-        Object value = "Test";
-        byte[] bytes = serializer.serialize(value);
-        assertEquals(value, deserializer.deserialize(bytes));
-
-        value = 1;
-        bytes = serializer.serialize(value);
-        assertEquals(value, deserializer.deserialize(bytes));
+    @Override
+    public Object convert(String value) throws IllegalArgumentException, NullPointerException {
+        return value;
     }
 }
