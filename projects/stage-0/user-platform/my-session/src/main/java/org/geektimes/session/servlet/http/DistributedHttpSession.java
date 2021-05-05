@@ -16,6 +16,8 @@
  */
 package org.geektimes.session.servlet.http;
 
+import org.geektimes.session.SessionInfo;
+
 import javax.cache.Cache;
 import javax.cache.CacheManager;
 import javax.cache.configuration.MutableConfiguration;
@@ -26,7 +28,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 import javax.servlet.http.HttpSessionContext;
 import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+
+import static java.util.Collections.enumeration;
 
 /**
  * The Distributed {@link HttpSession}
@@ -48,22 +54,27 @@ public class DistributedHttpSession implements HttpSession {
 
     private final HttpSession source;
 
-    private final SessionInfo sessionInfo;
+    private final Cache<String, SessionInfo> sessionInfoCache;
 
     private final Cache<String, Object> attributesCache;
+
+    private final SessionInfo sessionInfo;
+
 
     public DistributedHttpSession(HttpServletRequest request, HttpSession source, CacheManager cacheManager) {
         this.request = request;
         this.source = source;
         this.cacheManager = cacheManager;
+        this.sessionInfoCache = resolveSessionInfoCache();
+        this.attributesCache = resolveAttributesCache();
         this.sessionInfo = resolveSessionInfo();
-        this.attributesCache = buildAttributesCache();
-        // set self into Session context
-        source.setAttribute(ATTRIBUTE_NAME, this);
+        // set self into Request Context
+        request.setAttribute(ATTRIBUTE_NAME, this);
+
     }
 
-    public static DistributedHttpSession get(HttpSession session) {
-        return (DistributedHttpSession) session.getAttribute(ATTRIBUTE_NAME);
+    public static DistributedHttpSession get(HttpServletRequest request) {
+        return (DistributedHttpSession) request.getAttribute(ATTRIBUTE_NAME);
     }
 
 //    public HttpServletRequest getRequest() {
@@ -83,42 +94,70 @@ public class DistributedHttpSession implements HttpSession {
 //    }
 
     private SessionInfo resolveSessionInfo() {
-
         String requestSessionId = request.getRequestedSessionId();
-
         SessionInfo sessionInfo = null;
-
-        if (requestSessionId == null) { // First time access or re-access to the same server
-            if (isNewSession()) {
-                sessionInfo = new SessionInfo(source);
-                saveSessionInfo(sessionInfo);
-            }
-        } else {
-            // Get the SessionInfo from cache if the session was created by another server in the cluster.
+        if (requestSessionId != null) { // the "requestSessionId" that the server generated was stored by HTTP client
+            // Try to get the SessionInfo from cache,
+            // If the "sessionInfo" is present , it indicates that the session was created by another server
+            // in the distributed cluster, or the session had been expired in the server
             sessionInfo = getSessionInfo(requestSessionId);
-            if (sessionInfo == null) {
-                sessionInfo = new SessionInfo(source);
-                saveSessionInfo(sessionInfo);
-            }
         }
-
+        if (sessionInfo == null) { // Maybe the first time access to the server when the "requestSessionId" is absent
+            sessionInfo = new SessionInfo(source);
+        }
         return sessionInfo;
     }
 
-    /**
-     * @return The requestedSessionId matches current session id and session is exited.
-     */
-    private boolean isReentrantSession() {
-        return request.isRequestedSessionIdValid();
+    private Cache<String, SessionInfo> resolveSessionInfoCache() {
+        String cacheName = "sessionInfoCache";
+        Cache<String, SessionInfo> cache = cacheManager.getCache(cacheName, String.class, SessionInfo.class);
+        if (cache == null) {
+            MutableConfiguration<String, SessionInfo> configuration =
+                    new MutableConfiguration<String, SessionInfo>()
+                            .setTypes(String.class, SessionInfo.class)
+                            .setExpiryPolicyFactory(this::createExpiryPolicy);
+            cache = cacheManager.createCache(cacheName, configuration);
+        }
+        return cache;
     }
 
+    private Cache<String, Object> resolveAttributesCache() {
+        String sessionId = getId();
+        String cacheName = "sessionAttributesCache-" + sessionId;
+        Class keyType = String.class;
+        Class valueType = Object.class;
+        Cache<String, Object> attributeCache = cacheManager.getCache(cacheName, keyType, valueType);
+        if (attributeCache == null) {
+            MutableConfiguration<String, Object> configuration = new MutableConfiguration<String, Object>()
+                    .setTypes(keyType, valueType)
+                    .setExpiryPolicyFactory(this::createExpiryPolicy)
+                    .setStoreByValue(true);
+            attributeCache = cacheManager.createCache(cacheName, configuration);
+        }
+        return attributeCache;
+    }
+
+//    /**
+//     * @return The requestedSessionId matches current session id and session is exited.
+//     */
+//    private boolean isReentrantSession() {
+//        return request.isRequestedSessionIdValid();
+//    }
+//
+//    /**
+//     * Is first time access
+//     *
+//     * @return
+//     */
+//    private boolean isNewSession() {
+//        return source.isNew();
+//    }
+
     /**
-     * Is first time access
-     *
-     * @return
+     * Commit the {@link SessionInfo} into cache
      */
-    private boolean isNewSession() {
-        return source.isNew();
+    public void commitSessionInfo() {
+        saveSessionInfo(sessionInfo);
     }
 
     public void saveSessionInfo(SessionInfo sessionInfo) {
@@ -131,6 +170,10 @@ public class DistributedHttpSession implements HttpSession {
         return attributesCache;
     }
 
+    public Cache<String, SessionInfo> getSessionInfoCache() {
+        return sessionInfoCache;
+    }
+
     /**
      * Get the {@link SessionInfo} from cache.
      *
@@ -141,20 +184,6 @@ public class DistributedHttpSession implements HttpSession {
     public SessionInfo getSessionInfo(String sessionId) {
         Cache<String, SessionInfo> sessionInfoCache = getSessionInfoCache();
         return sessionInfoCache.get(sessionId);
-    }
-
-
-    private Cache<String, SessionInfo> getSessionInfoCache() {
-        String cacheName = "sessionInfoCache";
-        Cache<String, SessionInfo> cache = cacheManager.getCache(cacheName, String.class, SessionInfo.class);
-        if (cache == null) {
-            MutableConfiguration<String, SessionInfo> configuration =
-                    new MutableConfiguration<String, SessionInfo>()
-                            .setTypes(String.class, SessionInfo.class)
-                            .setExpiryPolicyFactory(this::createExpiryPolicy);
-            cache = cacheManager.createCache(cacheName, configuration);
-        }
-        return cache;
     }
 
     private ExpiryPolicy createExpiryPolicy() {
@@ -179,16 +208,6 @@ public class DistributedHttpSession implements HttpSession {
                 return new Duration(TimeUnit.SECONDS, getMaxInactiveInterval());
             }
         };
-    }
-
-    private Cache<String, Object> buildAttributesCache() {
-        String sessionId = getId();
-        String cacheName = "session-attributes-cache-" + sessionId;
-        MutableConfiguration<String, Object> configuration = new MutableConfiguration<String, Object>()
-                .setTypes(String.class, Object.class)
-                .setExpiryPolicyFactory(this::createExpiryPolicy)
-                .setStoreByValue(true);
-        return cacheManager.createCache(cacheName, configuration);
     }
 
     @Override
@@ -248,7 +267,11 @@ public class DistributedHttpSession implements HttpSession {
 
     @Override
     public Enumeration<String> getAttributeNames() {
-        return source.getAttributeNames();
+        List<String> attributeNames = new LinkedList<>();
+        for (Cache.Entry<String, Object> entry : attributesCache) {
+            attributeNames.add(entry.getKey());
+        }
+        return enumeration(attributeNames);
     }
 
     @Override
@@ -260,6 +283,7 @@ public class DistributedHttpSession implements HttpSession {
     @Override
     public void setAttribute(String name, Object value) {
         source.setAttribute(name, value);
+        attributesCache.put(name, value);
     }
 
     @Override
@@ -271,6 +295,7 @@ public class DistributedHttpSession implements HttpSession {
     @Override
     public void removeAttribute(String name) {
         source.removeAttribute(name);
+        attributesCache.remove(name);
     }
 
     @Override
@@ -282,6 +307,16 @@ public class DistributedHttpSession implements HttpSession {
     @Override
     public void invalidate() {
         source.invalidate();
+        invalidateSessionInfoCache();
+        invalidateAttributesCache();
+    }
+
+    private void invalidateSessionInfoCache() {
+        getSessionInfoCache().remove(getId());
+    }
+
+    private void invalidateAttributesCache() {
+
     }
 
     @Override

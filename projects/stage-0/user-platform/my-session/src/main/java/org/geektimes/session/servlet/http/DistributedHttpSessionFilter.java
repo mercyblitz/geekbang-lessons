@@ -39,7 +39,7 @@ import java.net.URI;
  * @since 1.0.0
  * Date : 2021-04-28
  */
-public class DistributedCacheSessionFilter implements Filter {
+public class DistributedHttpSessionFilter implements Filter {
 
     public static final String CACHE_URI_PROPERTY_NAME = "javax.cache.CacheManager.uri";
 
@@ -82,18 +82,44 @@ public class DistributedCacheSessionFilter implements Filter {
 
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
-        doFilter(httpRequest, httpResponse, chain);
+        Throwable error = null;
+        try {
+            beforeFilter(httpRequest, httpResponse);
+            filter(httpRequest, httpResponse, chain);
+        } catch (Throwable e) {
+            error = e;
+        } finally {
+            afterFilter(httpRequest, httpResponse, error);
+        }
     }
 
-    protected void doFilter(HttpServletRequest request, HttpServletResponse response,
-                            FilterChain chain) throws IOException, ServletException {
+    protected void beforeFilter(HttpServletRequest request, HttpServletResponse response) {
+
+    }
+
+    protected void filter(HttpServletRequest request, HttpServletResponse response,
+                          FilterChain chain) throws IOException, ServletException {
         DistributedServletRequestWrapper requestWrapper = new DistributedServletRequestWrapper(request, cacheManager);
         DistributedServletResponseWrapper responseWrapper = new DistributedServletResponseWrapper(response);
         chain.doFilter(requestWrapper, responseWrapper);
     }
 
+    protected void afterFilter(HttpServletRequest request, HttpServletResponse response, Throwable error) {
+        DistributedHttpSession session = DistributedHttpSession.get(request);
+        session.commitSessionInfo();
+    }
+
     @Override
     public void destroy() {
+        destroyConfig();
+        destroyCacheManager();
+    }
 
+    private void destroyConfig() {
+        ConfigProviderResolver.instance().releaseConfig(config);
+    }
+
+    private void destroyCacheManager() {
+        cacheManager.getCacheNames().forEach(cacheManager::destroyCache);
     }
 }

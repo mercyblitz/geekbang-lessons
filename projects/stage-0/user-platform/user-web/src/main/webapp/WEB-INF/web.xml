@@ -21,7 +21,7 @@
     </listener>
 
     <listener>
-        <listener-class>org.geektimes.session.servlet.http.DistributedCacheSessionAttributeListener</listener-class>
+        <listener-class>org.geektimes.session.servlet.http.DistributedHttpSessionAttributeListener</listener-class>
     </listener>
 
     <servlet>
@@ -74,7 +74,7 @@
 
     <filter>
         <filter-name>DistributedCacheSessionFilter</filter-name>
-        <filter-class>org.geektimes.session.servlet.http.DistributedCacheSessionFilter</filter-class>
+        <filter-class>org.geektimes.session.servlet.http.DistributedHttpSessionFilter</filter-class>
         <init-param>
             <!-- Filter ÅäÖÃ = FilterConfig -->
             <param-name>javax.cache.CacheManager.uri</param-name>
