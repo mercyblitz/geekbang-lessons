@@ -19,24 +19,40 @@ package org.geektimes.session;
 import java.util.Set;
 
 /**
- * Distributed Session Repository
+ * Session Repository
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
 public interface SessionRepository {
 
-    void saveSessionInfo(SessionInfo sessionInfo);
+    // SessionInfo manipulation methods
 
-    SessionInfo getSessionInfo(String id);
+    SessionRepository saveSessionInfo(SessionInfo sessionInfo);
 
-    void removeSessionInfo(String id);
+    SessionInfo getSessionInfo(String sessionId);
 
-    void saveAttribute(String name, Object value);
+    SessionRepository removeSessionInfo(String sessionId);
 
-    Object getAttribute(String name);
+    // Attribute manipulation methods
 
-    void removeAttribute(String name);
+    SessionRepository setAttribute(String sessionId, String name, Object value);
 
-    Set<String> getAttributeNames();
+    SessionRepository removeAttribute(String sessionId, String name);
+
+    Object getAttribute(String sessionId, String name);
+
+    Set<String> getAttributeNames(String sessionId);
+
+    // Lifecycle methods
+
+    /**
+     * Initialize
+     */
+    void initialize();
+
+    /**
+     * Destroy
+     */
+    void destroy();
 }

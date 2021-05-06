@@ -14,23 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.session.servlet;
+package org.geektimes.configuration.microprofile.config.converter;
+
+import org.eclipse.microprofile.config.spi.Converter;
 
 /**
- * Session abstract interface
+ * {@link Class} {@link Converter} implementation
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
- * @since
+ * @since 1.0.0
+ * Date : 2021-05-06
  */
-public interface Session {
+public class ClassConverter extends AbstractConverter<Class> {
 
-    Session id(String id);
+    private final ClassLoader classLoader;
 
-    String getId();
+    public ClassConverter() {
+        this(Thread.currentThread().getContextClassLoader());
+    }
 
-    Session creationTime(long creationTime);
+    public ClassConverter(ClassLoader classLoader) {
+        this.classLoader = classLoader;
+    }
 
-    long getCreationTime();
-
-    void lastAccessedTime(long lastAccessedTime);
+    @Override
+    protected Class doConvert(String value) throws Throwable {
+        return classLoader.loadClass(value);
+    }
 }

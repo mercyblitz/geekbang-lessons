@@ -20,17 +20,17 @@ import org.eclipse.microprofile.config.Config;
 import org.eclipse.microprofile.config.spi.ConfigBuilder;
 import org.eclipse.microprofile.config.spi.ConfigProviderResolver;
 import org.geektimes.configuration.microprofile.config.source.servlet.FilterConfigSource;
-import org.geektimes.configuration.microprofile.config.util.DelegatingPropertiesAdapter;
+import org.geektimes.session.SessionRepository;
+import org.geektimes.session.config.DefaultSessionConfigSource;
+import org.geektimes.session.config.converter.SessionRepositoryConverter;
 
-import javax.cache.CacheManager;
-import javax.cache.Caching;
-import javax.cache.spi.CachingProvider;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.io.IOException;
-import java.net.URI;
+
+import static org.eclipse.microprofile.config.spi.ConfigProviderResolver.instance;
 
 /**
  * {@link HttpSession} Filter based on the distributed cache.
@@ -41,37 +41,43 @@ import java.net.URI;
  */
 public class DistributedHttpSessionFilter implements Filter {
 
-    public static final String CACHE_URI_PROPERTY_NAME = "javax.cache.CacheManager.uri";
+    public static final String SESSION_REPOSITORY_CLASS_PROPERTY_NAME = "session.repository.class";
 
     private ClassLoader classLoader;
 
     private Config config;
 
-    private CacheManager cacheManager;
+    private SessionRepository sessionRepository;
 
     @Override
     public void init(FilterConfig filterConfig) throws ServletException {
         this.classLoader = filterConfig.getServletContext().getClassLoader();
-        this.config = buildConfig(filterConfig, classLoader);
-        this.cacheManager = buildCacheManager(config, classLoader);
+        initConfig(filterConfig, classLoader);
+        initSessionRepository(config, classLoader);
     }
 
-
-    protected Config buildConfig(FilterConfig filterConfig, ClassLoader classLoader) {
+    protected void initConfig(FilterConfig filterConfig, ClassLoader classLoader) {
         ConfigProviderResolver resolver = ConfigProviderResolver.instance();
         ConfigBuilder configBuilder = resolver.getBuilder();
         configBuilder.forClassLoader(classLoader);
         configBuilder.addDefaultSources();
         configBuilder.addDiscoveredSources();
         configBuilder.addDiscoveredConverters();
-        configBuilder.withSources(new FilterConfigSource(filterConfig));
-        return configBuilder.build();
+        // Add the customized Converter(s)
+        configBuilder.withConverters(new SessionRepositoryConverter(classLoader));
+        // Add the customized ConfigSources
+        configBuilder.withSources(new FilterConfigSource(filterConfig),
+                new DefaultSessionConfigSource(classLoader));
+        this.config = configBuilder.build();
+
+        ConfigProviderResolver configProviderResolver = instance();
+        // register Config
+        configProviderResolver.registerConfig(config, classLoader);
     }
 
-    private CacheManager buildCacheManager(Config config, ClassLoader classLoader) {
-        URI uri = config.getValue(CACHE_URI_PROPERTY_NAME, URI.class);
-        CachingProvider cachingProvider = Caching.getCachingProvider(classLoader);
-        return cachingProvider.getCacheManager(uri, classLoader, new DelegatingPropertiesAdapter(config));
+    protected void initSessionRepository(Config config, ClassLoader classLoader) {
+        this.sessionRepository = config.getValue(SESSION_REPOSITORY_CLASS_PROPERTY_NAME, SessionRepository.class);
+        this.sessionRepository.initialize();
     }
 
     @Override
@@ -99,27 +105,29 @@ public class DistributedHttpSessionFilter implements Filter {
 
     protected void filter(HttpServletRequest request, HttpServletResponse response,
                           FilterChain chain) throws IOException, ServletException {
-        DistributedServletRequestWrapper requestWrapper = new DistributedServletRequestWrapper(request, cacheManager);
+        DistributedServletRequestWrapper requestWrapper = new DistributedServletRequestWrapper(request, sessionRepository);
         DistributedServletResponseWrapper responseWrapper = new DistributedServletResponseWrapper(response);
         chain.doFilter(requestWrapper, responseWrapper);
     }
 
     protected void afterFilter(HttpServletRequest request, HttpServletResponse response, Throwable error) {
         DistributedHttpSession session = DistributedHttpSession.get(request);
-        session.commitSessionInfo();
+        if (session != null) {
+            session.commitSessionInfo();
+        }
     }
 
     @Override
     public void destroy() {
         destroyConfig();
-        destroyCacheManager();
+        destroySessionRepository();
     }
 
     private void destroyConfig() {
         ConfigProviderResolver.instance().releaseConfig(config);
     }
 
-    private void destroyCacheManager() {
-        cacheManager.getCacheNames().forEach(cacheManager::destroyCache);
+    private void destroySessionRepository() {
+        this.sessionRepository.destroy();
     }
 }

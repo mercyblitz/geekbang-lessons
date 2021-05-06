@@ -20,10 +20,6 @@
         <listener-class>org.geektimes.projects.user.web.listener.TestingListener</listener-class>
     </listener>
 
-    <listener>
-        <listener-class>org.geektimes.session.servlet.http.DistributedHttpSessionAttributeListener</listener-class>
-    </listener>
-
     <servlet>
         <servlet-name>default</servlet-name>
         <servlet-class>org.apache.catalina.servlets.DefaultServlet</servlet-class>
