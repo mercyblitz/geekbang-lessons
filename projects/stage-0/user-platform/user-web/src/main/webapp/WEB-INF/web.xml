@@ -2,8 +2,8 @@
 <web-app xmlns="http://java.sun.com/xml/ns/javaee"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
-         http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-         metadata-complete="true" version="2.5">
+         http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+         metadata-complete="true" version="3.0">
 
     <!-- ServletContext ÅäÖÃ²ÎÊý -->
     <context-param>
@@ -46,6 +46,18 @@
     </servlet-mapping>
 
     <servlet>
+        <servlet-name>AsyncServlet</servlet-name>
+        <servlet-class>org.geektimes.projects.user.web.servlet.AsyncServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+        <async-supported>true</async-supported>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>AsyncServlet</servlet-name>
+        <url-pattern>/async.servlet</url-pattern>
+    </servlet-mapping>
+
+    <servlet>
         <servlet-name>FrontControllerServlet</servlet-name>
         <servlet-class>org.geektimes.web.mvc.FrontControllerServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
@@ -57,14 +69,19 @@
     </servlet-mapping>
 
     <filter>
-        <filter-name>HttpSessionFilter</filter-name>
-        <filter-class>org.geektimes.projects.user.web.filter.HttpSessionFilter</filter-class>
+        <filter-name>DistributedCacheSessionFilter</filter-name>
+        <filter-class>org.geektimes.session.servlet.http.DistributedHttpSessionFilter</filter-class>
         <init-param>
             <!-- Filter ÅäÖÃ = FilterConfig -->
             <param-name>javax.cache.CacheManager.uri</param-name>
             <param-value>redis://127.0.0.1:6379/</param-value>
         </init-param>
     </filter>
+
+    <filter-mapping>
+        <filter-name>DistributedCacheSessionFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
 
     <filter>
         <filter-name>CharsetEncodingFilter</filter-name>
