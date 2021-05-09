@@ -122,7 +122,6 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
      *
      * @param key key whose presence in this cache is to be tested.
      * @param key the specified key
-     * @return <tt>true</tt> if this map contains a mapping for the specified key
      * @return
      * @throws NullPointerException  if key is null
      * @throws IllegalStateException if the cache is {@link #isClosed()}

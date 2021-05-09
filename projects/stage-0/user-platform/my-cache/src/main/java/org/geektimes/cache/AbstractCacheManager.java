@@ -16,6 +16,9 @@
  */
 package org.geektimes.cache;
 
+import org.geektimes.commons.io.Deserializers;
+import org.geektimes.commons.io.Serializers;
+
 import javax.cache.Cache;
 import javax.cache.CacheException;
 import javax.cache.CacheManager;
@@ -31,6 +34,7 @@ import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 import static java.lang.String.format;
+import static java.util.Collections.emptyMap;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -55,6 +59,10 @@ public abstract class AbstractCacheManager implements CacheManager {
 
     private final ClassLoader classLoader;
 
+    private final Serializers serializers;
+
+    private final Deserializers deserializers;
+
     private final Properties properties;
 
     private volatile boolean closed;
@@ -66,6 +74,20 @@ public abstract class AbstractCacheManager implements CacheManager {
         this.uri = uri == null ? cachingProvider.getDefaultURI() : uri;
         this.properties = properties == null ? cachingProvider.getDefaultProperties() : properties;
         this.classLoader = classLoader == null ? cachingProvider.getDefaultClassLoader() : classLoader;
+        this.serializers = initSerializers(this.classLoader);
+        this.deserializers = initDeserializers(this.classLoader);
+    }
+
+    protected Serializers initSerializers(ClassLoader classLoader) {
+        Serializers serializers = new Serializers(classLoader);
+        serializers.loadSPI();
+        return serializers;
+    }
+
+    protected Deserializers initDeserializers(ClassLoader classLoader) {
+        Deserializers deserializers = new Deserializers(classLoader);
+        deserializers.loadSPI();
+        return deserializers;
     }
 
     @Override
@@ -91,7 +113,7 @@ public abstract class AbstractCacheManager implements CacheManager {
     @Override
     public <K, V, C extends Configuration<K, V>> Cache<K, V> createCache(String cacheName, C configuration) throws IllegalArgumentException {
         // If a Cache with the specified name is known to the CacheManager, a CacheException is thrown.
-        if (cacheRepository.containsKey(cacheName)) {
+        if (!cacheRepository.getOrDefault(cacheName, emptyMap()).isEmpty()) {
             throw new CacheException(format("The Cache whose name is '%s' is already existed, " +
                     "please try another name to create a new Cache.", cacheName));
         }
@@ -205,5 +227,13 @@ public abstract class AbstractCacheManager implements CacheManager {
             throw new RuntimeException(e);
         }
         return value;
+    }
+
+    public Serializers getSerializers() {
+        return serializers;
+    }
+
+    public Deserializers getDeserializers() {
+        return deserializers;
     }
 }
