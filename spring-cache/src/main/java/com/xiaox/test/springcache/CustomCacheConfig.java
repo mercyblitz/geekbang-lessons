@@ -21,11 +21,11 @@ public class CustomCacheConfig extends CachingConfigurerSupport {
     @Value("${cache.custom.redis.uri}")
     private String uri;
 
-    @Bean("CustomRedisCacheManager")
+    /*@Bean("CustomRedisCacheManager")
     @Override
     public CacheManager cacheManager() {
         return new RedisCacheManager(uri);
-    }
+    }*/
 
     @Override
     @Bean

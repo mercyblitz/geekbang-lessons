@@ -19,7 +19,6 @@ package com.xiaox.test.springcache;
 import org.springframework.cache.Cache;
 import redis.clients.jedis.Jedis;
 
-import javax.cache.CacheException;
 import java.io.*;
 import java.util.Objects;
 import java.util.concurrent.Callable;
@@ -95,7 +94,7 @@ public class RedisCache implements Cache {
     }
 
     // 是否可以抽象出一套序列化和反序列化的 API
-    private byte[] serialize(Object value) throws CacheException {
+    private byte[] serialize(Object value) {
         byte[] bytes = null;
         try (ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
              ObjectOutputStream objectOutputStream = new ObjectOutputStream(outputStream)
@@ -104,12 +103,12 @@ public class RedisCache implements Cache {
             objectOutputStream.writeObject(value);
             bytes = outputStream.toByteArray();
         } catch (IOException e) {
-            throw new CacheException(e);
+
         }
         return bytes;
     }
 
-    private <T> T deserialize(byte[] bytes) throws CacheException {
+    private <T> T deserialize(byte[] bytes) {
         if (bytes == null) {
             return null;
         }
@@ -120,7 +119,7 @@ public class RedisCache implements Cache {
             // byte[] -> Value
             value = (T) objectInputStream.readObject();
         } catch (Exception e) {
-            throw new CacheException(e);
+
         }
         return value;
     }
