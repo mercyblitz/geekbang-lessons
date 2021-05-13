@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class CacheTestService {
 
-    @Cacheable(cacheNames = "test1",key = "#a",cacheManager="CustomRedisCacheManager")
+    @Cacheable(value = "com.xiaox.test.cache",key = "#a")
     public String test(String a){
        System.out.println("进入方法执行！！！！传入参数："+a);
        return "Hello world";
