@@ -69,7 +69,15 @@ public class ExpirableEntry<K, V> implements Cache.Entry<K, V>, Serializable {
     }
 
     public boolean isExpired() {
-        return System.currentTimeMillis() >= timestamp;
+        return getExpiredTime() < 1;
+    }
+
+    public boolean isEternal() {
+        return Long.MAX_VALUE == getTimestamp();
+    }
+
+    public long getExpiredTime() {
+        return getTimestamp() - System.currentTimeMillis();
     }
 
     @Override
