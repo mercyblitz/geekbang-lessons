@@ -10,9 +10,8 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>spring-cloud-config-server</artifactId>
-    <name>Spring Cloud Projects - Config Server ${revision}</name>
-    <packaging>jar</packaging>
+    <artifactId>spring-cloud-service-provider</artifactId>
+    <name>Spring Cloud Projects - Service Provider ${revision}</name>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -20,6 +19,11 @@
     </properties>
 
     <dependencies>
+        <!-- Spring Web MVC -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
 
         <!-- Eureka Client 依赖 -->
         <dependency>
@@ -27,11 +31,11 @@
             <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
         </dependency>
 
+        <!-- resilience4j 服务熔断依赖 -->
         <dependency>
             <groupId>org.springframework.cloud</groupId>
-            <artifactId>spring-cloud-config-server</artifactId>
+            <artifactId>spring-cloud-starter-circuitbreaker-resilience4j</artifactId>
         </dependency>
-
     </dependencies>
 
 </project>

@@ -1,0 +1,14 @@
+server:
+  port: 9090
+
+# Spring 应用名称
+spring:
+  application:
+    name: spring-cloud-service-provider
+
+# 配置 Eureka Client（可参考 EurekaClientConfigBean）
+# 配置 Eureka Client 示例（可参考 EurekaInstanceConfigBean）
+eureka:
+  client:
+    service-url:
+      defaultZone: 'http://127.0.0.1:12345/eureka'
