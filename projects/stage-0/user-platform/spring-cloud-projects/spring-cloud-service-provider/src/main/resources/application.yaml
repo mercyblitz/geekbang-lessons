@@ -1,0 +1,57 @@
+resilience4j.circuitbreaker:
+  configs:
+    default:
+      registerHealthIndicator: true
+      slidingWindowSize: 10
+      minimumNumberOfCalls: 5
+      permittedNumberOfCallsInHalfOpenState: 3
+      automaticTransitionFromOpenToHalfOpenEnabled: true
+      waitDurationInOpenState: 5s
+      failureRateThreshold: 50
+      eventConsumerBufferSize: 10
+      recordExceptions:
+        - org.springframework.web.client.HttpServerErrorException
+        - java.util.concurrent.TimeoutException
+        - java.io.IOException
+    shared:
+      slidingWindowSize: 100
+      permittedNumberOfCallsInHalfOpenState: 30
+      waitDurationInOpenState: 1s
+      failureRateThreshold: 50
+      eventConsumerBufferSize: 10
+  instances:
+    echo:
+      registerHealthIndicator: true
+      slidingWindowSize: 100
+      permittedNumberOfCallsInHalfOpenState: 3
+      slidingWindowType: COUNT_BASED
+
+server:
+  port: 19092
+
+# Spring 应用名称
+spring:
+  application:
+    name: spring-cloud-service-provider
+
+
+  cloud:
+    stream:
+      bindings:
+        output1:
+          destination: test-topic
+        output2:
+          destination: test-topic-1
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+
+# 配置 Eureka Client（可参考 EurekaClientConfigBean）
+# 配置 Eureka Client 示例（可参考 EurekaInstanceConfigBean）
+eureka:
+  client:
+    service-url:
+      defaultZone: 'http://127.0.0.1:12345/eureka'
