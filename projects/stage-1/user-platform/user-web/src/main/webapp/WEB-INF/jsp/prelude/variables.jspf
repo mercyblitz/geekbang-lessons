@@ -1,0 +1,15 @@
+<c:set var="contextPath" value="${pageContext.servletContext.contextPath}" />
+<c:set var="scheme" value ="${pageContext.request.scheme}" />
+<c:set var="serverName" value="${pageContext.request.serverName}" />
+<c:set var="serverPort" value="${pageContext.request.serverPort}" />
+<c:set var="requestURI" value="${pageContext.request.requestURI}" />
+<c:set var="characterEncoding" value="${pageContext.request.characterEncoding}" />
+<c:set var="queryString" value="${pageContext.request.queryString}" />
+<c:set var="contextURI" value="${scheme}://${serverName}:${serverPort}${contextPath}" />
+<c:set var="referer" value="${header['Referer']}" />
+<c:set var="requestIncludedURI" value="${requestScope['javax.servlet.include.request_uri']}" />
+<c:set var="requestForwardedURI" value="${requestScope['javax.servlet.forward.request_uri']}" />
+
+<c:if test="${empty applicationScope['date']}">
+    <fmt:formatDate value="${currentDate}" var="date" pattern="yyyyMMdd" scope="application" />
+</c:if>

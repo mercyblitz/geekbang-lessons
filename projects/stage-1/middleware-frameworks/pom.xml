@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>org.geekbang.projects</groupId>
+        <artifactId>stage-1</artifactId>
+        <version>${revision}</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <groupId>org.geekbang.projects</groupId>
+    <artifactId>middleware-frameworks</artifactId>
+    <version>${revision}</version>
+    <name>Middleware Frameworks ${revision}</name>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>my-web-mvc</module>
+        <module>my-configuration</module>
+        <module>my-dependency-injection</module>
+        <module>my-rest-client</module>
+        <module>my-reactive-messaging</module>
+        <module>my-cache</module>
+        <module>my-interceptor</module>
+        <module>my-commons</module>
+        <module>my-session</module>
+        <module>my-distributed-lock</module>
+    </modules>
+
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+    </properties>
+
+</project>
