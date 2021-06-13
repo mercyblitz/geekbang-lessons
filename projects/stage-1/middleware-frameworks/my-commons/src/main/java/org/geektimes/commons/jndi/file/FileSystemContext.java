@@ -17,10 +17,10 @@
 package org.geektimes.commons.jndi.file;
 
 import org.apache.commons.io.FileUtils;
-import org.geektimes.commons.io.DefaultDeserializer;
-import org.geektimes.commons.io.DefaultSerializer;
 import org.geektimes.commons.io.Deserializer;
+import org.geektimes.commons.io.Deserializers;
 import org.geektimes.commons.io.Serializer;
+import org.geektimes.commons.io.Serializers;
 
 import javax.naming.*;
 import java.io.File;
@@ -43,9 +43,14 @@ class FileSystemContext implements Context {
 
     private static final String ENV_CONTEXT_NAME = "java:comp/env";
 
-    private static final Serializer serializer = new DefaultSerializer();
+    private static final Serializers serializers = new Serializers();
 
-    private static final Deserializer deserializer = new DefaultDeserializer();
+    private static final Deserializers deserializers = new Deserializers();
+
+    static {
+        serializers.loadSPI();
+        deserializers.loadSPI();
+    }
 
     private final File rootDirectory;
 
@@ -93,6 +98,7 @@ class FileSystemContext implements Context {
     private Object lookup(File targetFile) throws NamingException {
         return execute(() -> {
             byte[] bytes = readFileToByteArray(targetFile);
+            Deserializer deserializer = deserializers.getMostCompatible(String.class);
             return deserializer.deserialize(bytes);
         }, NamingException.class);
     }
@@ -124,6 +130,8 @@ class FileSystemContext implements Context {
             return;
         }
         execute(() -> {
+            Class<?> objClass = obj.getClass();
+            Serializer serializer = serializers.getMostCompatible(objClass);
             byte[] bytes = serializer.serialize(obj);
             FileUtils.writeByteArrayToFile(targetFile, bytes);
         }, NamingException.class);

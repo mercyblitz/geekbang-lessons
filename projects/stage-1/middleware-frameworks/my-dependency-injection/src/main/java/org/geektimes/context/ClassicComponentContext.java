@@ -83,6 +83,8 @@ public class ClassicComponentContext implements ComponentContext {
      * </ol>
      */
     protected void initializeComponents() {
+        // 1. jdbc/DBConnectionManager
+        // 2. jdbc/UserPlatformDataSource
         componentsCache.values().forEach(this::initializeComponent);
     }
 

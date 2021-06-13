@@ -2,6 +2,7 @@ package org.geektimes.projects.user.standard.sql;
 
 import org.geektimes.projects.user.api.domain.User;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import javax.sql.DataSource;
 import java.beans.BeanInfo;
@@ -21,6 +22,11 @@ public class DBConnectionManager { // JNDI Component
     @Resource(name = "jdbc/UserPlatformDataSource")
     private DataSource dataSource;
 
+    @PostConstruct
+    public void init() {
+        // 使用 DataSource
+    }
+
     public Connection getConnection() {
         // 依赖查找
         Connection connection = null;
@@ -34,7 +40,6 @@ public class DBConnectionManager { // JNDI Component
         }
         return connection;
     }
-
 
 
     public void releaseConnection() {
