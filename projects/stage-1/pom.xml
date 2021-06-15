@@ -54,6 +54,7 @@
         <mybatis.version>3.5.7</mybatis.version>
         <mybatis-spring.version>2.0.6</mybatis-spring.version>
         <curator.version>5.1.0</curator.version>
+        <netty.version>4.1.65.Final</netty.version>
 
         <!-- Spring 依赖版本 -->
         <spring-boot.version>2.4.5</spring-boot.version>
@@ -312,6 +313,13 @@
                 <groupId>org.apache.curator</groupId>
                 <artifactId>curator-x-discovery</artifactId>
                 <version>${curator.version}</version>
+            </dependency>
+
+            <!-- Netty -->
+            <dependency>
+                <groupId>io.netty</groupId>
+                <artifactId>netty-all</artifactId>
+                <version>${netty.version}</version>
             </dependency>
 
             <!-- Apache Commons DBCP -->

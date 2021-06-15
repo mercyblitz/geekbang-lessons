@@ -28,6 +28,7 @@
         <module>my-commons</module>
         <module>my-session</module>
         <module>my-distributed-lock</module>
+        <module>my-rpc</module>
     </modules>
 
     <properties>
