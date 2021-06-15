@@ -1,0 +1,4 @@
+org.geektimes.commons.sql.BooleanPreparedStatementParameterMapper
+org.geektimes.commons.sql.IntegerPreparedStatementParameterMapper
+org.geektimes.commons.sql.LongPreparedStatementParameterMapper
+org.geektimes.commons.sql.ReflectivePreparedStatementParameterMapper

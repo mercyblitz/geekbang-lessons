@@ -22,6 +22,7 @@
         <module>user-data</module>
         <module>my-commons</module>
         <module>my-session</module>
+        <module>spring-cloud-projects</module>
     </modules>
 
     <properties>
@@ -55,16 +56,21 @@
         <hibernate.version>5.4.29.Final</hibernate.version>
         <hibernate.validator.version>5.4.3.Final</hibernate.validator.version>
         <glassfish-el.version>3.0.1-b08</glassfish-el.version>
-        <jackson.version>2.9.5</jackson.version>
         <activemq.version>5.9.1</activemq.version>
         <tomcat7.version>7.0.37</tomcat7.version>
         <lettuce.version>6.1.0.RELEASE</lettuce.version>
         <jedis.version>3.5.2</jedis.version>
         <mybatis.version>3.5.7</mybatis.version>
         <mybatis-spring.version>2.0.6</mybatis-spring.version>
+        <dubbo.version>2.7.10</dubbo.version>
+        <jackson.version>2.10.1</jackson.version>
 
         <!-- Spring 依赖版本 -->
-        <spring-boot.version>2.4.5</spring-boot.version>
+        <spring-boot.version>2.4.2</spring-boot.version>
+        <spring.cloud-version>2020.0.0</spring.cloud-version>
+
+        <!-- Spring Cloud Alibaba -->
+        <spring.cloud.alibaba.version>2021.1</spring.cloud.alibaba.version>
 
         <!-- Testing 版本 -->
         <junit.version>4.13</junit.version>
@@ -85,6 +91,26 @@
 
         <dependencies>
 
+
+            <!-- Jackson -->
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>2.10.1</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>2.10.1</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>2.10.1</version>
+            </dependency>
+
             <!-- Spring Boot Dependencies -->
             <dependency>
                 <groupId>org.springframework.boot</groupId>
@@ -92,6 +118,46 @@
                 <version>${spring-boot.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+
+            <!-- Spring Cloud Dependencies -->
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-dependencies</artifactId>
+                <version>${spring.cloud-version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Spring Cloud Alibaba Dependencies -->
+            <dependency>
+                <groupId>com.alibaba.cloud</groupId>
+                <artifactId>spring-cloud-alibaba-dependencies</artifactId>
+                <version>${spring.cloud.alibaba.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <!-- Apache Dubbo -->
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-dependencies-bom</artifactId>
+                <version>${dubbo.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo</artifactId>
+                <version>${dubbo.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.dubbo</groupId>
+                <artifactId>dubbo-dependencies-zookeeper</artifactId>
+                <version>${dubbo.version}</version>
+                <type>pom</type>
             </dependency>
 
             <!-- Servlet 3.1 API -->

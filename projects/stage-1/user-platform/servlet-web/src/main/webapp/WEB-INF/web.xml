@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="GBK"?>
+<web-app xmlns="http://java.sun.com/xml/ns/javaee"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee
+         http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+         metadata-complete="false" version="3.0">
+
+    <!-- ServletContext 配置参数 -->
+    <context-param>
+        <param-name>application.name</param-name>
+        <param-value>servlet-web</param-value>
+    </context-param>
+
+    <listener>
+        <listener-class>org.geektimes.projects.servlet.listener.MyServletContextListener</listener-class>
+    </listener>
+
+    <listener>
+        <listener-class>org.geektimes.projects.servlet.listener.MyServletContextAttributeListener</listener-class>
+    </listener>
+
+</web-app>
