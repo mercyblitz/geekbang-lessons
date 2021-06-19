@@ -1,0 +1,9 @@
+# Spring 应用名称
+spring:
+  application:
+    name: spring-batch-project
+  datasource:
+    driverClassName: com.mysql.cj.jdbc.Driver
+    username: 'root'
+    password: '123456'
+    url: 'jdbc:mysql://127.0.0.1:3306/test'
