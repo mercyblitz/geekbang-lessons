@@ -29,6 +29,7 @@
         <module>my-session</module>
         <module>my-distributed-lock</module>
         <module>my-rpc</module>
+        <module>my-http-server</module>
     </modules>
 
     <properties>
