@@ -16,6 +16,7 @@
  */
 package org.geektimes.rpc.client;
 
+import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import org.geektimes.rpc.InvocationRequest;
 import org.geektimes.rpc.loadbalancer.ServiceInstanceSelector;
@@ -42,16 +43,17 @@ public class ServiceInvocationHandler implements InvocationHandler {
 
     private String serviceName;
 
-    private ServiceRegistry serviceRegistry;
+    private final RpcClient rpcClient;
 
-    private ServiceInstanceSelector selector;
+    private final ServiceRegistry serviceRegistry;
 
-    public ServiceInvocationHandler(String serviceName,
-                                    ServiceRegistry serviceRegistry,
-                                    ServiceInstanceSelector selector) {
+    private final ServiceInstanceSelector selector;
+
+    public ServiceInvocationHandler(String serviceName, RpcClient rpcClient) {
         this.serviceName = serviceName;
-        this.serviceRegistry = serviceRegistry;
-        this.selector = selector;
+        this.rpcClient = rpcClient;
+        this.serviceRegistry = rpcClient.getServiceRegistry();
+        this.selector = rpcClient.getSelector();
     }
 
     @Override
@@ -69,16 +71,14 @@ public class ServiceInvocationHandler implements InvocationHandler {
 
         ServiceInstance serviceInstance = selectServiceProviderInstance();
 
-        InvocationClient invocationClient = new InvocationClient(serviceInstance);
-
-        ChannelFuture channelFuture = invocationClient.connect().awaitUninterruptibly();
+        ChannelFuture channelFuture = rpcClient.connect(serviceInstance);
 
         sendRequest(request, channelFuture);
 
         ExchangeFuture exchangeFuture = createExchangeFuture(request);
 
         try {
-            return exchangeFuture.get(1000, TimeUnit.MILLISECONDS);
+            return exchangeFuture.get();
         } catch (Exception e) {
             removeExchangeFuture(request.getRequestId());
         }
@@ -104,7 +104,7 @@ public class ServiceInvocationHandler implements InvocationHandler {
         request.setParameters(args);
         // TODO
         request.setMetadata(new HashMap<>());
-        return null;
+        return request;
     }
 
     private Object handleObjectMethod(Object proxy, Method method, Object[] args) {

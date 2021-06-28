@@ -17,6 +17,7 @@
 package org.geektimes.rpc;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -87,4 +88,15 @@ public class InvocationRequest implements Serializable {
         this.metadata = metadata;
     }
 
+    @Override
+    public String toString() {
+        return "InvocationRequest{" +
+                "requestId='" + requestId + '\'' +
+                ", serviceName='" + serviceName + '\'' +
+                ", methodName='" + methodName + '\'' +
+                ", parameterTypes=" + Arrays.toString(parameterTypes) +
+                ", parameters=" + Arrays.toString(parameters) +
+                ", metadata=" + metadata +
+                '}';
+    }
 }

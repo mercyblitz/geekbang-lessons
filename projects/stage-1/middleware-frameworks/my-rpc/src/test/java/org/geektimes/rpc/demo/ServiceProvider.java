@@ -16,7 +16,7 @@
  */
 package org.geektimes.rpc.demo;
 
-import org.geektimes.rpc.server.ServerBootstrap;
+import org.geektimes.rpc.server.RpcServer;
 
 /**
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
@@ -24,9 +24,10 @@ import org.geektimes.rpc.server.ServerBootstrap;
  */
 public class ServiceProvider {
 
-    public static void main(String[] args) {
-        ServerBootstrap serverBootstrap = new ServerBootstrap("echoService", 12345);
-        serverBootstrap.registerService(EchoService.class.getName(), new DefaultEchoService());
-        serverBootstrap.start();
+    public static void main(String[] args) throws Exception {
+        try (RpcServer serviceServer = new RpcServer("echoService", 12345)) {
+            serviceServer.registerService(EchoService.class.getName(), new DefaultEchoService());
+            serviceServer.start();
+        }
     }
 }

@@ -14,13 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.rpc.client;
+package org.geektimes.rpc.demo;
+
+import org.geektimes.rpc.client.RpcClient;
 
 /**
- * 客户端引导程序
+ * Service Consumer
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class ClientBootstrap {
+public class ServiceConsumer {
+
+    public static void main(String[] args) throws Exception {
+        try (RpcClient rpcClient = new RpcClient()) {
+            EchoService echoService = rpcClient.getService("echoService", EchoService.class);
+            System.out.println(echoService.echo("Hello,World"));
+        }
+    }
 }

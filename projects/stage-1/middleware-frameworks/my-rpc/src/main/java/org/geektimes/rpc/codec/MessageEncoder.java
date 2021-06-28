@@ -21,6 +21,8 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
 import org.geektimes.rpc.InvocationRequest;
 import org.geektimes.rpc.serializer.Serializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * {@link InvocationRequest} {@link MessageToByteEncoder}
@@ -28,15 +30,16 @@ import org.geektimes.rpc.serializer.Serializer;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class InvocationRequestEncoder extends MessageToByteEncoder {
+public class MessageEncoder extends MessageToByteEncoder {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
     protected void encode(ChannelHandlerContext ctx, Object message, ByteBuf out) throws Exception {
-        if (InvocationRequest.class.isInstance(message)) {
-            Serializer serializer = Serializer.DEFAULT;
-            byte[] data = serializer.serialize(message);
-            out.writeInt(data.length);
-            out.writeBytes(data);
-        }
+        Serializer serializer = Serializer.DEFAULT;
+        byte[] data = serializer.serialize(message);
+        out.writeInt(data.length);
+        out.writeBytes(data);
+        logger.info("Encode {} to bytes[length:{}]", message, data.length);
     }
 }

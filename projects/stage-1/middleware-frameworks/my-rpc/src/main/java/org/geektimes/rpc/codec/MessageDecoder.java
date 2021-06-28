@@ -19,8 +19,11 @@ package org.geektimes.rpc.codec;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
+import org.geektimes.rpc.InvocationRequest;
 import org.geektimes.rpc.InvocationResponse;
 import org.geektimes.rpc.serializer.Serializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -30,7 +33,9 @@ import java.util.List;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class InvocationResponseDecoder extends ByteToMessageDecoder {
+public class MessageDecoder extends ByteToMessageDecoder {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     @Override
     protected void decode(ChannelHandlerContext ctx, ByteBuf in, List<Object> out) throws Exception {
@@ -43,7 +48,8 @@ public class InvocationResponseDecoder extends ByteToMessageDecoder {
         byte[] data = new byte[dataLength];
         in.readBytes(data);
         Serializer serializer = Serializer.DEFAULT;
-        Object object = serializer.deserialize(data, InvocationResponse.class);
+        Object object = serializer.deserialize(data, InvocationRequest.class);
         out.add(object);
+        logger.info("Serialize from bytes[length:{}] to be a {}", dataLength, object);
     }
 }

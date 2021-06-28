@@ -55,4 +55,13 @@ public class InvocationResponse implements Serializable {
     public void setEntity(Object entity) {
         this.entity = entity;
     }
+
+    @Override
+    public String toString() {
+        return "InvocationResponse{" +
+                "requestId='" + requestId + '\'' +
+                ", errorMessage='" + errorMessage + '\'' +
+                ", entity=" + entity +
+                '}';
+    }
 }

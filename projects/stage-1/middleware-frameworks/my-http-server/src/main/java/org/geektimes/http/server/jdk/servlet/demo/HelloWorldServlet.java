@@ -19,6 +19,7 @@ package org.geektimes.http.server.jdk.servlet.demo;
 import javax.servlet.Servlet;
 import javax.servlet.ServletException;
 import javax.servlet.ServletOutputStream;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -31,6 +32,11 @@ import java.nio.charset.StandardCharsets;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
+@WebServlet(name = "helloWorld", urlPatterns = {
+        "/hello-world",
+        "/helloworld",
+        "/hello/world"
+})
 public class HelloWorldServlet extends HttpServlet {
 
     @Override
