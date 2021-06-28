@@ -48,7 +48,7 @@ public class MessageDecoder extends ByteToMessageDecoder {
         byte[] data = new byte[dataLength];
         in.readBytes(data);
         Serializer serializer = Serializer.DEFAULT;
-        Object object = serializer.deserialize(data, InvocationRequest.class);
+        Object object = serializer.deserialize(data, Object.class);
         out.add(object);
         logger.info("Serialize from bytes[length:{}] to be a {}", dataLength, object);
     }
