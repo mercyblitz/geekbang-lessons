@@ -34,7 +34,6 @@ import java.util.Collection;
  * @see Qualifier
  * @since
  */
-@Configuration
 public class QualifierAnnotationDependencyInjectionDemo {
 
     @Autowired
