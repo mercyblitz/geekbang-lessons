@@ -6,13 +6,21 @@
 
     <groupId>org.geekbang.projects</groupId>
     <artifactId>stage-1</artifactId>
-    <name>Geekbang projects - stage 1 ${revision}</name>
+    <name>Geekbang projects - stage 1</name>
     <version>${revision}</version>
     <packaging>pom</packaging>
+
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
+        </license>
+    </licenses>
 
     <modules>
         <module>middleware-frameworks</module>
         <module>user-platform</module>
+        <module>shopizer</module>
     </modules>
 
     <properties>
@@ -29,6 +37,7 @@
         <javax.cdi-api.version>2.0</javax.cdi-api.version>
         <javax.cache-api.version>1.1.1</javax.cache-api.version>
         <javax.interceptor-api.version>1.2</javax.interceptor-api.version>
+        <javax.mail.version>1.4.7</javax.mail.version>
 
         <!-- MicroProfile 版本-->
         <microprofile-config-api.version>2.0</microprofile-config-api.version>
@@ -38,23 +47,34 @@
 
         <!-- 第三方开源依赖版本-->
         <commons-lang.version>2.6</commons-lang.version>
-        <commons-io.version>2.4</commons-io.version>
+        <commons-lang3.version>3.5</commons-lang3.version>
+        <commons-io.version>2.7</commons-io.version>
         <commons-validator.version>1.7</commons-validator.version>
         <commons-configuration.version>1.10</commons-configuration.version>
+        <commons-collections.version>3.2.2</commons-collections.version>
+        <commons-collections4.version>4.1</commons-collections4.version>
         <commons-dbcp.version>1.4</commons-dbcp.version>
+        <commons-fileupload.version>1.3.3</commons-fileupload.version>
+        <tiles.jsp.version>3.0.4</tiles.jsp.version>
         <derby.version>10.1.3.1</derby.version>
+        <httpcomponent.version>4.5.2</httpcomponent.version>
+
+        <mapstruct.version>1.3.0.Final</mapstruct.version>
+        <guava.version>27.1-jre</guava.version>
         <hibernate.version>5.4.29.Final</hibernate.version>
         <hibernate.validator.version>5.4.3.Final</hibernate.validator.version>
         <glassfish-el.version>3.0.1-b08</glassfish-el.version>
         <jackson.version>2.9.5</jackson.version>
         <activemq.version>5.9.1</activemq.version>
-        <tomcat7.version>7.0.37</tomcat7.version>
+        <tomcat.version>8.5.64</tomcat.version>
         <lettuce.version>6.1.0.RELEASE</lettuce.version>
         <jedis.version>3.5.2</jedis.version>
         <mybatis.version>3.5.7</mybatis.version>
         <mybatis-spring.version>2.0.6</mybatis-spring.version>
         <curator.version>5.1.0</curator.version>
         <netty.version>4.1.65.Final</netty.version>
+        <swagger.version>2.9.2</swagger.version>
+        <mysql.jdbc.version>8.0.21</mysql.jdbc.version>
 
         <!-- Spring 依赖版本 -->
         <spring-boot.version>2.4.5</spring-boot.version>
@@ -70,6 +90,7 @@
         <maven.deploy.version>2.8.2</maven.deploy.version>
         <maven.flatten.version>1.2.5</maven.flatten.version>
         <maven.share.version>3.2.4</maven.share.version>
+        <maven.release.version>2.5.3</maven.release.version>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
     </properties>
@@ -109,6 +130,22 @@
                 <version>${jstl.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.glassfish.web</groupId>
+                <artifactId>jstl-impl</artifactId>
+                <version>${jstl.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.servlet</groupId>
+                        <artifactId>servlet-api</artifactId>
+                    </exclusion>
+                    <exclusion>
+                        <groupId>javax.servlet.jsp</groupId>
+                        <artifactId>jsp-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
             <!-- Java Commons Annotations -->
             <dependency>
                 <groupId>javax.annotation</groupId>
@@ -142,6 +179,13 @@
                 <groupId>javax.interceptor</groupId>
                 <artifactId>javax.interceptor-api</artifactId>
                 <version>${javax.interceptor-api.version}</version>
+            </dependency>
+
+            <!-- Java Mail API -->
+            <dependency>
+                <groupId>javax.mail</groupId>
+                <artifactId>mail</artifactId>
+                <version>${javax.mail.version}</version>
             </dependency>
 
             <!-- MicroProfile -->
@@ -179,6 +223,12 @@
                 <version>${commons-lang.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>commons-lang</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons-lang3.version}</version>
+            </dependency>
+
             <!-- Apache Commons I/O -->
             <dependency>
                 <groupId>commons-io</groupId>
@@ -191,6 +241,12 @@
                 <groupId>commons-validator</groupId>
                 <artifactId>commons-validator</artifactId>
                 <version>${commons-validator.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>commons-collections</groupId>
+                        <artifactId>commons-collections</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
 
             <!-- Apache Commons Configuration -->
@@ -200,6 +256,18 @@
                 <version>${commons-configuration.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>commons-collections</groupId>
+                <artifactId>commons-collections</artifactId>
+                <version>${commons-collections.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-collections4</artifactId>
+                <version>${commons-collections4.version}</version>
+            </dependency>
+
             <!-- Apache Commons DBCP -->
             <dependency>
                 <groupId>commons-dbcp</groupId>
@@ -207,11 +275,45 @@
                 <version>${commons-dbcp.version}</version>
             </dependency>
 
+            <!-- Apache Commons File Upload-->
+            <dependency>
+                <groupId>commons-fileupload</groupId>
+                <artifactId>commons-fileupload</artifactId>
+                <version>${commons-fileupload.version}</version>
+            </dependency>
+
+            <!-- Apache Tiles -->
+            <dependency>
+                <groupId>org.apache.tiles</groupId>
+                <artifactId>tiles-jsp</artifactId>
+                <version>${tiles.jsp.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>javax.servlet</groupId>
+                        <artifactId>servlet-api</artifactId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <!-- Guava -->
+            <dependency>
+                <groupId>com.google.guava</groupId>
+                <artifactId>guava</artifactId>
+                <version>${guava.version}</version>
+            </dependency>
+
             <!-- Java DB -->
             <dependency>
                 <groupId>org.apache.derby</groupId>
                 <artifactId>derby</artifactId>
                 <version>${derby.version}</version>
+            </dependency>
+
+            <!-- MapStruct -->
+            <dependency>
+                <groupId>org.mapstruct</groupId>
+                <artifactId>mapstruct</artifactId>
+                <version>${mapstruct.version}</version>
             </dependency>
 
             <!-- Hibernate ORM Core -->
@@ -269,19 +371,19 @@
             <dependency>
                 <groupId>org.apache.tomcat</groupId>
                 <artifactId>tomcat-catalina-ha</artifactId>
-                <version>${tomcat7.version}</version>
+                <version>${tomcat.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.apache.tomcat</groupId>
                 <artifactId>tomcat-dbcp</artifactId>
-                <version>${tomcat7.version}</version>
+                <version>${tomcat.version}</version>
             </dependency>
 
             <dependency>
                 <groupId>org.apache.tomcat</groupId>
                 <artifactId>tomcat-jdbc</artifactId>
-                <version>${tomcat7.version}</version>
+                <version>${tomcat.version}</version>
             </dependency>
 
             <!-- Redis Java Client - Lettuce -->
@@ -323,12 +425,25 @@
                 <version>${netty.version}</version>
             </dependency>
 
-            <!-- Apache Commons DBCP -->
+            <!-- Spring Swagger2 -->
             <dependency>
-                <groupId>commons-dbcp</groupId>
-                <artifactId>commons-dbcp</artifactId>
+                <groupId>io.springfox</groupId>
+                <artifactId>springfox-swagger2</artifactId>
+                <version>${swagger.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>io.springfox</groupId>
+                <artifactId>springfox-swagger-ui</artifactId>
+                <version>${swagger.version}</version>
+            </dependency>
+
+            <!-- MySQL -->
+            <dependency>
+                <groupId>mysql</groupId>
+                <artifactId>mysql-connector-java</artifactId>
+                <version>${mysql.jdbc.version}</version>
+            </dependency>
 
             <!-- Testing Dependencies -->
 
@@ -343,6 +458,7 @@
         </dependencies>
 
     </dependencyManagement>
+
     <build>
         <pluginManagement>
             <plugins>
@@ -382,6 +498,12 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>
                     <version>${maven.share.version}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-release-plugin</artifactId>
+                    <version>${maven.release.version}</version>
                 </plugin>
 
             </plugins>
@@ -484,5 +606,41 @@
             </pluginRepositories>
         </profile>
     </profiles>
+
+    <repositories>
+        <!-- Sonatype snapshot repo -->
+        <repository>
+            <id>oss-sonatype</id>
+            <name>oss-sonatype</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
+            <id>spring-releases</id>
+            <name>Spring Releases</name>
+            <url>https://repo.spring.io/libs-release</url>
+        </repository>
+        <!-- Milestone repo -->
+        <repository>
+            <id>spring-milestone</id>
+            <name>Spring Milestone</name>
+            <url>https://repo.spring.io/milestone/</url>
+        </repository>
+        <repository>
+            <id>org.jboss.repository.releases</id>
+            <name>JBoss Maven Release Repository</name>
+            <url>https://repository.jboss.org/nexus/content/repositories/releases</url>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>spring-releases</id>
+            <name>Spring Releases</name>
+            <url>https://repo.spring.io/libs-release</url>
+        </pluginRepository>
+    </pluginRepositories>
 
 </project>

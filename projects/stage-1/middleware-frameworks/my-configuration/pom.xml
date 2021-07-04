@@ -11,7 +11,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>my-configuration</artifactId>
-    <name>Middleware Frameworks - My Configuration Framework ${revision}</name>
+    <name>Middleware Frameworks - My Configuration Framework</name>
     <packaging>jar</packaging>
 
     <properties>
