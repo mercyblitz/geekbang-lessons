@@ -16,7 +16,9 @@
  */
 package com.salesmanager.shop.application.config;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnJndi;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jndi.JndiObjectFactoryBean;
 
@@ -31,6 +33,7 @@ import javax.sql.DataSource;
 @Configuration
 public class JndiConfig {
 
+    @ConditionalOnJndi("java:comp/env/jdbc/ShopizerDataSource")
     @Bean(name = "secondaryDataSource")
     public JndiObjectFactoryBean jndiObjectFactoryBean() {
         JndiObjectFactoryBean bean = new JndiObjectFactoryBean();
