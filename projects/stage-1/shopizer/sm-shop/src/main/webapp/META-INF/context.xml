@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context>
+
+    <!-- 上下文资源/组件声明（类似于 Spring 上下文）-->
+
+    <!-- Apache Commons Digester (Read-Only) 表达式（规则） -->
+    <!-- Apache Commons DataSource Connection Pool(DBCP) 1.x -->
+    <!--
+    JNDI : Java Naming and Directory Interface
+    ENV -> java:comp/env
+                        /bean
+                             /DBConnectionManager
+
+    =      java:comp/env/bean/DBConnectionManager
+
+    Tomcat JNDI : http://tomcat.apache.org/tomcat-7.0-doc/jndi-resources-howto.html
+    -->
+    <!-- 资源或者 FactoryBean 组件类似于 Spring Bean -->
+
+    <!-- DB Components -->
+    <Resource name="jdbc/ShopizerDataSource"
+              type="javax.sql.DataSource" auth="Container"
+              description="H2 database for Shopizer"
+              maxActive="100" maxIdle="30" maxWait="10000"
+              username="test" password="password"
+              driverClassName="org.h2.Driver"
+              url="jdbc:h2:file:./shopizer;AUTOCOMMIT=OFF;;mv_store=false;INIT=CREATE SCHEMA IF NOT EXISTS SALESMANAGER"/>
+
+</Context>

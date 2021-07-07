@@ -1,0 +1,31 @@
+server:
+  port: 8081
+
+echo:
+  service:
+    provider:
+      application:
+        name: spring-cloud-service-provider
+
+# Spring 应用名称
+spring:
+  application:
+    name: spring-cloud-service-consumer
+
+  cloud:
+    stream:
+      bindings:
+        message-in-0:
+          destination: test-topic
+        message-in-1:
+          destination: test-topic-1
+#        input1:
+#          destination: test-topic
+
+
+# 配置 Eureka Client（可参考 EurekaClientConfigBean）
+# 配置 Eureka Client 示例（可参考 EurekaInstanceConfigBean）
+eureka:
+  client:
+    service-url:
+      defaultZone: 'http://127.0.0.1:12345/eureka'

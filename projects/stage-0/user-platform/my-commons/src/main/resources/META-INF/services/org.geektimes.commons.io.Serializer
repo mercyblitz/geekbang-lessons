@@ -1,0 +1,2 @@
+org.geektimes.commons.io.DefaultSerializer
+org.geektimes.commons.io.StringSerializer
