@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE form-validation SYSTEM "shopizer/sm-shop-model/src/main/resources/META-INF/validation/commons-validator/validator_1_4_0.dtd">
+<form-validation>
+    <global>
+        <validator name="required"
+                   classname="com.salesmanager.shop.validation.commons.validator.ShopizerValidator"
+                   method="validateRequired"
+                   methodParams="java.lang.Object, org.apache.commons.validator.Field"/>
+    </global>
+
+    <formset>
+        <form name="customerForm">
+            <field property="userName" depends="required">
+                <arg0 key="customerForm.userName.displayname"/>
+            </field>
+            <field property="password" depends="required">
+                <arg0 key="customerForm.password.displayname"/>
+            </field>
+        </form>
+    </formset>
+
+</form-validation>

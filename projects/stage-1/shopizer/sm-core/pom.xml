@@ -49,6 +49,12 @@
             <artifactId>sm-core-modules</artifactId>
         </dependency>
 
+        <!-- Netflix Archaius -->
+        <dependency>
+            <groupId>com.netflix.archaius</groupId>
+            <artifactId>archaius-core</artifactId>
+        </dependency>
+
         <!-- canadapost -->
         <!--        <dependency>-->
         <!--            <groupId>com.shopizer</groupId>-->
