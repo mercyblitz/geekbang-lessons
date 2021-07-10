@@ -11,9 +11,15 @@
         http://www.springframework.org/schema/util
         https://www.springframework.org/schema/util/spring-util.xsd">
 
-    <!-- 3. 将其声明为 Spring Bean -->
-    <bean class="org.geekbang.thinking.in.spring.conversion.CustomizedPropertyEditorRegistrar"/>
-
+    <bean id="customEditorConfigurer" class="org.springframework.beans.factory.config.CustomEditorConfigurer">
+        <property name="propertyEditorRegistrars">
+            <list>
+                <!-- 3. 将其声明为 Spring Bean 并注入到customEditorConfigurer-->
+                <bean class="org.geekbang.thinking.in.spring.conversion.CustomizedPropertyEditorRegistrar"/>
+            </list>
+        </property>
+    </bean>
+        
     <!-- 声明 ConversionServiceFactoryBean 并且 name 必须为 "conversionService" -->
     <bean id="conversionService" class="org.springframework.context.support.ConversionServiceFactoryBean">
         <property name="converters">
