@@ -50,6 +50,13 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- Netflix Archaius -->
+        <dependency>
+            <groupId>com.netflix.archaius</groupId>
+            <artifactId>archaius-core</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
 </project>
