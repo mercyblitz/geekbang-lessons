@@ -11,7 +11,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>my-reactive-messaging</artifactId>
-    <name>Middleware Frameworks - My Reactive Messaging Framework ${revision}</name>
+    <name>Middleware Frameworks - My Reactive Messaging Framework</name>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>

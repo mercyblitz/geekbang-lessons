@@ -22,6 +22,10 @@ import org.apache.commons.lang.reflect.MethodUtils;
 import org.geektimes.rpc.InvocationRequest;
 import org.geektimes.rpc.InvocationResponse;
 import org.geektimes.rpc.context.ServiceContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Arrays;
 
 /**
  * {@link InvocationRequest} 处理器
@@ -30,6 +34,8 @@ import org.geektimes.rpc.context.ServiceContext;
  * @since 1.0.0
  */
 public class InvocationRequestHandler extends SimpleChannelInboundHandler<InvocationRequest> {
+
+    private final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final ServiceContext serviceContext;
 
@@ -54,11 +60,16 @@ public class InvocationRequestHandler extends SimpleChannelInboundHandler<Invoca
             errorMessage = e.getMessage();
         }
 
+        logger.info("Read {} and invoke the {}'s method[name:{}, param-types:{}, params:{}] : {}",
+                request, serviceName, methodName, Arrays.asList(parameterTypes), Arrays.asList(parameters), entity);
+
         InvocationResponse response = new InvocationResponse();
         response.setRequestId(request.getRequestId());
         response.setEntity(entity);
         response.setErrorMessage(errorMessage);
 
         ctx.writeAndFlush(response);
+
+        logger.info("Write and Flush {}", response);
     }
 }

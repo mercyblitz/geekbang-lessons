@@ -14,7 +14,7 @@
     <groupId>org.geekbang.projects</groupId>
     <artifactId>user-platform</artifactId>
     <version>${revision}</version>
-    <name>User Platform ${revision}</name>
+    <name>User Platform</name>
     <packaging>pom</packaging>
 
     <modules>

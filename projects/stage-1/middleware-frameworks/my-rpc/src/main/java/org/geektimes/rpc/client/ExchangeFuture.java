@@ -45,10 +45,6 @@ public class ExchangeFuture implements Future {
         return workingFutureMap.computeIfAbsent(requestId, id -> new ExchangeFuture(request));
     }
 
-    public static ExchangeFuture getExchangeFuture(String requestId) {
-        return workingFutureMap.get(requestId);
-    }
-
     public static ExchangeFuture removeExchangeFuture(String requestId) {
         return workingFutureMap.remove(requestId);
     }
