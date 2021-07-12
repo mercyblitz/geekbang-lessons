@@ -14,7 +14,7 @@
     <groupId>org.geekbang.projects</groupId>
     <artifactId>middleware-frameworks</artifactId>
     <version>${revision}</version>
-    <name>Middleware Frameworks ${revision}</name>
+    <name>Middleware Frameworks</name>
     <packaging>pom</packaging>
 
     <modules>

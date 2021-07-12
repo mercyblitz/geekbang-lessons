@@ -11,7 +11,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>my-configuration</artifactId>
-    <name>Middleware Frameworks - My Configuration Framework ${revision}</name>
+    <name>Middleware Frameworks - My Configuration Framework</name>
     <packaging>jar</packaging>
 
     <properties>
@@ -47,6 +47,13 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- Netflix Archaius -->
+        <dependency>
+            <groupId>com.netflix.archaius</groupId>
+            <artifactId>archaius-core</artifactId>
             <scope>test</scope>
         </dependency>
 
