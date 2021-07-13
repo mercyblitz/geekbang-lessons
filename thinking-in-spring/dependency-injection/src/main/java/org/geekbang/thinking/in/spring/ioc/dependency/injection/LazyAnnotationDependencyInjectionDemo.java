@@ -37,7 +37,6 @@ import java.util.Set;
  * @see Qualifier
  * @since
  */
-@Configuration
 public class LazyAnnotationDependencyInjectionDemo {
 
     @Autowired

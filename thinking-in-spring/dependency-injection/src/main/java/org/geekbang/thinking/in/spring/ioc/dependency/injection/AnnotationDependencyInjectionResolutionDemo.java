@@ -43,7 +43,6 @@ import static org.springframework.context.annotation.AnnotationConfigUtils.AUTOW
  * @see Qualifier
  * @since
  */
-@Configuration
 public class AnnotationDependencyInjectionResolutionDemo {
 
     @Autowired          // 依赖查找（处理） + 延迟
