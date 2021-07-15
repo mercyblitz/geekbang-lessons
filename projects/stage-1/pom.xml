@@ -86,6 +86,7 @@
         <!-- Maven Plugins 版本 -->
         <maven.compiler.version>3.8.1</maven.compiler.version>
         <maven.source.version>3.2.1</maven.source.version>
+        <maven.javadoc.version>3.3.0</maven.javadoc.version>
         <maven.jar.version>3.2.0</maven.jar.version>
         <maven.war.version>3.3.1</maven.war.version>
         <maven.deploy.version>2.8.2</maven.deploy.version>
@@ -394,6 +395,12 @@
                 <version>${tomcat.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.apache.tomcat</groupId>
+                <artifactId>tomcat-jasper</artifactId>
+                <version>${tomcat.version}</version>
+            </dependency>
+
             <!-- Redis Java Client - Lettuce -->
             <dependency>
                 <groupId>io.lettuce</groupId>
@@ -486,8 +493,8 @@
 
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-deploy-plugin</artifactId>
-                    <version>${maven.deploy.version}</version>
+                    <artifactId>maven-javadoc-plugin</artifactId>
+                    <version>${maven.javadoc.version}</version>
                 </plugin>
 
                 <plugin>
@@ -506,6 +513,12 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-shade-plugin</artifactId>
                     <version>${maven.share.version}</version>
+                </plugin>
+
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>${maven.deploy.version}</version>
                 </plugin>
 
                 <plugin>
@@ -564,29 +577,6 @@
 
     <profiles>
         <profile>
-            <id>tomcat-7</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
-            <build>
-                <pluginManagement>
-                    <plugins>
-                        <!-- Tomcat Maven 插件用于构建可执行 war -->
-                        <!-- Tomcat 7.x 官方文档：
-                        http://tomcat.apache.org/tomcat-7.0-doc/index.html
-                        -->
-                        <plugin>
-                            <groupId>org.apache.tomcat.maven</groupId>
-                            <artifactId>tomcat7-maven-plugin</artifactId>
-                            <version>2.1</version>
-                        </plugin>
-                    </plugins>
-                </pluginManagement>
-
-            </build>
-        </profile>
-
-        <profile>
             <id>tomcat-8</id>
             <build>
                 <pluginManagement>
@@ -612,6 +602,41 @@
                     </snapshots>
                 </pluginRepository>
             </pluginRepositories>
+        </profile>
+
+        <profile>
+            <id>release</id>
+            <build>
+              <plugins>
+                  <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-javadoc-plugin</artifactId>
+                      <executions>
+                          <execution>
+                              <id>attach-javadocs</id>
+                              <goals>
+                                  <goal>jar</goal>
+                              </goals>
+                              <configuration>
+                                  <source>8</source>
+                                  <detectJavaApiLink>false</detectJavaApiLink>
+                              </configuration>
+                          </execution>
+                      </executions>
+                  </plugin>
+
+                  <plugin>
+                      <groupId>org.apache.maven.plugins</groupId>
+                      <artifactId>maven-release-plugin</artifactId>
+                      <configuration>
+                          <autoVersionSubmodules>true</autoVersionSubmodules>
+                          <useReleaseProfile>false</useReleaseProfile>
+                          <releaseProfiles>release</releaseProfiles>
+                          <goals>deploy</goals>
+                      </configuration>
+                  </plugin>
+              </plugins>
+            </build>
         </profile>
     </profiles>
 

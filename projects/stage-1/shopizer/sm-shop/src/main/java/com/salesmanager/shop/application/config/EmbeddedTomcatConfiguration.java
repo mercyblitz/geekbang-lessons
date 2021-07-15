@@ -16,10 +16,7 @@
  */
 package com.salesmanager.shop.application.config;
 
-import org.apache.catalina.core.StandardContext;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.aop.framework.AopProxyUtils;
-import org.springframework.aop.support.AopUtils;
 import org.springframework.beans.factory.BeanClassLoaderAware;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
@@ -29,7 +26,6 @@ import org.springframework.context.annotation.Configuration;
 
 import java.io.File;
 import java.net.URL;
-import java.nio.file.Path;
 
 /**
  * Embedded Tomcat Configuration
@@ -48,10 +44,7 @@ public class EmbeddedTomcatConfiguration implements BeanClassLoaderAware {
         return factory -> {
             if (webappDirectory != null) {
                 factory.addContextCustomizers(context -> {
-                    if (context instanceof StandardContext) {
-                        StandardContext standardContext = (StandardContext) context;
-                        standardContext.setDocBase(webappDirectory.getAbsolutePath());
-                    }
+                    context.setDocBase(webappDirectory.getAbsolutePath());
                 });
             }
         };
