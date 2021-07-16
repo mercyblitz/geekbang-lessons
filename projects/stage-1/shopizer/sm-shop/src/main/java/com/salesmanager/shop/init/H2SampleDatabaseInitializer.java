@@ -39,7 +39,7 @@ import java.io.InputStream;
  */
 public class H2SampleDatabaseInitializer implements ApplicationContextInitializer {
 
-    public static final String SAMPLE_H2_DATABASE_RESOURCE_NAME = "classpath:/db/h2/shopizer-sample.h2.db";
+    public static final String SAMPLE_H2_DATABASE_RESOURCE_NAME = "classpath:/sample-data/h2/SALESMANAGER.h2.db";
 
     public static final String TARGET_H2_DATABASE_FILE_NAME = "SALESMANAGER.h2.db";
 
@@ -57,8 +57,8 @@ public class H2SampleDatabaseInitializer implements ApplicationContextInitialize
         // default, ${user.dir} comes from Java System Properties
         // Please refer the configuration in the resource "classpath:database.properties" :
         // db.jdbcUrl=jdbc\:h2\:file\:${user.dir}/SALESMANAGER;
-        String userDirPath = environment.getProperty("user.dir");
-        File targetH2DatabaseFile = new File(userDirPath, TARGET_H2_DATABASE_FILE_NAME);
+        String dataDirPath = getDataDirectoryPath(environment);
+        File targetH2DatabaseFile = new File(dataDirPath, TARGET_H2_DATABASE_FILE_NAME);
         if (targetH2DatabaseFile.exists()) {
             logger.info("The target H2 database file[path:{}] exists, the sample data is not about to be initialized.",
                     targetH2DatabaseFile.getAbsolutePath());
@@ -80,5 +80,9 @@ public class H2SampleDatabaseInitializer implements ApplicationContextInitialize
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
         }
+    }
+
+    private String getDataDirectoryPath(Environment environment) {
+        return environment.getProperty("user.dir") + File.separator + ".data" + File.separator;
     }
 }
