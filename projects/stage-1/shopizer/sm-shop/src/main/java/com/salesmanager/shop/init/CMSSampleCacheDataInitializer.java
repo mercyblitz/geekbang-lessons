@@ -44,8 +44,6 @@ public class CMSSampleCacheDataInitializer implements ApplicationContextInitiali
 
     public static final String SOURCE_RESOURCES_PATTERN = CLASSPATH_ALL_URL_PREFIX + SIMPLE_DATA_CLASS_PATH + "files/**/*.dat";
 
-    public static final String TARGET_DIRECTORY_NAME = "files";
-
     private static final Logger logger = LoggerFactory.getLogger(CMSSampleCacheDataInitializer.class);
 
     @Override
