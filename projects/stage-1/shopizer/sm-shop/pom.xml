@@ -183,6 +183,28 @@
             <version>1.6.0</version>
         </dependency>
 
+        <!-- Jersey -->
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-client</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.glassfish.jersey.ext.microprofile</groupId>
+            <artifactId>jersey-mp-rest-client</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.geekbang.projects</groupId>
+            <artifactId>my-configuration</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>

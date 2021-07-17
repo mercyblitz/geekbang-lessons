@@ -74,6 +74,25 @@
             <artifactId>jakarta.el</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.geekbang.projects</groupId>
+            <artifactId>my-rest-client</artifactId>
+            <version>${revision}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.ws.rs</groupId>
+            <artifactId>javax.ws.rs-api</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>
