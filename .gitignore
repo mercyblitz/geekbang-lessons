@@ -43,11 +43,10 @@ compiler/gradle.properties
 compiler/build/*
 compiler/.gradle/*
 
-
-# Tomcat
-.extract
-
-# Others
+# Data 
 db/
 activemq-data/
+.data/
+# Tomcat
+.extract
 

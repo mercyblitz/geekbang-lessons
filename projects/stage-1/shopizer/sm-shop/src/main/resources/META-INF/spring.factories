@@ -1,0 +1,3 @@
+org.springframework.context.ApplicationContextInitializer=\
+com.salesmanager.shop.init.H2SampleDatabaseInitializer,\
+com.salesmanager.shop.init.CMSSampleCacheDataInitializer

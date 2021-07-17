@@ -2,9 +2,15 @@ package com.salesmanager.core.business.modules.email;
 
 
 public interface HtmlEmailSender {
-	
-	void send(final Email email) throws Exception;
 
-	void setEmailConfig(EmailConfig emailConfig);
+    void send(final Email email) throws Exception;
+
+    void setEmailConfig(EmailConfig emailConfig);
+
+    default EmailConfig getEmailConfig() {
+        return null;
+    }
+
+    ;
 
 }
