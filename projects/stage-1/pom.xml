@@ -76,6 +76,7 @@
         <swagger.version>2.9.2</swagger.version>
         <mysql.jdbc.version>8.0.21</mysql.jdbc.version>
         <archaius.version>0.6.0</archaius.version>
+        <jersey.version>2.34</jersey.version>
 
         <!-- Spring 依赖版本 -->
         <spring-boot.version>2.4.5</spring-boot.version>
@@ -460,6 +461,25 @@
                 <version>${mysql.jdbc.version}</version>
             </dependency>
 
+            <!-- Jersey -->
+            <dependency>
+                <groupId>org.glassfish.jersey.core</groupId>
+                <artifactId>jersey-client</artifactId>
+                <version>${jersey.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jersey.core</groupId>
+                <artifactId>jersey-common</artifactId>
+                <version>${jersey.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jersey.ext.microprofile</groupId>
+                <artifactId>jersey-mp-rest-client</artifactId>
+                <version>${jersey.version}</version>
+            </dependency>
+
             <!-- Testing Dependencies -->
 
             <!-- JUnit -->
@@ -607,35 +627,35 @@
         <profile>
             <id>release</id>
             <build>
-              <plugins>
-                  <plugin>
-                      <groupId>org.apache.maven.plugins</groupId>
-                      <artifactId>maven-javadoc-plugin</artifactId>
-                      <executions>
-                          <execution>
-                              <id>attach-javadocs</id>
-                              <goals>
-                                  <goal>jar</goal>
-                              </goals>
-                              <configuration>
-                                  <source>8</source>
-                                  <detectJavaApiLink>false</detectJavaApiLink>
-                              </configuration>
-                          </execution>
-                      </executions>
-                  </plugin>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-javadoc-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>attach-javadocs</id>
+                                <goals>
+                                    <goal>jar</goal>
+                                </goals>
+                                <configuration>
+                                    <source>8</source>
+                                    <detectJavaApiLink>false</detectJavaApiLink>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
 
-                  <plugin>
-                      <groupId>org.apache.maven.plugins</groupId>
-                      <artifactId>maven-release-plugin</artifactId>
-                      <configuration>
-                          <autoVersionSubmodules>true</autoVersionSubmodules>
-                          <useReleaseProfile>false</useReleaseProfile>
-                          <releaseProfiles>release</releaseProfiles>
-                          <goals>deploy</goals>
-                      </configuration>
-                  </plugin>
-              </plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-release-plugin</artifactId>
+                        <configuration>
+                            <autoVersionSubmodules>true</autoVersionSubmodules>
+                            <useReleaseProfile>false</useReleaseProfile>
+                            <releaseProfiles>release</releaseProfiles>
+                            <goals>deploy</goals>
+                        </configuration>
+                    </plugin>
+                </plugins>
             </build>
         </profile>
     </profiles>

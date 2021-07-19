@@ -221,7 +221,6 @@
             <version>7.5.2</version>
         </dependency>
 
-
         <!-- tests dependencies -->
         <!-- http://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-test -->
         <dependency>
