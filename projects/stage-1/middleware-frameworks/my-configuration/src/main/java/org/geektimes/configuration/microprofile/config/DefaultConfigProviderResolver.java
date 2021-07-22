@@ -17,7 +17,7 @@ public class DefaultConfigProviderResolver extends ConfigProviderResolver {
 
     @Override
     public Config getConfig() {
-        return getConfig(null);
+        return getConfig(Thread.currentThread().getContextClassLoader());
     }
 
     @Override
