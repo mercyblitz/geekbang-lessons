@@ -28,10 +28,44 @@
         </dependency>
 
         <dependency>
+            <groupId>org.geekbang.projects</groupId>
+            <artifactId>my-gateway</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
         </dependency>
 
     </dependencies>
 
+    <build>
+        <plugins>
+            <!-- Tomcat Maven 插件用于构建可执行 war -->
+            <!-- Tomcat 7.x 官方文档：
+            http://tomcat.apache.org/tomcat-7.0-doc/index.html
+            -->
+            <plugin>
+                <groupId>org.apache.tomcat.maven</groupId>
+                <artifactId>tomcat7-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>tomcat-run</id>
+                        <goals>
+                            <!-- 最终打包成可执行的jar包 -->
+                            <goal>exec-war-only</goal>
+                        </goals>
+                        <phase>package</phase>
+                        <configuration>
+                            <!-- ServletContext 路径 -->
+                            <path>/</path>
+                            <httpPort>80</httpPort>
+                            <enableNaming>true</enableNaming>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

@@ -18,37 +18,47 @@ package org.geektimes.configuration.microprofile.config.source.servlet;
 
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.geektimes.configuration.microprofile.config.source.EnumerableConfigSource;
+import org.geektimes.configuration.microprofile.config.source.servlet.initializer.ServletRequestThreadLocalListener;
 
-import javax.servlet.FilterConfig;
+import javax.servlet.ServletRequest;
+import javax.servlet.http.HttpServletRequest;
 import java.util.Enumeration;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static java.lang.String.format;
+import static java.util.Collections.emptyEnumeration;
+import static java.util.Collections.list;
 
 /**
- * The {@link ConfigSource} implementation based on {@link FilterConfig}
+ * {@link ServletRequest}'s Headers {@link ConfigSource}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
- * Date : 2021-04-28
  */
-public class FilterConfigSource extends EnumerableConfigSource {
+public class ServletRequestHeaderConfigSource extends EnumerableConfigSource {
 
-    private final FilterConfig filterConfig;
-
-    public FilterConfigSource(FilterConfig filterConfig) {
-        super(format("Filter[name:%s] Init Parameters", filterConfig.getFilterName()), 550);
-        this.filterConfig = filterConfig;
+    public ServletRequestHeaderConfigSource() {
+        super("Request Headers", 1100);
     }
 
-    @Override
     protected Supplier<Enumeration<String>> namesSupplier() {
-        return filterConfig::getInitParameterNames;
+        return () -> {
+            HttpServletRequest request = request();
+            return request == null ? emptyEnumeration() : request.getHeaderNames();
+        };
     }
 
-    @Override
     protected Function<String, String> valueResolver() {
-        return filterConfig::getInitParameter;
+        return this::getHeaderValue;
+    }
+
+    private String getHeaderValue(String parameterName) {
+        // return String Array
+        Enumeration<String> headerValues = request().getHeaders(parameterName);
+        return String.join(",", list(headerValues).toArray(new String[0]));
+    }
+
+    private HttpServletRequest request() {
+        return ServletRequestThreadLocalListener.getRequest();
     }
 }

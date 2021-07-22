@@ -19,4 +19,15 @@
         <listener-class>org.geektimes.projects.servlet.listener.MyServletContextAttributeListener</listener-class>
     </listener>
 
+    <servlet>
+        <servlet-name>GatewayServlet</servlet-name>
+        <servlet-class>org.geektimes.gateway.servlet.GatewayServlet</servlet-class>
+        <load-on-startup>0</load-on-startup>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>GatewayServlet</servlet-name>
+        <url-pattern>/</url-pattern>
+    </servlet-mapping>
+
 </web-app>

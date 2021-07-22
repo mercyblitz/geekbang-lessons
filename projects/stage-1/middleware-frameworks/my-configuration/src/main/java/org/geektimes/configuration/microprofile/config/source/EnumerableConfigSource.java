@@ -14,41 +14,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.configuration.microprofile.config.source.servlet;
+package org.geektimes.configuration.microprofile.config.source;
 
 import org.eclipse.microprofile.config.spi.ConfigSource;
-import org.geektimes.configuration.microprofile.config.source.EnumerableConfigSource;
 
-import javax.servlet.FilterConfig;
 import java.util.Enumeration;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import static java.lang.String.format;
-
 /**
- * The {@link ConfigSource} implementation based on {@link FilterConfig}
+ * Enumerable {@link ConfigSource} extends {@link MapBasedConfigSource}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
- * Date : 2021-04-28
  */
-public class FilterConfigSource extends EnumerableConfigSource {
+public abstract class EnumerableConfigSource extends MapBasedConfigSource {
 
-    private final FilterConfig filterConfig;
-
-    public FilterConfigSource(FilterConfig filterConfig) {
-        super(format("Filter[name:%s] Init Parameters", filterConfig.getFilterName()), 550);
-        this.filterConfig = filterConfig;
+    protected EnumerableConfigSource(String name, int ordinal) {
+        super(name, ordinal);
     }
 
     @Override
-    protected Supplier<Enumeration<String>> namesSupplier() {
-        return filterConfig::getInitParameterNames;
+    protected final void prepareConfigData(Map configData) throws Throwable {
+        prepareConfigData(configData, namesSupplier(), valueResolver());
     }
 
-    @Override
-    protected Function<String, String> valueResolver() {
-        return filterConfig::getInitParameter;
+    private void prepareConfigData(Map configData,
+                                   Supplier<Enumeration<String>> namesSupplier,
+                                   Function<String, String> valueResolver) {
+        Enumeration<String> names = namesSupplier.get();
+        while (names.hasMoreElements()) {
+            String name = names.nextElement();
+            String value = valueResolver.apply(name);
+            configData.put(name, value);
+        }
     }
+
+    protected abstract Supplier<Enumeration<String>> namesSupplier();
+
+    protected abstract Function<String, String> valueResolver();
+
 }
