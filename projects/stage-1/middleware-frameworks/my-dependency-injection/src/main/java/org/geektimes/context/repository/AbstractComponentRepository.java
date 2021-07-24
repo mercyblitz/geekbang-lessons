@@ -18,11 +18,13 @@ package org.geektimes.context.repository;
 
 import org.geektimes.commons.function.ThrowableFunction;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
 
+import static java.util.Collections.unmodifiableMap;
 import static org.geektimes.commons.function.ThrowableFunction.execute;
 
 /**
@@ -47,7 +49,7 @@ public abstract class AbstractComponentRepository implements ComponentRepository
 
     @Override
     public Set<String> getComponentNames() {
-        return componentsCache.isEmpty() ? componentsCache.keySet() : listComponentNames();
+        return componentsCache.isEmpty() ? listComponentNames() : componentsCache.keySet();
     }
 
     /**
@@ -88,15 +90,20 @@ public abstract class AbstractComponentRepository implements ComponentRepository
         return result;
     }
 
-    protected abstract Set<String> listComponentNames();
-
-    protected abstract <C> C loadComponent(String s);
-
     @Override
     public final void destroy() {
         clearComponentsCache();
         doDestroy();
     }
+
+    @Override
+    public Map<String, Object> getComponents() {
+        return componentsCache;
+    }
+
+    public abstract Set<String> listComponentNames();
+
+    public abstract <C> C loadComponent(String s);
 
     protected void clearComponentsCache() {
         componentsCache.clear();

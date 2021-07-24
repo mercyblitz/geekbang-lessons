@@ -31,7 +31,7 @@ import static java.util.Collections.emptySet;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class JndiComponentContext extends AbstractComponentRepository {
+public class JndiComponentRepository extends AbstractComponentRepository {
 
     private static final String COMPONENT_ENV_CONTEXT_NAME = "java:comp/env";
 
@@ -87,7 +87,7 @@ public class JndiComponentContext extends AbstractComponentRepository {
     }
 
     @Override
-    protected Set<String> listComponentNames() {
+    public Set<String> listComponentNames() {
         return listComponentNames("/");
     }
 
@@ -121,7 +121,7 @@ public class JndiComponentContext extends AbstractComponentRepository {
     }
 
     @Override
-    protected <C> C loadComponent(String name) {
+    public <C> C loadComponent(String name) {
         return executeInContext(context -> (C) context.lookup(name));
     }
 

@@ -77,6 +77,7 @@
         <mysql.jdbc.version>8.0.21</mysql.jdbc.version>
         <archaius.version>0.6.0</archaius.version>
         <jersey.version>2.34</jersey.version>
+        <cglib.version>3.3.0</cglib.version>
 
         <!-- Spring 依赖版本 -->
         <spring-boot.version>2.4.5</spring-boot.version>
@@ -478,6 +479,13 @@
                 <groupId>org.glassfish.jersey.ext.microprofile</groupId>
                 <artifactId>jersey-mp-rest-client</artifactId>
                 <version>${jersey.version}</version>
+            </dependency>
+
+            <!-- CGLIB -->
+            <dependency>
+                <groupId>cglib</groupId>
+                <artifactId>cglib</artifactId>
+                <version>${cglib.version}</version>
             </dependency>
 
             <!-- Testing Dependencies -->
