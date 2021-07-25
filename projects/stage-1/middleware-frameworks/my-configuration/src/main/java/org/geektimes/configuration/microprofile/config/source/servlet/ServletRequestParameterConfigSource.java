@@ -34,8 +34,9 @@ import static java.util.Collections.emptyEnumeration;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class
-ServletRequestParameterConfigSource extends EnumerableConfigSource {
+
+public class ServletRequestParameterConfigSource extends EnumerableConfigSource {
+
 
     public ServletRequestParameterConfigSource() {
         super("Request Parameters", 1000);
