@@ -18,6 +18,8 @@ package org.geektimes.context.repository;
 
 import org.geektimes.context.core.Lifecycle;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -31,24 +33,35 @@ public interface ComponentRepository extends Lifecycle {
     /**
      * 通过名称查找组件对象
      *
-     * @param name 组件名称
-     * @param <C>  组件对象类型
-     * @return 如果找不到返回, <code>null</code>
+     * @param name the name of component
+     * @param <C>  the type of component
+     * @return <code>null</code> if not found
      */
     <C> C getComponent(String name);
 
     /**
-     * 注册组件
+     * Register a component with name.
      *
-     * @param name      组件名称
-     * @param component 组件对象
+     * @param name      the name of component
+     * @param component the instance of component
      */
     void registerComponent(String name, Object component);
 
     /**
-     * 获取所有的组件名称
+     * Get all names of components
      *
-     * @return
+     * @return non-null
      */
     Set<String> getComponentNames();
+
+    /**
+     * Get all components
+     *
+     * @return non-null
+     */
+    default Map<String, Object> getComponents() {
+        final Map<String, Object> componentsMap = new HashMap<>();
+        getComponentNames().forEach(name -> componentsMap.put(name, getComponent(name)));
+        return componentsMap;
+    }
 }

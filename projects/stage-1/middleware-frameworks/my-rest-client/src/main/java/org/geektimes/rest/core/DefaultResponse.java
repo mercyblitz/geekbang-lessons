@@ -179,6 +179,8 @@ public class DefaultResponse extends Response {
             if (String.class.equals(entityType)) {
                 Object value = IOUtils.toString(inputStream, encoding);
                 entity = (T) value;
+            } else if (InputStream.class.equals(entityType)) {
+                return (T) inputStream;
             } else {
                 ObjectMapper objectMapper = new ObjectMapper();
                 entity = objectMapper.readValue(new InputStreamReader(inputStream, encoding), entityType);
