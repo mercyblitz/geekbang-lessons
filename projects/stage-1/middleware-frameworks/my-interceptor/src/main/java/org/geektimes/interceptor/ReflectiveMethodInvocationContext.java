@@ -53,7 +53,7 @@ public class ReflectiveMethodInvocationContext implements InvocationContext {
 
     @Override
     public Object getTimer() {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override
@@ -63,7 +63,7 @@ public class ReflectiveMethodInvocationContext implements InvocationContext {
 
     @Override
     public Constructor<?> getConstructor() {
-        throw new UnsupportedOperationException("ReflectiveMethodInvocationContext does not support to get the Constructor!");
+        return null;
     }
 
     @Override

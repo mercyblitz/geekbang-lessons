@@ -58,7 +58,7 @@ public class CglibMethodInvocationContext implements InvocationContext {
 
     @Override
     public Object getTimer() {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override
@@ -68,7 +68,7 @@ public class CglibMethodInvocationContext implements InvocationContext {
 
     @Override
     public Constructor<?> getConstructor() {
-        throw new UnsupportedOperationException();
+        return null;
     }
 
     @Override

@@ -32,7 +32,7 @@ public class BulkheadInterceptorTest {
     private BulkheadInterceptor interceptor = new BulkheadInterceptor();
 
     @Test
-    public void testInThreadIsolation() throws Exception {
+    public void testInThreadIsolation() throws Throwable {
         EchoService echoService = new EchoService();
         Method method = EchoService.class.getMethod("echo", Object.class);
         ReflectiveMethodInvocationContext context = new ReflectiveMethodInvocationContext
@@ -41,7 +41,7 @@ public class BulkheadInterceptorTest {
     }
 
     @Test
-    public void testInSemaphoreIsolation() throws Exception {
+    public void testInSemaphoreIsolation() throws Throwable {
         EchoService echoService = new EchoService();
         Method method = EchoService.class.getMethod("echo", String.class);
         ReflectiveMethodInvocationContext context = new ReflectiveMethodInvocationContext

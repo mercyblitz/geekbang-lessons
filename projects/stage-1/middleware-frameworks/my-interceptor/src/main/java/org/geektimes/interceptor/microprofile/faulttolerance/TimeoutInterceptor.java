@@ -17,19 +17,13 @@
 package org.geektimes.interceptor.microprofile.faulttolerance;
 
 import org.eclipse.microprofile.faulttolerance.Timeout;
+import org.geektimes.interceptor.AnnotatedInterceptor;
 
-import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
-import java.lang.reflect.Method;
 import java.time.temporal.ChronoUnit;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
-import static java.util.concurrent.Executors.newCachedThreadPool;
-import static org.geektimes.commons.util.AnnotationUtils.findAnnotation;
 import static org.geektimes.commons.util.TimeUtils.toTimeUnit;
 
 /**
@@ -41,43 +35,29 @@ import static org.geektimes.commons.util.TimeUtils.toTimeUnit;
  */
 @Timeout
 @Interceptor
-public class TimeoutInterceptor {
+public class TimeoutInterceptor extends AnnotatedInterceptor<Timeout> {
 
     // TODO ExecutorService fixed size = external Server Thread numbers
-    private final ExecutorService executor = newCachedThreadPool();
+    private final ExecutorService executor = ForkJoinPool.commonPool();
 
-    @AroundInvoke
-    public Object execute(InvocationContext context) throws Exception {
-        Method method = context.getMethod();
-        Timeout timeout = findTimeout(method);
-        if (timeout != null) {
-            ChronoUnit chronoUnit = timeout.unit();
-            long timeValue = timeout.value();
-            TimeUnit timeUnit = toTimeUnit(chronoUnit);
-
-            Future future = executor.submit(() -> {
-                try {
-                    return context.proceed();
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            });
-
-            try {
-                return future.get(timeValue, timeUnit);
-            } catch (TimeoutException e) {
-                future.cancel(true);
-            }
-        }
-
-        return context.proceed();
+    public TimeoutInterceptor() {
+        super();
+        setPriority(400);
     }
 
-    private Timeout findTimeout(Method method) {
-        Timeout timeout = findAnnotation(method, Timeout.class);
-        if (timeout == null) {
-            timeout = method.getDeclaringClass().getAnnotation(Timeout.class);
+    @Override
+    protected Object execute(InvocationContext context, Timeout timeout) throws Exception {
+        ChronoUnit chronoUnit = timeout.unit();
+        long timeValue = timeout.value();
+        TimeUnit timeUnit = toTimeUnit(chronoUnit);
+
+        Future future = executor.submit(context::proceed);
+
+        try {
+            return future.get(timeValue, timeUnit);
+        } catch (TimeoutException e) {
+            throw new org.eclipse.microprofile.faulttolerance.exceptions.TimeoutException(e);
         }
-        return timeout;
     }
+
 }

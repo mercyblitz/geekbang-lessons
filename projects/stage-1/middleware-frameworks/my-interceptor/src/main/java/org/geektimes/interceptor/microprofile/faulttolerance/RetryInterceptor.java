@@ -17,20 +17,18 @@
 package org.geektimes.interceptor.microprofile.faulttolerance;
 
 import org.eclipse.microprofile.faulttolerance.Retry;
+import org.geektimes.interceptor.AnnotatedInterceptor;
 
-import javax.interceptor.AroundInvoke;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
-import java.lang.reflect.Method;
 import java.util.Optional;
 import java.util.concurrent.*;
-import java.util.function.Supplier;
 
 import static java.lang.String.format;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.concurrent.Executors.newScheduledThreadPool;
-import static org.geektimes.commons.util.AnnotationUtils.findAnnotation;
+import static org.geektimes.commons.reflect.util.ClassUtils.isDerived;
 import static org.geektimes.commons.util.TimeUtils.toTimeUnit;
 
 /**
@@ -42,17 +40,18 @@ import static org.geektimes.commons.util.TimeUtils.toTimeUnit;
  */
 @Retry
 @Interceptor
-public class RetryInterceptor {
+public class RetryInterceptor extends AnnotatedInterceptor<Retry> {
 
     private final ScheduledExecutorService executorService = newScheduledThreadPool(2);
 
-    @AroundInvoke
-    public Object execute(InvocationContext context) throws Exception {
-        Method method = context.getMethod();
-        Retry retry = findRetry(method);
-        if (retry == null) { // No @Retry Found
-            return context.proceed();
-        }
+
+    public RetryInterceptor() {
+        super();
+        setPriority(300);
+    }
+
+    @Override
+    protected Object execute(InvocationContext context, Retry retry) throws Throwable {
 
         long maxRetries = retry.maxRetries();
         if (maxRetries < 1) { // No retry
@@ -60,96 +59,71 @@ public class RetryInterceptor {
         }
 
         // Invoke first
-        Object result = null;
+        InvocationResult result = action(retry, context);
 
-        boolean success = false;
-
-        try {
-            result = context.proceed();
-            success = true;
-        } catch (Throwable e) {
-            if (isAbortOn(retry, e)) {
-                throw e;
-            } else if (!isRetryOn(retry, e)) {
-                throw e;
-            }
-            success = false;
+        if (result.isSuccess()) {
+            return result.getResult();
+        } else if (result.getFailure() != null) { // if the abort or no-retry failure found
+            throw result.getFailure();
         }
 
-        if (success) { // successful
-            return result;
-        }
-
-        Supplier<InvocationResult> retryActionResult = () -> {
-            InvocationResult invocationResult = new InvocationResult();
-            try {
-                invocationResult.setResult(context.proceed());
-                invocationResult.setSuccess(true);
-            } catch (Throwable e) {
-                invocationResult.setSuccess(false);
-                if (!isAbortOn(retry, e) && isRetryOn(retry, e)) {
-                    invocationResult.setException(e);
-                } // else isAbortOn == true || isRetryOn == false
-            }
-            return invocationResult;
-        };
-
+        Callable<InvocationResult> retryAction = () -> action(retry, context);
 
         Optional<Long> delay = getDelay(retry);
 
-        Callable<InvocationResult> maxRetriesActionResult = () -> {
-            InvocationResult value = null;
+        Callable<InvocationResult> maxRetriesAction = () -> {
+            InvocationResult retryActionResult = null;
             for (int i = 0; i < maxRetries; i++) {
                 if (delay.isPresent()) { // Schedule
                     Optional<Long> jitter = getJitter(retry);
                     long actualDelay = delay.get() + jitter.get();
-                    ScheduledFuture<InvocationResult> future =
-                            executorService.schedule(() -> retryActionResult.get(), actualDelay, TimeUnit.NANOSECONDS);
-                    value = future.get();
+                    ScheduledFuture<InvocationResult> future = executorService.schedule(retryAction,
+                            actualDelay, TimeUnit.NANOSECONDS);
+                    retryActionResult = future.get();
                 } else { // Synchronization
-                    value = retryActionResult.get();
+                    retryActionResult = retryAction.call();
                 }
-                if (value.isSuccess() || value.getException() == null) {
+                if (retryActionResult.isSuccess()) {
                     break;
                 }
             }
-            return value;
+            return retryActionResult;
         };
 
         Optional<Long> maxDuration = getMaxDuration(retry, delay);
 
         if (maxDuration.isPresent()) { // with max duration execution
-            Future<InvocationResult> future = executorService.submit(maxRetriesActionResult);
-            InvocationResult value = future.get(maxDuration.get(), TimeUnit.NANOSECONDS);
-            result = value.getResult();
+            Future<InvocationResult> future = executorService.submit(maxRetriesAction);
+            result = future.get(maxDuration.get(), TimeUnit.NANOSECONDS);
         } else {
-            InvocationResult value = maxRetriesActionResult.call();
-            result = value.getResult();
+            result = maxRetriesAction.call();
         }
 
-        return result;
+        return result.getResult();
+    }
+
+    private InvocationResult action(Retry retry, InvocationContext context) {
+        InvocationResult invocationResult = new InvocationResult();
+        try {
+            invocationResult.setResult(context.proceed());
+            invocationResult.setSuccess(true);
+        } catch (Throwable e) {
+            Throwable failure = getFailure(e);
+            invocationResult.setSuccess(false);
+            if (isAbortOn(retry, failure) || !isRetryOn(retry, failure)) {
+                invocationResult.setFailure(failure);
+            }
+
+        }
+        return invocationResult;
     }
 
     private boolean isRetryOn(Retry retry, Throwable e) {
-        boolean retryOn = false;
-        for (Class<? extends Throwable> retryType : retry.retryOn()) {
-            if (retryType.isInstance(e.getCause())) {
-                retryOn = true;
-                break;
-            }
-        }
-        return retryOn;
+        return isDerived(e.getClass(), retry.retryOn());
     }
 
     private boolean isAbortOn(Retry retry, Throwable e) {
-        boolean abort = false;
-        for (Class<? extends Throwable> abortType : retry.abortOn()) {
-            if (abortType.isInstance(e.getCause())) {
-                abort = true;
-                break;
-            }
-        }
-        return abort;
+        return isDerived(e.getClass(), retry.abortOn());
     }
 
     private Optional<Long> getMaxDuration(Retry retry, Optional<Long> delay) {
@@ -191,21 +165,16 @@ public class RetryInterceptor {
         return of(timeUnit.toNanos(value));
     }
 
-    private Retry findRetry(Method method) {
-        Retry timeout = findAnnotation(method, Retry.class);
-        if (timeout == null) {
-            timeout = method.getDeclaringClass().getAnnotation(Retry.class);
-        }
-        return timeout;
-    }
-
     private static class InvocationResult {
 
         private Object result;
 
         private boolean success;
 
-        private Throwable exception;
+        /**
+         * Holds the abort or no-retry failure
+         */
+        private Throwable failure;
 
         public Object getResult() {
             return result;
@@ -223,12 +192,13 @@ public class RetryInterceptor {
             this.success = success;
         }
 
-        public Throwable getException() {
-            return exception;
+        public Throwable getFailure() {
+            return failure;
         }
 
-        public void setException(Throwable exception) {
-            this.exception = exception;
+        public void setFailure(Throwable failure) {
+            this.failure = failure;
+            this.setSuccess(false);
         }
     }
 }

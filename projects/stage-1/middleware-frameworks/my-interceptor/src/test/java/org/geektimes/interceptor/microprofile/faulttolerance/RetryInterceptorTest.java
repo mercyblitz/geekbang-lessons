@@ -32,7 +32,7 @@ public class RetryInterceptorTest {
     private RetryInterceptor interceptor = new RetryInterceptor();
 
     @Test
-    public void test() throws Exception {
+    public void test() throws Throwable {
         EchoService echoService = new EchoService();
         Method method = EchoService.class.getMethod("echo", Long.class);
         ReflectiveMethodInvocationContext context = new ReflectiveMethodInvocationContext

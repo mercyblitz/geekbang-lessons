@@ -14,27 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.interceptor.cglib;
+package org.geektimes.interceptor.microprofile.faulttolerance;
 
-import org.geektimes.interceptor.microprofile.faulttolerance.EchoService;
+import org.geektimes.interceptor.ReflectiveMethodInvocationContext;
 import org.junit.Test;
 
-import static org.geektimes.interceptor.AnnotatedInterceptor.loadInterceptors;
+import java.lang.reflect.Method;
+import java.util.concurrent.Future;
 
 /**
- * {@link InterceptorEnhancer} Test
+ * {@link AsynchronousInterceptor} Test
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class InterceptorEnhancerTest {
+public class AsynchronousInterceptorTest {
+
+    private AsynchronousInterceptor interceptor = new AsynchronousInterceptor();
 
     @Test
-    public void test() {
-        InterceptorEnhancer enhancer = new InterceptorEnhancer();
+    public void testFuture() throws Throwable {
         EchoService echoService = new EchoService();
-        Object proxy = enhancer.enhance(echoService, loadInterceptors());
-        EchoService echoServiceProxy = (EchoService) proxy;
-        echoServiceProxy.echo("Hello,World");
+        Method method = EchoService.class.getMethod("echo", Object.class);
+        ReflectiveMethodInvocationContext context = new ReflectiveMethodInvocationContext
+                (echoService, method, "Hello,World");
+        Future<?> future = (Future) interceptor.execute(context);
+        future.get();
     }
 }

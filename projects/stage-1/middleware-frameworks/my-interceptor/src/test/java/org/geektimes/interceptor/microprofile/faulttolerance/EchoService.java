@@ -16,10 +16,12 @@
  */
 package org.geektimes.interceptor.microprofile.faulttolerance;
 
-import org.eclipse.microprofile.faulttolerance.Asynchronous;
-import org.eclipse.microprofile.faulttolerance.Bulkhead;
-import org.eclipse.microprofile.faulttolerance.Retry;
-import org.eclipse.microprofile.faulttolerance.Timeout;
+import org.eclipse.microprofile.faulttolerance.*;
+
+import java.util.concurrent.Future;
+import java.util.logging.Logger;
+
+import static java.lang.String.format;
 
 /**
  * EchoService
@@ -30,20 +32,28 @@ import org.eclipse.microprofile.faulttolerance.Timeout;
 @Bulkhead(value = 1)
 public class EchoService {
 
+    private final Logger logger = Logger.getLogger(getClass().getName());
+
     @Timeout
     public void echo(String message) {
         echo((Object) message);
     }
 
     @Asynchronous
-    public void echo(Object message) {
-        System.out.println(message);
+    public Future<Void> echo(Object message) {
+        logger.info(format("[%s] - echo : %s", Thread.currentThread().getName(), message));
+        return null;
     }
 
     @Retry(maxRetries = 3,
             delay = 0, maxDuration = 0, jitter = 0,
             retryOn = UnsupportedOperationException.class)
-    public void echo(Long value) {
+    @Fallback(fallbackMethod = "fallback")
+    public String echo(Long value) {
         throw new UnsupportedOperationException();
+    }
+
+    public String fallback(Long value) {
+        return String.valueOf(value);
     }
 }

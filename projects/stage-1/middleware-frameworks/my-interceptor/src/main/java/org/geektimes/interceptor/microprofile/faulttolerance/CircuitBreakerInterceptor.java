@@ -14,17 +14,41 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.interceptor;
+package org.geektimes.interceptor.microprofile.faulttolerance;
 
-import java.lang.reflect.Method;
+import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
+import org.geektimes.interceptor.AnnotatedInterceptor;
+
+import javax.interceptor.Interceptor;
+import javax.interceptor.InvocationContext;
 
 /**
- * Method Interceptor
+ * The interceptor implementation for the annotation {@link CircuitBreaker} of
+ * MicroProfile Fault Tolerance
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public interface MethodInterceptor {
+@CircuitBreaker
+@Interceptor
+public class CircuitBreakerInterceptor extends AnnotatedInterceptor<CircuitBreaker> {
 
-    Object intercept(Object target, Method method, Object... args) throws Exception;
+    public CircuitBreakerInterceptor() {
+        super();
+        setPriority(0);
+    }
+
+    @Override
+    protected Object execute(InvocationContext context, CircuitBreaker bindingAnnotation) throws Throwable {
+        return null;
+    }
+
+    private enum Status {
+
+        CLOSED,
+
+        OPEN,
+
+        HALF_OPEN;
+    }
 }
