@@ -16,7 +16,14 @@
  */
 package org.geektimes.commons.util;
 
+import org.geektimes.commons.function.Streams;
+
 import java.util.ServiceLoader;
+import java.util.stream.Stream;
+
+import static java.util.ServiceLoader.load;
+import static org.geektimes.commons.function.Streams.stream;
+import static org.geektimes.commons.reflect.util.ClassUtils.getClassLoader;
 
 /**
  * {@link ServiceLoader} Utilities Class
@@ -26,7 +33,23 @@ import java.util.ServiceLoader;
  */
 public abstract class ServiceLoaders {
 
+    public static <T> Stream<T> loadAsStream(Class<T> serviceClass) {
+        return loadAsStream(serviceClass, getClassLoader(serviceClass));
+    }
+
+    public static <T> Stream<T> loadAsStream(Class<T> serviceClass, ClassLoader classLoader) {
+        return stream(load(serviceClass, classLoader));
+    }
+
     public static <T> T loadSpi(Class<T> serviceClass) {
-        return ServiceLoader.load(serviceClass).iterator().next();
+        return load(serviceClass, getClassLoader(serviceClass)).iterator().next();
+    }
+
+    public static <T> T[] loadAsArray(Class<T> serviceClass) {
+        return loadAsArray(serviceClass, getClassLoader(serviceClass));
+    }
+
+    public static <T> T[] loadAsArray(Class<T> serviceClass, ClassLoader classLoader) {
+        return (T[]) loadAsStream(serviceClass, classLoader).toArray();
     }
 }

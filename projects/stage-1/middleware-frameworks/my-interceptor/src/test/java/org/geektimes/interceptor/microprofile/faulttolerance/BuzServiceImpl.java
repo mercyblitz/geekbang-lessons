@@ -14,26 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.interceptor.cglib;
-
-
-import net.sf.cglib.proxy.Enhancer;
-
-import javax.interceptor.Interceptor;
+package org.geektimes.interceptor.microprofile.faulttolerance;
 
 /**
- * {@link Interceptor @Interceptor} enhancer by CGLIB
+ * {@link BuzService} Implementation
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class InterceptorEnhancer {
+public class BuzServiceImpl implements BuzService {
 
-    public Object enhance(Object target, Object... interceptors) {
-        Enhancer enhancer = new Enhancer();
-        enhancer.setSuperclass(target.getClass());
-        enhancer.setCallback(new MethodInterceptorAdapter(target, interceptors));
-        return enhancer.create();
+    @Override
+    public void task() {
+        try {
+            Thread.sleep(100L);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 
+    public void fallbackTask() {
+        System.out.println("fallbackTask");
+    }
 }

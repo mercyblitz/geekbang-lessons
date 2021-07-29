@@ -19,8 +19,8 @@ package org.geektimes.interceptor;
 import org.geektimes.commons.lang.Prioritized;
 import org.geektimes.commons.reflect.util.TypeUtils;
 
+import javax.annotation.Priority;
 import javax.interceptor.AroundInvoke;
-import javax.interceptor.Interceptor;
 import javax.interceptor.InterceptorBinding;
 import javax.interceptor.InvocationContext;
 import java.lang.annotation.Annotation;
@@ -38,13 +38,15 @@ import static org.geektimes.commons.function.Streams.stream;
 import static org.geektimes.commons.util.AnnotationUtils.findAnnotation;
 
 /**
- * The abstract annotated {@link Interceptor @Interceptor} class
+ * The abstract annotated {@link javax.interceptor.Interceptor @Interceptor} class
  *
  * @param <A> the type of {@link Annotation}
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public abstract class AnnotatedInterceptor<A extends Annotation> implements Prioritized {
+public abstract class AnnotatedInterceptor<A extends Annotation> implements Interceptor, Prioritized {
+
+    private static final Class<? extends Annotation> INTERCEPTOR_ANNOTATION_TYPE = javax.interceptor.Interceptor.class;
 
     private final Class<A> bindingAnnotationType;
 
@@ -55,9 +57,9 @@ public abstract class AnnotatedInterceptor<A extends Annotation> implements Prio
      *                                  the generic parameter type does not be specified.
      */
     public AnnotatedInterceptor() throws IllegalArgumentException {
-        if (!getClass().isAnnotationPresent(Interceptor.class)) {
+        if (!getClass().isAnnotationPresent(INTERCEPTOR_ANNOTATION_TYPE)) {
             throw new IllegalArgumentException(
-                    format("The Interceptor class[%s] must annotate %s", getClass(), Interceptor.class));
+                    format("The Interceptor class[%s] must annotate %s", getClass(), INTERCEPTOR_ANNOTATION_TYPE));
         }
         this.bindingAnnotationType = resolveInterceptorBindingAnnotationType();
     }
@@ -148,6 +150,9 @@ public abstract class AnnotatedInterceptor<A extends Annotation> implements Prio
 
     protected Throwable getFailure(Throwable e) {
         Throwable failure = e instanceof InvocationTargetException ? e.getCause() : e;
+        while (failure instanceof InvocationTargetException) {
+            failure = getFailure(failure);
+        }
         return failure;
     }
 

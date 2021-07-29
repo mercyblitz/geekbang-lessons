@@ -14,35 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.interceptor.cglib;
+package org.geektimes.interceptor.jdk;
 
-import net.sf.cglib.proxy.MethodInterceptor;
-import net.sf.cglib.proxy.MethodProxy;
 import org.geektimes.interceptor.ChainableInvocationContext;
+import org.geektimes.interceptor.ReflectiveMethodInvocationContext;
 
+import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 
 /**
- * {@link MethodInterceptor} -> @Interceptor chain
+ * {@link InvocationHandler} Adapter based on {@link Interceptor @Interceptor} class
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class MethodInterceptorAdapter implements MethodInterceptor {
+public class InvocationHandlerAdapter implements InvocationHandler {
 
-    private final Object target;
+    private final Object source;
 
     private final Object[] interceptors;
 
-    public MethodInterceptorAdapter(Object target, Object[] interceptors) {
-        this.target = target;
+    public InvocationHandlerAdapter(Object source, Object... interceptors) {
+        this.source = source;
         this.interceptors = interceptors;
     }
 
     @Override
-    public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
-        InvocationContext delegateContext = new CglibMethodInvocationContext(obj, method, proxy, args);
+    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        InvocationContext delegateContext = new ReflectiveMethodInvocationContext(source, method, args);
         ChainableInvocationContext context = new ChainableInvocationContext(delegateContext, interceptors);
         return context.proceed();
     }

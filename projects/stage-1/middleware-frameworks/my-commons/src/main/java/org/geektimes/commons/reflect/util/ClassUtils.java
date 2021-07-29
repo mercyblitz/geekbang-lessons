@@ -504,8 +504,9 @@ public abstract class ClassUtils {
     }
 
     public static Class<?>[] getTypes(Object... args) {
-        Class[] types = new Class[args.length];
-        for (int i = 0; i < args.length; i++) {
+        int size = args == null ? 0 : args.length;
+        Class[] types = new Class[size];
+        for (int i = 0; i < size; i++) {
             types[i] = args[i].getClass();
         }
         return types;

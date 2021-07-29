@@ -25,6 +25,7 @@ import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import java.lang.reflect.Method;
 
+import static java.lang.String.format;
 import static org.geektimes.commons.reflect.util.ClassUtils.getTypes;
 import static org.geektimes.commons.reflect.util.ClassUtils.isDerived;
 
@@ -63,10 +64,8 @@ public class FallbackInterceptor extends AnnotatedInterceptor<Fallback> {
         Object result = null;
         String methodName = fallback.fallbackMethod();
         if (!"".equals(methodName)) {
-            Class<?>[] parameterTypes = getTypes(context.getParameters());
-            Class<?> type = context.getMethod().getDeclaringClass();
-            Method method = type.getMethod(methodName, parameterTypes);
-            result = method.invoke(context.getTarget(), context.getParameters());
+            Method fallbackMethod = findFallbackMethod(context, methodName);
+            result = fallbackMethod.invoke(context.getTarget(), context.getParameters());
         } else {
             Class<? extends FallbackHandler<?>> fallbackHandlerType = fallback.value();
             FallbackHandler fallbackHandler = fallbackHandlerType.newInstance();
@@ -74,6 +73,26 @@ public class FallbackInterceptor extends AnnotatedInterceptor<Fallback> {
         }
         return result;
     }
+
+    private Method findFallbackMethod(InvocationContext context, String methodName) {
+        Class<?>[] parameterTypes = getTypes(context.getParameters());
+        Class<?> type = context.getMethod().getDeclaringClass();
+        Method fallbackMethod = null;
+        try {
+            fallbackMethod = type.getMethod(methodName, parameterTypes);
+        } catch (NoSuchMethodException ignored) {
+            // try to find the fallback method in the target object
+            type = context.getTarget().getClass();
+            try {
+                fallbackMethod = type.getMethod(methodName, parameterTypes);
+            } catch (NoSuchMethodException e) {
+                throw new IllegalArgumentException(
+                        format("The fallbackMethod[%s] that configured at @Fallback can't be found!", methodName), e);
+            }
+        }
+        return fallbackMethod;
+    }
+
 
     private boolean isApplyOn(Fallback fallback, Throwable e) {
         return isDerived(e.getClass(), fallback.applyOn());

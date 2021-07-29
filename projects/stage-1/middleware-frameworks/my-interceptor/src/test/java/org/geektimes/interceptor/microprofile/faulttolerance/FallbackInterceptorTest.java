@@ -61,7 +61,7 @@ public class FallbackInterceptorTest {
         assertEquals("Fallback", interceptor.execute(context));
     }
 
-    @Test(expected = NoSuchMethodException.class)
+    @Test(expected = IllegalArgumentException.class)
     @Fallback(fallbackMethod = "noSuchMethod")
     public void testFallbackMethodNotFound() throws Throwable {
         Method method = getClass().getMethod(currentThread().getStackTrace()[1].getMethodName());
@@ -69,7 +69,7 @@ public class FallbackInterceptorTest {
         interceptor.execute(context);
     }
 
-    @Test(expected = NoSuchMethodException.class)
+    @Test(expected = IllegalArgumentException.class)
     @Fallback(fallbackMethod = "fallback")
     public void testFallbackMethodNotMatch() throws Throwable {
         Method method = getClass().getMethod(currentThread().getStackTrace()[1].getMethodName());

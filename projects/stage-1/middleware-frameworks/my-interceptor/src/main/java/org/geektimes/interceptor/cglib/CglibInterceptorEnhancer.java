@@ -16,25 +16,25 @@
  */
 package org.geektimes.interceptor.cglib;
 
-import org.geektimes.interceptor.microprofile.faulttolerance.EchoService;
-import org.junit.Test;
 
-import static org.geektimes.interceptor.AnnotatedInterceptor.loadInterceptors;
+import net.sf.cglib.proxy.Enhancer;
+import org.geektimes.interceptor.InterceptorEnhancer;
+
+import javax.interceptor.Interceptor;
 
 /**
- * {@link InterceptorEnhancer} Test
+ * {@link Interceptor @Interceptor} enhancer by CGLIB
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class InterceptorEnhancerTest {
+public class CglibInterceptorEnhancer implements InterceptorEnhancer {
 
-    @Test
-    public void test() {
-        InterceptorEnhancer enhancer = new InterceptorEnhancer();
-        EchoService echoService = new EchoService();
-        Object proxy = enhancer.enhance(echoService, loadInterceptors());
-        EchoService echoServiceProxy = (EchoService) proxy;
-        echoServiceProxy.echo("Hello,World");
+    @Override
+    public <T> T enhance(T source, Class<? super T> type, Object... interceptors) {
+        Enhancer enhancer = new Enhancer();
+        enhancer.setSuperclass(type);
+        enhancer.setCallback(new MethodInterceptorAdapter(source, interceptors));
+        return (T) enhancer.create();
     }
 }

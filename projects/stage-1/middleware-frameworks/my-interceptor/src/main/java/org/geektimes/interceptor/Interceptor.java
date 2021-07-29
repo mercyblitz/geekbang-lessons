@@ -16,13 +16,11 @@
  */
 package org.geektimes.interceptor;
 
-import javax.interceptor.Interceptor;
-
 /**
- * {@link Interceptor @Interceptor} chain
+ * The tagging interface that all {@link javax.interceptor.Interceptor @Interceptor} class should implement.
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class InterceptorChain {
+public interface Interceptor {
 }
