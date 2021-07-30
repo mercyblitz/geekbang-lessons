@@ -49,4 +49,4 @@ activemq-data/
 .data/
 # Tomcat
 .extract
-
+.java-version

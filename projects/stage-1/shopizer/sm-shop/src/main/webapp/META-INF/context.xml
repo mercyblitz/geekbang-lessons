@@ -26,4 +26,26 @@
               driverClassName="org.h2.Driver"
               url="jdbc:h2:file:./shopizer;AUTOCOMMIT=OFF;;mv_store=false;INIT=CREATE SCHEMA IF NOT EXISTS SALESMANAGER"/>
 
+    <Resource name="jms/activemq-factory"
+              auth="Container"
+              type="org.apache.activemq.ActiveMQConnectionFactory"
+              description="JMS Connection Factory"
+              factory="org.apache.activemq.jndi.JNDIReferenceFactory"
+              brokerURL="vm://localhost"
+              brokerName="LocalActiveMQBroker"
+              useEmbeddedBroker="false"/>
+
+    <Resource name="jms/activemq-topic"
+              auth="Container"
+              type="org.apache.activemq.command.ActiveMQTopic"
+              factory="org.apache.activemq.jndi.JNDIReferenceFactory"
+              physicalName="activemq-topic"/>
+
+    <Resource name="jms/message-producer"
+              auth="Container"
+              type="javax.jms.MessageProducer"
+              factory="com.salesmanager.shop.jms.MessageProducerFactory"
+              connectionFactoryJndiName="activemq-factory"
+              queueName="TEST.FOO" />
+
 </Context>
