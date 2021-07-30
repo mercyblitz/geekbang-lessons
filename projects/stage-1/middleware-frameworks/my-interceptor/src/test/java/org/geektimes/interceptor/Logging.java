@@ -16,24 +16,21 @@
  */
 package org.geektimes.interceptor;
 
-import org.junit.Test;
-
-import static org.geektimes.interceptor.AnnotatedInterceptor.loadInterceptors;
+import javax.interceptor.InterceptorBinding;
+import java.lang.annotation.*;
 
 /**
- * {@link DefaultInterceptorEnhancer} Test
+ * Logging Annotation
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
- * @since 1.0.0
+ * @since
  */
-public class DefaultInterceptorEnhancerTest {
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD, ElementType.TYPE})
+@InterceptorBinding
+@Inherited
+public @interface Logging {
 
-    private InterceptorEnhancer interceptorEnhancer = new DefaultInterceptorEnhancer();
-
-    @Test
-    public void testInterface() {
-        EchoService echoService = new EchoService();
-        echoService = interceptorEnhancer.enhance(echoService, loadInterceptors());
-        echoService.echo("Hello,World");
-    }
+    String name() default "ROOT";
 }

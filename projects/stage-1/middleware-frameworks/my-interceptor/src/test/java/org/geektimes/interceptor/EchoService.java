@@ -16,24 +16,16 @@
  */
 package org.geektimes.interceptor;
 
-import org.junit.Test;
-
-import static org.geektimes.interceptor.AnnotatedInterceptor.loadInterceptors;
-
 /**
- * {@link DefaultInterceptorEnhancer} Test
+ * Echo Service
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
- * @since 1.0.0
+ * @since
  */
-public class DefaultInterceptorEnhancerTest {
+public class EchoService {
 
-    private InterceptorEnhancer interceptorEnhancer = new DefaultInterceptorEnhancer();
-
-    @Test
-    public void testInterface() {
-        EchoService echoService = new EchoService();
-        echoService = interceptorEnhancer.enhance(echoService, loadInterceptors());
-        echoService.echo("Hello,World");
+    @Logging
+    public String echo(String message) {
+        return "[ECHO] : " + message;
     }
 }

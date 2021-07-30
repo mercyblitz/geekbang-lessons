@@ -16,12 +16,16 @@
  */
 package com.salesmanager.shop.application.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnJndi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jndi.JndiObjectFactoryBean;
+import org.springframework.jndi.JndiTemplate;
 
+import javax.jms.MessageProducer;
+import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 /**
@@ -41,6 +45,16 @@ public class JndiConfig {
         bean.setResourceRef(true);
         bean.setExpectedType(DataSource.class);
         return bean;
+    }
+
+    @Bean
+    public JndiTemplate jndiTemplate() {
+        return new JndiTemplate();
+    }
+
+    @Bean
+    public MessageProducer messageProducer(@Autowired JndiTemplate jndiTemplate) throws NamingException {
+        return jndiTemplate.lookup("jms/message-producer", MessageProducer.class);
     }
 
 }

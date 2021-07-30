@@ -17,7 +17,7 @@
 package org.geektimes.interceptor;
 
 import org.geektimes.interceptor.cglib.CglibInterceptorEnhancer;
-import org.geektimes.interceptor.jdk.JdkProxyInterceptorEnhancer;
+import org.geektimes.interceptor.jdk.DynamicProxyInterceptorEnhancer;
 
 /**
  * Default {@link InterceptorEnhancer}
@@ -27,7 +27,7 @@ import org.geektimes.interceptor.jdk.JdkProxyInterceptorEnhancer;
  */
 public class DefaultInterceptorEnhancer implements InterceptorEnhancer {
 
-    private final InterceptorEnhancer jdkProxyInterceptorEnhancer = new JdkProxyInterceptorEnhancer();
+    private final InterceptorEnhancer jdkProxyInterceptorEnhancer = new DynamicProxyInterceptorEnhancer();
 
     private final InterceptorEnhancer cglibInterceptorEnhancer = new CglibInterceptorEnhancer();
 

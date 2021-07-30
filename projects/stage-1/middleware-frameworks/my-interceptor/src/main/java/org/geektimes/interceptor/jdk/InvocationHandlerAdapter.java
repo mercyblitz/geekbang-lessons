@@ -30,7 +30,7 @@ import java.lang.reflect.Method;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class InvocationHandlerAdapter implements InvocationHandler {
+class InvocationHandlerAdapter implements InvocationHandler {
 
     private final Object source;
 

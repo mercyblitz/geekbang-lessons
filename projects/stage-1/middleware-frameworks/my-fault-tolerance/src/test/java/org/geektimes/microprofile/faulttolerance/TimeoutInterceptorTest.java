@@ -14,26 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.interceptor;
-
-import org.junit.Test;
-
-import static org.geektimes.interceptor.AnnotatedInterceptor.loadInterceptors;
+package org.geektimes.microprofile.faulttolerance;
 
 /**
- * {@link DefaultInterceptorEnhancer} Test
+ * {@link TimeoutInterceptor} Test
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class DefaultInterceptorEnhancerTest {
-
-    private InterceptorEnhancer interceptorEnhancer = new DefaultInterceptorEnhancer();
-
-    @Test
-    public void testInterface() {
-        EchoService echoService = new EchoService();
-        echoService = interceptorEnhancer.enhance(echoService, loadInterceptors());
-        echoService.echo("Hello,World");
-    }
+public class TimeoutInterceptorTest {
 }

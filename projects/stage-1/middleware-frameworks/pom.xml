@@ -31,6 +31,7 @@
         <module>my-rpc</module>
         <module>my-http-server</module>
         <module>my-gateway</module>
+        <module>my-fault-tolerance</module>
     </modules>
 
     <properties>

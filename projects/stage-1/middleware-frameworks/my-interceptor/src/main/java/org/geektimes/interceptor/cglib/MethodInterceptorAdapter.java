@@ -29,7 +29,7 @@ import java.lang.reflect.Method;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class MethodInterceptorAdapter implements MethodInterceptor {
+class MethodInterceptorAdapter implements MethodInterceptor {
 
     private final Object target;
 

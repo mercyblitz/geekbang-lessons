@@ -1,6 +1,0 @@
-org.geektimes.interceptor.microprofile.faulttolerance.AsynchronousInterceptor
-org.geektimes.interceptor.microprofile.faulttolerance.BulkheadInterceptor
-org.geektimes.interceptor.microprofile.faulttolerance.CircuitBreakerInterceptor
-org.geektimes.interceptor.microprofile.faulttolerance.FallbackInterceptor
-org.geektimes.interceptor.microprofile.faulttolerance.RetryInterceptor
-org.geektimes.interceptor.microprofile.faulttolerance.TimeoutInterceptor

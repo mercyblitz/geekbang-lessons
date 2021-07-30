@@ -14,26 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.interceptor;
+package org.geektimes.microprofile.faulttolerance;
 
-import org.junit.Test;
-
-import static org.geektimes.interceptor.AnnotatedInterceptor.loadInterceptors;
+import org.eclipse.microprofile.faulttolerance.Asynchronous;
+import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
+import org.eclipse.microprofile.faulttolerance.Fallback;
+import org.eclipse.microprofile.faulttolerance.Timeout;
 
 /**
- * {@link DefaultInterceptorEnhancer} Test
+ * Business Service
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class DefaultInterceptorEnhancerTest {
+@CircuitBreaker
+public interface BuzService {
 
-    private InterceptorEnhancer interceptorEnhancer = new DefaultInterceptorEnhancer();
+    @Timeout(value = 50)
+    @Fallback(fallbackMethod = "fallbackTask")
+    void task();
 
-    @Test
-    public void testInterface() {
-        EchoService echoService = new EchoService();
-        echoService = interceptorEnhancer.enhance(echoService, loadInterceptors());
-        echoService.echo("Hello,World");
-    }
 }

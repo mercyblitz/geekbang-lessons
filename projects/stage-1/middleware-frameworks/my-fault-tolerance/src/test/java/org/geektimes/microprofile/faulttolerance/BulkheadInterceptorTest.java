@@ -14,41 +14,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.interceptor.cglib;
+package org.geektimes.microprofile.faulttolerance;
 
-import net.sf.cglib.proxy.MethodProxy;
 import org.geektimes.interceptor.ReflectiveMethodInvocationContext;
+import org.junit.Test;
 
-import javax.interceptor.InvocationContext;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-
-import static java.util.Objects.requireNonNull;
 
 /**
- * {@link InvocationContext} on method using CGLIB
+ * {@link BulkheadInterceptor} Test
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
+public class BulkheadInterceptorTest {
 
-class CglibMethodInvocationContext extends ReflectiveMethodInvocationContext {
+    private BulkheadInterceptor interceptor = new BulkheadInterceptor();
 
-    private final MethodProxy proxy;
-
-    public CglibMethodInvocationContext(Object target, Method method, MethodProxy proxy, Object... parameters) {
-        super(target, method, parameters);
-        this.proxy = proxy;
+    @Test
+    public void testInThreadIsolation() throws Throwable {
+        EchoService echoService = new EchoService();
+        Method method = EchoService.class.getMethod("echo", Object.class);
+        ReflectiveMethodInvocationContext context = new ReflectiveMethodInvocationContext
+                (echoService, method, "Hello,World");
+        interceptor.execute(context);
     }
 
-    @Override
-    public Object proceed() throws Exception {
-        try {
-            return proxy.invokeSuper(getTarget(), getParameters());
-        } catch (Throwable throwable) {
-            throw new Exception(throwable);
-        }
+    @Test
+    public void testInSemaphoreIsolation() throws Throwable {
+        EchoService echoService = new EchoService();
+        Method method = EchoService.class.getMethod("echo", String.class);
+        ReflectiveMethodInvocationContext context = new ReflectiveMethodInvocationContext
+                (echoService, method, "Hello,World");
+        interceptor.execute(context);
     }
+
 }
+

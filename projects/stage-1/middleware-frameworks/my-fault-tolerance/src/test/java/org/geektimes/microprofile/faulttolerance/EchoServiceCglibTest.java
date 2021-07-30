@@ -14,41 +14,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.interceptor.cglib;
+package org.geektimes.microprofile.faulttolerance;
 
+import net.sf.cglib.proxy.Enhancer;
+import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
-import org.geektimes.interceptor.ReflectiveMethodInvocationContext;
+import org.junit.Test;
 
-import javax.interceptor.InvocationContext;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-
-import static java.util.Objects.requireNonNull;
 
 /**
- * {@link InvocationContext} on method using CGLIB
+ * {@link EchoService} CGLIB Test
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
+public class EchoServiceCglibTest {
 
-class CglibMethodInvocationContext extends ReflectiveMethodInvocationContext {
+    @Test
+    public void test() {
+        Enhancer enhancer = new Enhancer();
+        enhancer.setSuperclass(EchoService.class);
+        enhancer.setCallback(new MethodInterceptor() {
 
-    private final MethodProxy proxy;
+            // @Bulkhead
 
-    public CglibMethodInvocationContext(Object target, Method method, MethodProxy proxy, Object... parameters) {
-        super(target, method, parameters);
-        this.proxy = proxy;
-    }
+            @Override
+            public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
+                return proxy.invokeSuper(obj, args);
+            }
+        });
 
-    @Override
-    public Object proceed() throws Exception {
-        try {
-            return proxy.invokeSuper(getTarget(), getParameters());
-        } catch (Throwable throwable) {
-            throw new Exception(throwable);
-        }
+        EchoService echoService = (EchoService) enhancer.create();
+
+        echoService.echo("Hello,World");
     }
 }

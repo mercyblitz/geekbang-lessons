@@ -16,12 +16,11 @@
  */
 package org.geektimes.interceptor;
 
-import org.geektimes.interceptor.microprofile.faulttolerance.BulkheadInterceptor;
-import org.geektimes.interceptor.microprofile.faulttolerance.EchoService;
-import org.geektimes.interceptor.microprofile.faulttolerance.TimeoutInterceptor;
 import org.junit.Test;
 
 import java.lang.reflect.Method;
+
+import static org.geektimes.interceptor.AnnotatedInterceptor.loadInterceptors;
 
 /**
  * {@link ChainableInvocationContext} Test
@@ -38,11 +37,7 @@ public class ChainableInvocationContextTest {
         ReflectiveMethodInvocationContext delegateContext = new ReflectiveMethodInvocationContext
                 (echoService, method, "Hello,World");
 
-        Object[] interceptors = new Object[]{
-                new TimeoutInterceptor(),
-                new BulkheadInterceptor()
-        };
-        ChainableInvocationContext context = new ChainableInvocationContext(delegateContext, interceptors);
+        ChainableInvocationContext context = new ChainableInvocationContext(delegateContext, loadInterceptors());
 
         context.proceed();
 

@@ -14,26 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.interceptor;
-
-import org.junit.Test;
-
-import static org.geektimes.interceptor.AnnotatedInterceptor.loadInterceptors;
 
 /**
- * {@link DefaultInterceptorEnhancer} Test
+ * The annotations of MicroProfile Fault Tolerance based on {@link javax.interceptor.Interceptor @Interceptor}
+ * implementations, the priority of annotations as below:
+ * <ol>
+ *     <li>{@link org.eclipse.microprofile.faulttolerance.CircuitBreaker}</li>
+ *     <li>{@link org.eclipse.microprofile.faulttolerance.Bulkhead}</li>
+ *     <li>{@link org.eclipse.microprofile.faulttolerance.Fallback}</li>
+ *     <li>{@link org.eclipse.microprofile.faulttolerance.Retry}</li>
+ *     <li>{@link org.eclipse.microprofile.faulttolerance.Timeout}</li>
+ *     <li>{@link org.eclipse.microprofile.faulttolerance.Asynchronous}</li>
+ * </ol>
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class DefaultInterceptorEnhancerTest {
-
-    private InterceptorEnhancer interceptorEnhancer = new DefaultInterceptorEnhancer();
-
-    @Test
-    public void testInterface() {
-        EchoService echoService = new EchoService();
-        echoService = interceptorEnhancer.enhance(echoService, loadInterceptors());
-        echoService.echo("Hello,World");
-    }
-}
+package org.geektimes.microprofile.faulttolerance;

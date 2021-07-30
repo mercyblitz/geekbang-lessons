@@ -20,7 +20,7 @@
 
     <dependencies>
 
-        <!-- Internal Projects -->
+        <!-- Internal Artifacts -->
         <dependency>
             <groupId>org.geekbang.projects</groupId>
             <artifactId>my-commons</artifactId>

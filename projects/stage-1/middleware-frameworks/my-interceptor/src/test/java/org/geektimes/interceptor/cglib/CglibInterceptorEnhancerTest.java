@@ -16,7 +16,7 @@
  */
 package org.geektimes.interceptor.cglib;
 
-import org.geektimes.interceptor.microprofile.faulttolerance.EchoService;
+import org.geektimes.interceptor.EchoService;
 import org.junit.Test;
 
 import static org.geektimes.interceptor.AnnotatedInterceptor.loadInterceptors;

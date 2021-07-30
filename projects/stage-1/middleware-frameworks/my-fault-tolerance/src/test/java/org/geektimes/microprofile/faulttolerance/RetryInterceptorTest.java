@@ -14,41 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.interceptor.cglib;
+package org.geektimes.microprofile.faulttolerance;
 
-import net.sf.cglib.proxy.MethodProxy;
 import org.geektimes.interceptor.ReflectiveMethodInvocationContext;
+import org.junit.Test;
 
-import javax.interceptor.InvocationContext;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-
-import static java.util.Objects.requireNonNull;
 
 /**
- * {@link InvocationContext} on method using CGLIB
+ * {@link RetryInterceptor} Test
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
+public class RetryInterceptorTest {
 
-class CglibMethodInvocationContext extends ReflectiveMethodInvocationContext {
+    private RetryInterceptor interceptor = new RetryInterceptor();
 
-    private final MethodProxy proxy;
-
-    public CglibMethodInvocationContext(Object target, Method method, MethodProxy proxy, Object... parameters) {
-        super(target, method, parameters);
-        this.proxy = proxy;
+    @Test
+    public void test() throws Throwable {
+        EchoService echoService = new EchoService();
+        Method method = EchoService.class.getMethod("echo", Long.class);
+        ReflectiveMethodInvocationContext context = new ReflectiveMethodInvocationContext
+                (echoService, method, new Long(1L));
+        interceptor.execute(context);
     }
 
-    @Override
-    public Object proceed() throws Exception {
-        try {
-            return proxy.invokeSuper(getTarget(), getParameters());
-        } catch (Throwable throwable) {
-            throw new Exception(throwable);
-        }
-    }
 }
