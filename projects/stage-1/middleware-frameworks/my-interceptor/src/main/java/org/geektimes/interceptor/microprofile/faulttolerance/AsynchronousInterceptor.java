@@ -24,10 +24,7 @@ import org.geektimes.interceptor.AnnotatedInterceptor;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import java.lang.reflect.Method;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.ForkJoinPool;
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
 
@@ -55,7 +52,7 @@ public class AsynchronousInterceptor extends AnnotatedInterceptor<Asynchronous> 
         Method method = context.getMethod();
         if (validateMethod(method, Future.class)) {
             return executeFuture(context);
-        } else if (validateMethod(method, CompletableFuture.class)) {
+        } else if (validateMethod(method, CompletionStage.class)) {
             return executeCompletableFuture(context);
         } else {
             throw new FaultToleranceDefinitionException("The return type of @Asynchronous method must be " +

@@ -129,6 +129,7 @@ public class CircuitBreakerInterceptor extends AnnotatedInterceptor<CircuitBreak
                 successTrials.increment();
             }
             requests.increment();
+            calculateStatus();
             return this;
         }
 

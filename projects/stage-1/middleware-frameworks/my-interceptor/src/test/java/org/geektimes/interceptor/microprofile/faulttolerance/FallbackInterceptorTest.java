@@ -19,6 +19,7 @@ package org.geektimes.interceptor.microprofile.faulttolerance;
 import org.eclipse.microprofile.faulttolerance.ExecutionContext;
 import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.FallbackHandler;
+import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
 import org.geektimes.interceptor.ReflectiveMethodInvocationContext;
 import org.junit.Before;
 import org.junit.Test;
@@ -61,7 +62,7 @@ public class FallbackInterceptorTest {
         assertEquals("Fallback", interceptor.execute(context));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = FaultToleranceDefinitionException.class)
     @Fallback(fallbackMethod = "noSuchMethod")
     public void testFallbackMethodNotFound() throws Throwable {
         Method method = getClass().getMethod(currentThread().getStackTrace()[1].getMethodName());
@@ -69,7 +70,7 @@ public class FallbackInterceptorTest {
         interceptor.execute(context);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = FaultToleranceDefinitionException.class)
     @Fallback(fallbackMethod = "fallback")
     public void testFallbackMethodNotMatch() throws Throwable {
         Method method = getClass().getMethod(currentThread().getStackTrace()[1].getMethodName());

@@ -19,6 +19,7 @@ package org.geektimes.interceptor.microprofile.faulttolerance;
 import org.eclipse.microprofile.faulttolerance.ExecutionContext;
 import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.faulttolerance.FallbackHandler;
+import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
 import org.geektimes.interceptor.AnnotatedInterceptor;
 
 import javax.interceptor.Interceptor;
@@ -81,12 +82,12 @@ public class FallbackInterceptor extends AnnotatedInterceptor<Fallback> {
         try {
             fallbackMethod = type.getMethod(methodName, parameterTypes);
         } catch (NoSuchMethodException ignored) {
-            // try to find the fallback method in the target object
+            // try to find the fallback method in the target class
             type = context.getTarget().getClass();
             try {
                 fallbackMethod = type.getMethod(methodName, parameterTypes);
             } catch (NoSuchMethodException e) {
-                throw new IllegalArgumentException(
+                throw new FaultToleranceDefinitionException(
                         format("The fallbackMethod[%s] that configured at @Fallback can't be found!", methodName), e);
             }
         }
