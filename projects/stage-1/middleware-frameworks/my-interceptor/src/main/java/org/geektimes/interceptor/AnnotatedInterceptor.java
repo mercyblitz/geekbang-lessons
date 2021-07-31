@@ -117,9 +117,9 @@ public abstract class AnnotatedInterceptor<A extends Annotation> implements Inte
                                 InterceptorBinding.class.getName()));
                     }
                 } else {
+                    annotationType = (Class<A>) typeArgument;
                     assertInterceptorBindingAnnotationType(annotationType);
                 }
-                annotationType = (Class<A>) typeArgument;
                 break;
             }
         }
