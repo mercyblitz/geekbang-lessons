@@ -18,8 +18,10 @@ package org.geektimes.cache.event;
 
 import javax.cache.configuration.CacheEntryListenerConfiguration;
 import javax.cache.event.CacheEntryEvent;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * The Publisher of {@link javax.cache.event.CacheEntryEvent}
@@ -29,7 +31,7 @@ import java.util.List;
  */
 public class CacheEntryEventPublisher {
 
-    private List<ConditionalCacheEntryEventListener> listeners = new LinkedList<>();
+    private Set<ConditionalCacheEntryEventListener> listeners = new HashSet<>();
 
     public void registerCacheEntryListener(CacheEntryListenerConfiguration configuration) {
         CacheEntryEventListenerAdapter listenerAdapter = new CacheEntryEventListenerAdapter(configuration);

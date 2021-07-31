@@ -31,6 +31,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import static java.lang.String.format;
 import static java.util.ServiceLoader.load;
@@ -47,6 +49,8 @@ import static org.geektimes.commons.util.AnnotationUtils.findAnnotation;
 public abstract class AnnotatedInterceptor<A extends Annotation> implements Interceptor, Prioritized {
 
     private static final Class<? extends Annotation> INTERCEPTOR_ANNOTATION_TYPE = javax.interceptor.Interceptor.class;
+
+    private final Logger logger = Logger.getLogger(getClass().getName());
 
     private final Class<A> bindingAnnotationType;
 
@@ -105,13 +109,20 @@ public abstract class AnnotatedInterceptor<A extends Annotation> implements Inte
         List<Class<?>> typeArguments = TypeUtils.resolveTypeArguments(getClass());
         Class<A> annotationType = null;
         for (Class<?> typeArgument : typeArguments) {
-            if (typeArgument.isAnnotation() && typeArgument.isAnnotationPresent(InterceptorBinding.class)) {
+            if (typeArgument.isAnnotation()) {
+                if (!typeArgument.isAnnotationPresent(InterceptorBinding.class)) {
+                    if (logger.isLoggable(Level.SEVERE)) {
+                        logger.severe(format("The annotationType[%s] should annotate %s",
+                                typeArgument.getName(),
+                                InterceptorBinding.class.getName()));
+                    }
+                } else {
+                    assertInterceptorBindingAnnotationType(annotationType);
+                }
                 annotationType = (Class<A>) typeArgument;
                 break;
             }
         }
-
-        assertInterceptorBindingAnnotationType(annotationType);
 
         return annotationType;
     }
