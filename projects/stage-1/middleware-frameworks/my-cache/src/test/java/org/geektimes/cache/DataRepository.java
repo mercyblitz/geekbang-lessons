@@ -16,7 +16,10 @@
  */
 package org.geektimes.cache;
 
+import javax.cache.annotation.CacheDefaults;
+import javax.cache.annotation.CacheKey;
 import javax.cache.annotation.CachePut;
+import javax.cache.annotation.CacheValue;
 
 /**
  * Data Repository
@@ -24,10 +27,14 @@ import javax.cache.annotation.CachePut;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
+@CacheDefaults(cacheName = "defaultCache")
 public interface DataRepository {
 
     @CachePut(cacheName = "simpleCache")
-    boolean create(String name, Object value);
+    boolean create(@CacheKey String name, @CacheValue Object value);
+
+    @CachePut
+    boolean save(@CacheKey String name, @CacheKey String alias, @CacheValue Object value);
 
     boolean remove(String name);
 

@@ -19,8 +19,8 @@ package org.geektimes.commons.util;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.reflect.AnnotatedElement;
-import java.util.List;
-import java.util.Objects;
+import java.lang.reflect.Method;
+import java.util.*;
 import java.util.function.Predicate;
 
 import static java.util.Arrays.asList;
@@ -28,6 +28,8 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 import static org.geektimes.commons.function.Streams.filterAll;
 import static org.geektimes.commons.function.Streams.filterFirst;
+import static org.geektimes.commons.reflect.util.ClassUtils.getAllInheritedTypes;
+import static org.geektimes.commons.reflect.util.ClassUtils.isDerived;
 
 /**
  * {@link Annotation} Utilities class
@@ -92,6 +94,36 @@ public class AnnotationUtils {
     }
 
     /**
+     * Get all directly declared annotations of the specified type and its' all hierarchical types, not including
+     * meta annotations.
+     *
+     * @param type                the specified type
+     * @param annotationsToFilter the annotations to filter
+     * @return non-null read-only {@link List}
+     */
+    public static List<Annotation> getAllDeclaredAnnotations(Class<?> type, Predicate<Annotation>... annotationsToFilter) {
+
+        if (type == null) {
+            return emptyList();
+        }
+
+        List<Annotation> allAnnotations = new LinkedList<>();
+
+        // All types
+        Set<Class<?>> allTypes = new LinkedHashSet<>();
+        // Add current type
+        allTypes.add(type);
+        // Add all inherited types
+        allTypes.addAll(getAllInheritedTypes(type, t -> !Object.class.equals(t)));
+
+        for (Class<?> t : allTypes) {
+            allAnnotations.addAll(getDeclaredAnnotations(t, annotationsToFilter));
+        }
+
+        return unmodifiableList(allAnnotations);
+    }
+
+    /**
      * Get annotations that are <em>directly present</em> on this element.
      * This method ignores inherited annotations.
      *
@@ -107,4 +139,45 @@ public class AnnotationUtils {
 
         return unmodifiableList(filterAll(asList(annotatedElement.getDeclaredAnnotations()), annotationsToFilter));
     }
+
+    public static <T> T getAttributeValue(Annotation[] annotations, String attributeName, Class<T> returnType) {
+        T attributeValue = null;
+        for (Annotation annotation : annotations) {
+            if (annotation != null) {
+                attributeValue = getAttributeValue(annotation, attributeName, returnType);
+                if (attributeValue != null) {
+                    break;
+                }
+            }
+        }
+        return attributeValue;
+    }
+
+    public static <T> T getAttributeValue(Annotation annotation, String attributeName, Class<T> returnType) {
+        Class<?> annotationType = annotation.annotationType();
+        T attributeValue = null;
+        try {
+            Method method = annotationType.getMethod(attributeName);
+            Object value = method.invoke(annotation);
+            attributeValue = returnType.cast(value);
+        } catch (Exception ignored) {
+            attributeValue = null;
+        }
+        return attributeValue;
+    }
+
+    public static boolean contains(Collection<Annotation> annotations, Class<? extends Annotation> annotationType) {
+        if (annotations == null || annotations.isEmpty()) {
+            return false;
+        }
+        boolean contained = false;
+        for (Annotation annotation : annotations) {
+            if (Objects.equals(annotationType, annotation.annotationType())) {
+                contained = true;
+                break;
+            }
+        }
+        return contained;
+    }
+
 }

@@ -14,39 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.cache;
+package org.geektimes.commons.reflect.annotation;
 
-import javax.cache.annotation.CacheKey;
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.annotation.Annotation;
 
 /**
- * In-Memory {@link DataRepository} Implementation
+ * {@link Annotation} Attribute
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class InMemoryDataRepository implements DataRepository {
+public class AnnotationAttribute {
 
-    private final Map<String, Object> storage = new HashMap<>();
-
-    @Override
-    public boolean create(String name, Object value) {
-        return storage.put(name, value) == null;
-    }
-
-    @Override
-    public boolean save(String name, String alias, Object value) {
-        return create(name + alias, value);
-    }
-
-    @Override
-    public boolean remove(String name) {
-        return storage.remove(name) != null;
-    }
-
-    @Override
-    public Object get(String name) {
-        return storage.get(name);
-    }
+    private Class<? extends Annotation> annotationType;
 }

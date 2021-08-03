@@ -557,25 +557,4 @@ public abstract class ClassUtils {
         return type != null && !void.class.equals(type) && !Void.class.equals(type);
     }
 
-    public static <A extends Annotation> A findAnnotation(Class<?> type, Class<A> annotationType) {
-        if (Object.class.equals(type) || type == null) {
-            return null;
-        }
-        A annotation = type.getAnnotation(annotationType);
-        if (annotation == null) {
-            // find the annotation from the super interfaces
-            for (Class<?> interfaceType : type.getInterfaces()) {
-                annotation = interfaceType.getAnnotation(annotationType);
-                if (annotation != null) {
-                    break;
-                }
-            }
-        }
-
-        if (annotation == null) {
-            // find the annotation from the super class recursively
-            annotation = findAnnotation(type.getSuperclass(), annotationType);
-        }
-        return annotation;
-    }
 }

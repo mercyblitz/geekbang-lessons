@@ -14,39 +14,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.cache;
+package org.geektimes.cache.annotation;
 
-import javax.cache.annotation.CacheKey;
-import java.util.HashMap;
-import java.util.Map;
+import org.geektimes.cache.DataRepository;
+import org.junit.Test;
+
+import javax.cache.annotation.CachePut;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+
+import static org.junit.Assert.assertEquals;
 
 /**
- * In-Memory {@link DataRepository} Implementation
+ * {@link ReflectiveCacheMethodDetails} Test
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class InMemoryDataRepository implements DataRepository {
+public class ReflectiveCacheMethodDetailsTest {
 
-    private final Map<String, Object> storage = new HashMap<>();
+    @Test
+    public void test() throws Throwable {
+        Method method = DataRepository.class.getMethod("create", String.class, Object.class);
+        ReflectiveCacheMethodDetails details = new ReflectiveCacheMethodDetails(method);
 
-    @Override
-    public boolean create(String name, Object value) {
-        return storage.put(name, value) == null;
-    }
-
-    @Override
-    public boolean save(String name, String alias, Object value) {
-        return create(name + alias, value);
-    }
-
-    @Override
-    public boolean remove(String name) {
-        return storage.remove(name) != null;
-    }
-
-    @Override
-    public Object get(String name) {
-        return storage.get(name);
+        assertEquals(method, details.getMethod());
+        assertEquals("simpleCache", details.getCacheName());
+        assertEquals(CachePut.class, details.getCacheAnnotation().annotationType());
+        assertEquals(1, details.getAnnotations().size());
     }
 }

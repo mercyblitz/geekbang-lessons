@@ -14,39 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.cache;
+package org.geektimes.commons.util;
 
-import javax.cache.annotation.CacheKey;
-import java.util.HashMap;
-import java.util.Map;
+import java.lang.reflect.Array;
 
 /**
- * In-Memory {@link DataRepository} Implementation
+ * The utilities class for {@link Array}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class InMemoryDataRepository implements DataRepository {
+public abstract class ArrayUtils {
 
-    private final Map<String, Object> storage = new HashMap<>();
-
-    @Override
-    public boolean create(String name, Object value) {
-        return storage.put(name, value) == null;
-    }
-
-    @Override
-    public boolean save(String name, String alias, Object value) {
-        return create(name + alias, value);
-    }
-
-    @Override
-    public boolean remove(String name) {
-        return storage.remove(name) != null;
-    }
-
-    @Override
-    public Object get(String name) {
-        return storage.get(name);
+    public static <T> T[] of(T... values) {
+        return values;
     }
 }

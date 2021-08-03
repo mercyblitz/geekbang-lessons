@@ -110,7 +110,8 @@ public abstract class AnnotatedInterceptor<A extends Annotation> implements Inte
         Class<A> annotationType = null;
         for (Class<?> typeArgument : typeArguments) {
             if (typeArgument.isAnnotation()) {
-                if (!typeArgument.isAnnotationPresent(InterceptorBinding.class)) {
+                annotationType = (Class<A>) typeArgument;
+                if (!annotationType.isAnnotationPresent(InterceptorBinding.class)) {
                     if (logger.isLoggable(Level.SEVERE)) {
                         logger.severe(format("The annotationType[%s] should annotate %s",
                                 typeArgument.getName(),

@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.cache.interceptor;
+package org.geektimes.cache.annotation.interceptor;
 
 import org.geektimes.cache.DataRepository;
 import org.geektimes.cache.InMemoryDataRepository;
