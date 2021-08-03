@@ -20,6 +20,7 @@ import javax.cache.annotation.CacheInvocationParameter;
 import javax.cache.annotation.CacheKeyInvocationContext;
 import javax.cache.annotation.GeneratedCacheKey;
 import java.util.Arrays;
+import java.util.Objects;
 
 import static java.util.Arrays.deepEquals;
 import static java.util.Arrays.deepHashCode;
@@ -37,10 +38,20 @@ import static java.util.Arrays.deepHashCode;
  */
 class DefaultGeneratedCacheKey implements GeneratedCacheKey {
 
-    private final CacheInvocationParameter[] parameters;
+    private final Object[] parameters;
 
     DefaultGeneratedCacheKey(CacheKeyInvocationContext context) {
-        this.parameters = context.getKeyParameters();
+        this.parameters = getParameters(context.getKeyParameters());
+    }
+
+    private Object[] getParameters(CacheInvocationParameter[] keyParameters) {
+        int size = keyParameters.length;
+        Object[] parameters = new Object[keyParameters.length];
+        for (int i = 0; i < size; i++) {
+            CacheInvocationParameter keyParameter = keyParameters[i];
+            parameters[i] = keyParameter.getValue();
+        }
+        return parameters;
     }
 
     @Override
@@ -53,10 +64,11 @@ class DefaultGeneratedCacheKey implements GeneratedCacheKey {
         if (this == other) {
             return true;
         }
-        if (!(other instanceof DefaultGeneratedCacheKey)) {
-            return false;
+        if (other instanceof DefaultGeneratedCacheKey) {
+            return deepEquals(this.parameters, ((DefaultGeneratedCacheKey) other).parameters);
+        } else {
+            return Objects.deepEquals(this.parameters, other);
         }
-        return deepEquals(this.parameters, ((DefaultGeneratedCacheKey) other).parameters);
     }
 
     @Override
