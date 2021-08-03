@@ -32,12 +32,17 @@ public class InMemoryDataRepository implements DataRepository {
 
     @Override
     public boolean create(String name, Object value) {
-        return storage.put(name, value) == null;
+        return save(name, value);
     }
 
     @Override
     public boolean save(String name, String alias, Object value) {
-        return create(name + alias, value);
+        return save(name + alias, value);
+    }
+
+    @Override
+    public boolean save(String name, Object value) {
+        return storage.put(name, value) == null;
     }
 
     @Override
@@ -47,6 +52,16 @@ public class InMemoryDataRepository implements DataRepository {
 
     @Override
     public Object get(String name) {
+        return getWithoutCache(name);
+    }
+
+    @Override
+    public Object getWithoutCache(String name) {
         return storage.get(name);
+    }
+
+    @Override
+    public void removeAll() {
+        storage.clear();
     }
 }

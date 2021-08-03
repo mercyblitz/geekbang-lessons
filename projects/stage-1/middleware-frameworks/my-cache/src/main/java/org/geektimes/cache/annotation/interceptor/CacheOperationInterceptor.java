@@ -66,11 +66,15 @@ public abstract class CacheOperationInterceptor<A extends Annotation> extends An
         Object result = null;
 
         Cache cache = resolveCache(cacheOperationAnnotation, cacheKeyInvocationContext, cacheOperationAnnotationInfo);
+
         Optional<GeneratedCacheKey> cacheKey = generateCacheKey(cacheOperationAnnotation, cacheKeyInvocationContext, cacheOperationAnnotationInfo);
+
         try {
             if (!afterInvocation) {
-                beforeExecute(cacheOperationAnnotation, cacheKeyInvocationContext, cacheOperationAnnotationInfo, cache, cacheKey);
-                result = context.proceed();
+                result = beforeExecute(cacheOperationAnnotation, cacheKeyInvocationContext, cacheOperationAnnotationInfo, cache, cacheKey);
+                if (result == null) {
+                    result = context.proceed();
+                }
             } else {
                 result = context.proceed();
                 afterExecute(cacheOperationAnnotation, cacheKeyInvocationContext, cacheOperationAnnotationInfo, cache, cacheKey, result);
@@ -87,11 +91,17 @@ public abstract class CacheOperationInterceptor<A extends Annotation> extends An
 
     protected abstract CacheOperationAnnotationInfo getCacheOperationAnnotationInfo(A cacheOperationAnnotation, CacheDefaults cacheDefaults);
 
-    protected abstract void beforeExecute(A cacheOperationAnnotation, CacheKeyInvocationContext<A> cacheKeyInvocationContext, CacheOperationAnnotationInfo cacheOperationAnnotationInfo, Cache cache, Optional<GeneratedCacheKey> cacheKey);
+    protected abstract Object beforeExecute(A cacheOperationAnnotation, CacheKeyInvocationContext<A> cacheKeyInvocationContext,
+                                            CacheOperationAnnotationInfo cacheOperationAnnotationInfo,
+                                            Cache cache, Optional<GeneratedCacheKey> cacheKey);
 
-    protected abstract void afterExecute(A cacheOperationAnnotation, CacheKeyInvocationContext<A> cacheKeyInvocationContext, CacheOperationAnnotationInfo cacheOperationAnnotationInfo, Cache cache, Optional<GeneratedCacheKey> cacheKey, Object result);
+    protected abstract void afterExecute(A cacheOperationAnnotation, CacheKeyInvocationContext<A> cacheKeyInvocationContext,
+                                         CacheOperationAnnotationInfo cacheOperationAnnotationInfo,
+                                         Cache cache, Optional<GeneratedCacheKey> cacheKey, Object result);
 
-    protected abstract void handleFailure(A cacheOperationAnnotation, CacheKeyInvocationContext<A> cacheKeyInvocationContext, CacheOperationAnnotationInfo cacheOperationAnnotationInfo, Cache cache, Optional<GeneratedCacheKey> cacheKey, Throwable failure);
+    protected abstract void handleFailure(A cacheOperationAnnotation, CacheKeyInvocationContext<A> cacheKeyInvocationContext,
+                                          CacheOperationAnnotationInfo cacheOperationAnnotationInfo,
+                                          Cache cache, Optional<GeneratedCacheKey> cacheKey, Throwable failure);
 
     private boolean isAfterInvocation(CacheOperationAnnotationInfo cacheOperationAnnotation) {
         return TRUE.equals(cacheOperationAnnotation.getAfterInvocation());
@@ -105,9 +115,9 @@ public abstract class CacheOperationInterceptor<A extends Annotation> extends An
         return cacheResolver.resolveCache(cacheKeyInvocationContext);
     }
 
-    private CacheResolverFactory getCacheResolverFactory(A cacheOperationAnnotation,
-                                                         CacheKeyInvocationContext<A> cacheKeyInvocationContext,
-                                                         CacheOperationAnnotationInfo cacheOperationAnnotationInfo) {
+    protected CacheResolverFactory getCacheResolverFactory(A cacheOperationAnnotation,
+                                                           CacheKeyInvocationContext<A> cacheKeyInvocationContext,
+                                                           CacheOperationAnnotationInfo cacheOperationAnnotationInfo) {
         return cacheResolverFactoryCache.computeIfAbsent(cacheOperationAnnotation, key -> {
             Class<? extends CacheResolverFactory> cacheResolverFactoryClass = cacheOperationAnnotationInfo.getCacheResolverFactoryClass();
             return cacheKeyInvocationContext.unwrap(cacheResolverFactoryClass);
@@ -142,9 +152,26 @@ public abstract class CacheOperationInterceptor<A extends Annotation> extends An
     }
 
     private boolean shouldHandleFailure(Throwable failure, CacheOperationAnnotationInfo cacheOperationAnnotationInfo) {
-        Class<? extends Throwable> failureType = failure.getClass();
         Class<? extends Throwable>[] appliedFailures = cacheOperationAnnotationInfo.getAppliedFailures();
         Class<? extends Throwable>[] nonAppliedFailures = cacheOperationAnnotationInfo.getNonAppliedFailures();
-        return isDerived(failureType, appliedFailures) && isDerived(failureType, nonAppliedFailures);
+
+        boolean hasAppliedFailures = appliedFailures.length > 0;
+        boolean hasNonAppliedFailures = nonAppliedFailures.length > 0;
+
+        if (!hasAppliedFailures && !hasNonAppliedFailures) {
+            return true;
+        }
+
+        Class<? extends Throwable> failureType = failure.getClass();
+
+        if (hasAppliedFailures && !hasNonAppliedFailures) {
+            return isDerived(failureType, appliedFailures);
+        } else if (!hasAppliedFailures && hasNonAppliedFailures) {
+            return !isDerived(failureType, nonAppliedFailures);
+        } else if (hasAppliedFailures && hasNonAppliedFailures) {
+            return isDerived(failureType, appliedFailures) && !isDerived(failureType, nonAppliedFailures);
+        }
+
+        return false;
     }
 }

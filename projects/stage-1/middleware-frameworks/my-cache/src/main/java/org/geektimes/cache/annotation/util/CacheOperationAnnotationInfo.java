@@ -22,6 +22,8 @@ import org.geektimes.cache.annotation.DefaultCacheResolverFactory;
 import javax.cache.annotation.*;
 import java.util.function.Supplier;
 
+import static java.lang.Boolean.TRUE;
+
 /**
  * Cache Operation Annotation Info
  *
@@ -99,11 +101,11 @@ public class CacheOperationAnnotationInfo {
 
     public CacheOperationAnnotationInfo(CacheResult cacheResult, CacheDefaults cacheDefaults) {
         this.cacheName = getCacheName(cacheResult::cacheName, cacheDefaults::cacheName);
-        this.afterInvocation = true;
+        this.afterInvocation = cacheResult.skipGet();
         this.cacheResolverFactoryClass = getCacheResolverFactoryClass(cacheResult::cacheResolverFactory, cacheDefaults::cacheResolverFactory);
-        this.cacheKeyGeneratorClass = null;
-        this.appliedFailures = afterInvocation ? cacheResult.cachedExceptions() : EMPTY_FAILURE;
-        this.nonAppliedFailures = afterInvocation ? cacheResult.nonCachedExceptions() : EMPTY_FAILURE;
+        this.cacheKeyGeneratorClass = getCacheKeyGeneratorClass(cacheResult::cacheKeyGenerator, cacheDefaults::cacheKeyGenerator);
+        this.appliedFailures = cacheResult.cachedExceptions();
+        this.nonAppliedFailures = cacheResult.nonCachedExceptions();
         this.skipGet = cacheResult.skipGet();
         this.exceptionCacheName = cacheResult.exceptionCacheName();
     }
@@ -134,6 +136,10 @@ public class CacheOperationAnnotationInfo {
 
     public Boolean getSkipGet() {
         return skipGet;
+    }
+
+    public boolean isSkipGet() {
+        return TRUE.equals(getSkipGet());
     }
 
     public String getExceptionCacheName() {

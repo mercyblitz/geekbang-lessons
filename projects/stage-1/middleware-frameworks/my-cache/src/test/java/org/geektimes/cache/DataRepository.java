@@ -16,10 +16,7 @@
  */
 package org.geektimes.cache;
 
-import javax.cache.annotation.CacheDefaults;
-import javax.cache.annotation.CacheKey;
-import javax.cache.annotation.CachePut;
-import javax.cache.annotation.CacheValue;
+import javax.cache.annotation.*;
 
 /**
  * Data Repository
@@ -36,7 +33,18 @@ public interface DataRepository {
     @CachePut
     boolean save(@CacheKey String name, @CacheKey String alias, @CacheValue Object value);
 
+    @CachePut
+    boolean save(String name, @CacheValue Object value);
+
+    @CacheRemove(cacheName = "simpleCache", afterInvocation = false)
     boolean remove(String name);
 
+    @CacheResult(exceptionCacheName = "exceptionCache")
     Object get(String name);
+
+    @CacheResult(skipGet = true)
+    Object getWithoutCache(String name);
+
+    @CacheRemoveAll(cacheName = "simpleCache")
+    void removeAll();
 }

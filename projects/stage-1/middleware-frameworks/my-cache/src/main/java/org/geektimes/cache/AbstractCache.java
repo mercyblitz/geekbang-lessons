@@ -605,8 +605,8 @@ public abstract class AbstractCache<K, V> implements Cache<K, V> {
      */
     @Override
     public void removeAll(Set<? extends K> keys) {
-        for (K key : keys) {
-            remove(key);
+        for (Object key : keys.toArray()) {
+            remove((K) key);
         }
     }
 

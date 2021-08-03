@@ -24,23 +24,23 @@ import javax.interceptor.Interceptor;
 import java.util.Optional;
 
 /**
- * The {@link Interceptor @Interceptor} class for Java Caching annotation {@link CachePut}.
+ * The {@link Interceptor @Interceptor} class for Java Caching annotation {@link CacheRemove}.
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
 @Interceptor
-public class CachePutInterceptor extends CacheOperationInterceptor<CachePut> {
+public class CacheRemoveInterceptor extends CacheOperationInterceptor<CacheRemove> {
 
     @Override
-    protected CacheOperationAnnotationInfo getCacheOperationAnnotationInfo(CachePut cacheOperationAnnotation,
+    protected CacheOperationAnnotationInfo getCacheOperationAnnotationInfo(CacheRemove cacheOperationAnnotation,
                                                                            CacheDefaults cacheDefaults) {
         return new CacheOperationAnnotationInfo(cacheOperationAnnotation, cacheDefaults);
     }
 
     @Override
-    protected Object beforeExecute(CachePut cacheOperationAnnotation,
-                                   CacheKeyInvocationContext<CachePut> cacheKeyInvocationContext,
+    protected Object beforeExecute(CacheRemove cacheOperationAnnotation,
+                                   CacheKeyInvocationContext<CacheRemove> cacheKeyInvocationContext,
                                    CacheOperationAnnotationInfo cacheOperationAnnotationInfo, Cache cache,
                                    Optional<GeneratedCacheKey> cacheKey) {
         afterExecute(cacheOperationAnnotation, cacheKeyInvocationContext, cacheOperationAnnotationInfo, cache,
@@ -49,25 +49,27 @@ public class CachePutInterceptor extends CacheOperationInterceptor<CachePut> {
     }
 
     @Override
-    protected void afterExecute(CachePut cacheOperationAnnotation,
-                                CacheKeyInvocationContext<CachePut> cacheKeyInvocationContext,
+    protected void afterExecute(CacheRemove cacheOperationAnnotation,
+                                CacheKeyInvocationContext<CacheRemove> cacheKeyInvocationContext,
                                 CacheOperationAnnotationInfo cacheOperationAnnotationInfo, Cache cache,
                                 Optional<GeneratedCacheKey> cacheKey, Object result) {
         cacheKey.ifPresent(key -> {
             CacheInvocationParameter valueParameter = cacheKeyInvocationContext.getValueParameter();
             if (valueParameter != null) {
-                cache.put(key, valueParameter.getValue());
+                cache.remove(key, valueParameter.getValue());
+            } else {
+                cache.remove(key);
             }
         });
     }
 
     @Override
-    protected void handleFailure(CachePut cacheOperationAnnotation,
-                                 CacheKeyInvocationContext<CachePut> cacheKeyInvocationContext,
+    protected void handleFailure(CacheRemove cacheOperationAnnotation,
+                                 CacheKeyInvocationContext<CacheRemove> cacheKeyInvocationContext,
                                  CacheOperationAnnotationInfo cacheOperationAnnotationInfo, Cache cache,
                                  Optional<GeneratedCacheKey> cacheKey, Throwable failure) {
         cacheKey.ifPresent(key -> {
-            cache.put(key, failure);
+            cache.remove(key, failure);
         });
     }
 }
