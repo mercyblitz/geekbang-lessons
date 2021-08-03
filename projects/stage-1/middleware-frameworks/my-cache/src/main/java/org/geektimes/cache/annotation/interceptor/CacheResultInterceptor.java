@@ -47,7 +47,10 @@ public class CacheResultInterceptor extends CacheOperationInterceptor<CacheResul
                                    Optional<GeneratedCacheKey> cacheKey) {
 
         /**
-         * If set to true the pre-invocation {@link Cache#get(Object)} is skipped.
+         * If set to true the pre-invocation {@link Cache#get(Object)} is
+         * skipped and the annotated method is always executed with the returned value
+         * being cached as normal. This is useful for create or update methods that
+         * should always be executed and have their returned value placed in the cache.
          */
         if (cacheOperationAnnotationInfo.isSkipGet()) {
             return null;
@@ -61,13 +64,7 @@ public class CacheResultInterceptor extends CacheOperationInterceptor<CacheResul
                                 CacheKeyInvocationContext<CacheResult> cacheKeyInvocationContext,
                                 CacheOperationAnnotationInfo cacheOperationAnnotationInfo, Cache cache,
                                 Optional<GeneratedCacheKey> cacheKey, Object result) {
-        /**
-         * If set to true the pre-invocation {@link Cache#get(Object)} is
-         * skipped and the annotated method is always executed with the returned value
-         * being cached as normal. This is useful for create or update methods that
-         * should always be executed and have their returned value placed in the cache.
-         */
-        if (cacheOperationAnnotationInfo.isSkipGet()) {
+        if (result != null) {
             cacheKey.ifPresent(key -> cache.put(key, result));
         }
     }

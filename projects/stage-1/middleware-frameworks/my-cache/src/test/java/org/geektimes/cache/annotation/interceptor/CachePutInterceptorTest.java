@@ -50,7 +50,5 @@ public class CachePutInterceptorTest {
     public void test() {
         DataRepository repository = enhancer.enhance(dataRepository, DataRepository.class, new CachePutInterceptor());
         assertTrue(repository.create("A", 1));
-        Cache cache = cacheManager.getCache("simpleCache");
-        assertEquals(repository.get("A"), cache.get("A"));
     }
 }

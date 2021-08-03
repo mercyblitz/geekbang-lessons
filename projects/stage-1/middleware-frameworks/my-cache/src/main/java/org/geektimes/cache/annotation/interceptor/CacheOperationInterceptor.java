@@ -61,8 +61,6 @@ public abstract class CacheOperationInterceptor<A extends Annotation> extends An
 
         CacheOperationAnnotationInfo cacheOperationAnnotationInfo = getCacheOperationAnnotationInfo(cacheOperationAnnotation, cacheDefaults);
 
-        boolean afterInvocation = isAfterInvocation(cacheOperationAnnotationInfo);
-
         Object result = null;
 
         Cache cache = resolveCache(cacheOperationAnnotation, cacheKeyInvocationContext, cacheOperationAnnotationInfo);
@@ -70,12 +68,8 @@ public abstract class CacheOperationInterceptor<A extends Annotation> extends An
         Optional<GeneratedCacheKey> cacheKey = generateCacheKey(cacheOperationAnnotation, cacheKeyInvocationContext, cacheOperationAnnotationInfo);
 
         try {
-            if (!afterInvocation) {
-                result = beforeExecute(cacheOperationAnnotation, cacheKeyInvocationContext, cacheOperationAnnotationInfo, cache, cacheKey);
-                if (result == null) {
-                    result = context.proceed();
-                }
-            } else {
+            result = beforeExecute(cacheOperationAnnotation, cacheKeyInvocationContext, cacheOperationAnnotationInfo, cache, cacheKey);
+            if (result == null) {
                 result = context.proceed();
                 afterExecute(cacheOperationAnnotation, cacheKeyInvocationContext, cacheOperationAnnotationInfo, cache, cacheKey, result);
             }
@@ -102,10 +96,6 @@ public abstract class CacheOperationInterceptor<A extends Annotation> extends An
     protected abstract void handleFailure(A cacheOperationAnnotation, CacheKeyInvocationContext<A> cacheKeyInvocationContext,
                                           CacheOperationAnnotationInfo cacheOperationAnnotationInfo,
                                           Cache cache, Optional<GeneratedCacheKey> cacheKey, Throwable failure);
-
-    private boolean isAfterInvocation(CacheOperationAnnotationInfo cacheOperationAnnotation) {
-        return TRUE.equals(cacheOperationAnnotation.getAfterInvocation());
-    }
 
     private Cache resolveCache(A cacheOperationAnnotation, CacheKeyInvocationContext<A> cacheKeyInvocationContext,
                                CacheOperationAnnotationInfo cacheOperationAnnotationInfo) {

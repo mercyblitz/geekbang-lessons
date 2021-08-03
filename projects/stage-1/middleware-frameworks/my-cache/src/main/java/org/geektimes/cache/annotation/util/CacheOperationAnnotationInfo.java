@@ -101,7 +101,7 @@ public class CacheOperationAnnotationInfo {
 
     public CacheOperationAnnotationInfo(CacheResult cacheResult, CacheDefaults cacheDefaults) {
         this.cacheName = getCacheName(cacheResult::cacheName, cacheDefaults::cacheName);
-        this.afterInvocation = cacheResult.skipGet();
+        this.afterInvocation = null;
         this.cacheResolverFactoryClass = getCacheResolverFactoryClass(cacheResult::cacheResolverFactory, cacheDefaults::cacheResolverFactory);
         this.cacheKeyGeneratorClass = getCacheKeyGeneratorClass(cacheResult::cacheKeyGenerator, cacheDefaults::cacheKeyGenerator);
         this.appliedFailures = cacheResult.cachedExceptions();
@@ -116,6 +116,10 @@ public class CacheOperationAnnotationInfo {
 
     public Boolean getAfterInvocation() {
         return afterInvocation;
+    }
+
+    public boolean isAfterInvocation() {
+        return TRUE.equals(getAfterInvocation());
     }
 
     public Class<? extends CacheResolverFactory> getCacheResolverFactoryClass() {

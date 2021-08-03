@@ -43,8 +43,9 @@ public class CacheRemoveInterceptor extends CacheOperationInterceptor<CacheRemov
                                    CacheKeyInvocationContext<CacheRemove> cacheKeyInvocationContext,
                                    CacheOperationAnnotationInfo cacheOperationAnnotationInfo, Cache cache,
                                    Optional<GeneratedCacheKey> cacheKey) {
-        afterExecute(cacheOperationAnnotation, cacheKeyInvocationContext, cacheOperationAnnotationInfo, cache,
-                cacheKey, null);
+        if (!cacheOperationAnnotationInfo.isAfterInvocation()) {
+            manipulateCache(cacheKeyInvocationContext, cache, cacheKey);
+        }
         return null;
     }
 
@@ -53,6 +54,13 @@ public class CacheRemoveInterceptor extends CacheOperationInterceptor<CacheRemov
                                 CacheKeyInvocationContext<CacheRemove> cacheKeyInvocationContext,
                                 CacheOperationAnnotationInfo cacheOperationAnnotationInfo, Cache cache,
                                 Optional<GeneratedCacheKey> cacheKey, Object result) {
+        if (cacheOperationAnnotationInfo.isAfterInvocation()) {
+            manipulateCache(cacheKeyInvocationContext, cache, cacheKey);
+        }
+    }
+
+    private void manipulateCache(CacheKeyInvocationContext<CacheRemove> cacheKeyInvocationContext,
+                                 Cache cache, Optional<GeneratedCacheKey> cacheKey) {
         cacheKey.ifPresent(key -> {
             CacheInvocationParameter valueParameter = cacheKeyInvocationContext.getValueParameter();
             if (valueParameter != null) {
