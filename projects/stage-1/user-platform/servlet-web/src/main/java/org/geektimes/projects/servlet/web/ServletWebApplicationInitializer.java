@@ -16,8 +16,6 @@
  */
 package org.geektimes.projects.servlet.web;
 
-import org.geektimes.projects.servlet.filter.MyFilter;
-
 import javax.servlet.ServletContainerInitializer;
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -34,6 +32,5 @@ public class ServletWebApplicationInitializer implements ServletContainerInitial
     @Override
     public void onStartup(Set<Class<?>> c, ServletContext servletContext) throws ServletException {
         System.out.println("Hello,World 2021");
-        servletContext.addFilter("myFilter", MyFilter.class);
     }
 }

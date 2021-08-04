@@ -17,11 +17,12 @@
 package org.geektimes.configuration.microprofile.config.source.servlet;
 
 import org.eclipse.microprofile.config.spi.ConfigSource;
-import org.geektimes.configuration.microprofile.config.source.MapBasedConfigSource;
+import org.geektimes.configuration.microprofile.config.source.EnumerableConfigSource;
 
 import javax.servlet.FilterConfig;
 import java.util.Enumeration;
-import java.util.Map;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 import static java.lang.String.format;
 
@@ -32,7 +33,7 @@ import static java.lang.String.format;
  * @since 1.0.0
  * Date : 2021-04-28
  */
-public class FilterConfigSource extends MapBasedConfigSource {
+public class FilterConfigSource extends EnumerableConfigSource {
 
     private final FilterConfig filterConfig;
 
@@ -42,11 +43,12 @@ public class FilterConfigSource extends MapBasedConfigSource {
     }
 
     @Override
-    protected void prepareConfigData(Map configData) throws Throwable {
-        Enumeration<String> parameterNames = filterConfig.getInitParameterNames();
-        while (parameterNames.hasMoreElements()) {
-            String parameterName = parameterNames.nextElement();
-            configData.put(parameterName, filterConfig.getInitParameter(parameterName));
-        }
+    protected Supplier<Enumeration<String>> namesSupplier() {
+        return filterConfig::getInitParameterNames;
+    }
+
+    @Override
+    protected Function<String, String> valueResolver() {
+        return filterConfig::getInitParameter;
     }
 }

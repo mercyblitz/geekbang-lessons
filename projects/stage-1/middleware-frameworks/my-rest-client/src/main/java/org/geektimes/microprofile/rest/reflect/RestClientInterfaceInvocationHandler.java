@@ -17,21 +17,24 @@
 package org.geektimes.microprofile.rest.reflect;
 
 import org.geektimes.microprofile.rest.RequestTemplate;
-import org.geektimes.microprofile.rest.annotation.AnnotatedParamMetadata;
+import org.geektimes.microprofile.rest.uri.UriBuilderAssembler;
 
-import javax.ws.rs.MatrixParam;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.QueryParam;
+import javax.ws.rs.BeanParam;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation;
 import javax.ws.rs.core.Configuration;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriBuilder;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.Map;
+import java.util.ServiceLoader;
+import java.util.Set;
 
 /**
  * RestClient Interface Proxy {@link InvocationHandler}
@@ -46,9 +49,16 @@ public class RestClientInterfaceInvocationHandler implements InvocationHandler {
 
     private final Map<Method, RequestTemplate> requestTemplates;
 
+    private final Iterable<UriBuilderAssembler> uriBuilderAssemblers;
+
     public RestClientInterfaceInvocationHandler(Configuration configuration, Map<Method, RequestTemplate> requestTemplates) {
         this.client = ClientBuilder.newClient(configuration);
         this.requestTemplates = requestTemplates;
+        this.uriBuilderAssemblers = initUriBuilderAssemblers();
+    }
+
+    private Iterable<UriBuilderAssembler> initUriBuilderAssemblers() {
+        return ServiceLoader.load(UriBuilderAssembler.class);
     }
 
     @Override
@@ -68,31 +78,8 @@ public class RestClientInterfaceInvocationHandler implements InvocationHandler {
 
         UriBuilder uriBuilder = UriBuilder.fromUri(uriTemplate);
 
-        // Handle @PathParam @DefaultValue
-        for (AnnotatedParamMetadata metadata : requestTemplate.getAnnotatedParamMetadata(PathParam.class)) {
-            String paramName = metadata.getParamName();
-            int paramIndex = metadata.getParameterIndex();
-            Object paramValue = args[paramIndex];
-            if (paramValue == null) { // Handle @DefaultValue
-                paramValue = metadata.getDefaultValue();
-            }
-            uriBuilder.resolveTemplate(paramName, paramValue);
-        }
-
-        // Handle @QueryParam
-        for (AnnotatedParamMetadata metadata : requestTemplate.getAnnotatedParamMetadata(QueryParam.class)) {
-            String paramName = metadata.getParamName();
-            int paramIndex = metadata.getParameterIndex();
-            Object paramValue = args[paramIndex];
-            uriBuilder.queryParam(paramName, paramValue);
-        }
-
-        // Handle @QueryParam
-        for (AnnotatedParamMetadata metadata : requestTemplate.getAnnotatedParamMetadata(MatrixParam.class)) {
-            String paramName = metadata.getParamName();
-            int paramIndex = metadata.getParameterIndex();
-            Object paramValue = args[paramIndex];
-            uriBuilder.matrixParam(paramName, paramValue);
+        for (UriBuilderAssembler uriBuilderAssembler : uriBuilderAssemblers) {
+            uriBuilderAssembler.assemble(uriBuilder, requestTemplate, args);
         }
 
         String httpMethod = requestTemplate.getMethod();
@@ -101,7 +88,7 @@ public class RestClientInterfaceInvocationHandler implements InvocationHandler {
 
         Class<?> returnType = method.getReturnType();
 
-        Entity<?> entity = buildEntity(method, args);
+        Entity<?> entity = buildRequestEntity(requestTemplate, method, args);
 
         String uri = uriBuilder.build().toString();
 
@@ -112,8 +99,33 @@ public class RestClientInterfaceInvocationHandler implements InvocationHandler {
         return invocation.invoke(returnType);
     }
 
-    private Entity<?> buildEntity(Method method, Object[] args) {
+    private Entity<?> buildRequestEntity(RequestTemplate requestTemplate, Method method, Object[] args) {
+        Annotation[][] annotationsArray = method.getParameterAnnotations();
+        int parameterCount = method.getParameterCount();
+        int beanParamIndex = -1;
+        for (int i = 0; i < parameterCount; i++) { // Iterate parameters
+            Annotation[] annotations = annotationsArray[i];
+            for (Annotation annotation : annotations) {
+                if (BeanParam.class.equals(annotation.annotationType())) {
+                    beanParamIndex = i;
+                    break;
+                }
+            }
+        }
+
+        if (beanParamIndex > -1) {
+            MediaType mediaType = resolveMediaType(requestTemplate);
+            Object arg = args[beanParamIndex];
+            return Entity.entity(arg, mediaType);
+        }
+
         return null;
+    }
+
+    private MediaType resolveMediaType(RequestTemplate requestTemplate) {
+        Set<String> consumes = requestTemplate.getConsumes();
+        return consumes.isEmpty() ? MediaType.APPLICATION_JSON_TYPE :
+                MediaType.valueOf(consumes.iterator().next());
     }
 
     private String[] getAcceptedResponseTypes(Method method) {

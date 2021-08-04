@@ -1,7 +1,7 @@
 package org.geektimes.projects.user.standard.repository;
 
 import org.geektimes.commons.function.ThrowableFunction;
-import org.geektimes.context.ClassicComponentContext;
+import org.geektimes.context.JndiComponentContext;
 import org.geektimes.projects.user.api.domain.User;
 import org.geektimes.projects.user.api.repository.UserRepository;
 import org.geektimes.projects.user.standard.sql.DBConnectionManager;
@@ -42,7 +42,7 @@ public class JdbcUserRepository implements UserRepository {
     private final DBConnectionManager dbConnectionManager;
 
     public JdbcUserRepository() {
-        this.dbConnectionManager = ClassicComponentContext.getInstance().getComponent("bean/DBConnectionManager");
+        this.dbConnectionManager = JndiComponentContext.getInstance().getComponent("bean/DBConnectionManager");
     }
 
     private Connection getConnection() {

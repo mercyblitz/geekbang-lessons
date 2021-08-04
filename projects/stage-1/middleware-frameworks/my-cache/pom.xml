@@ -11,7 +11,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>my-cache</artifactId>
-    <name>Middleware Frameworks - My Caching Framework ${revision}</name>
+    <name>Middleware Frameworks - My Caching Framework</name>
     <packaging>jar</packaging>
 
     <properties>
@@ -21,9 +21,16 @@
 
     <dependencies>
 
+        <!-- Internal Artifacts -->
         <dependency>
             <groupId>org.geekbang.projects</groupId>
             <artifactId>my-commons</artifactId>
+            <version>${revision}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.geekbang.projects</groupId>
+            <artifactId>my-interceptor</artifactId>
             <version>${revision}</version>
         </dependency>
 

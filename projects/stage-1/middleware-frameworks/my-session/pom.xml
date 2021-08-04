@@ -11,7 +11,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>my-session</artifactId>
-    <name>Middleware Frameworks - My Session Framework ${revision}</name>
+    <name>Middleware Frameworks - My Session Framework</name>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>

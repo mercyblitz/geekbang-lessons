@@ -18,6 +18,7 @@
         <module>spring-cloud-config-client</module>
         <module>spring-cloud-service-provider</module>
         <module>spring-cloud-service-consumer</module>
+        <module>spring-batch-project</module>
     </modules>
     <packaging>pom</packaging>
 

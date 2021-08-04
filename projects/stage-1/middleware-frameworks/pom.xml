@@ -14,7 +14,7 @@
     <groupId>org.geekbang.projects</groupId>
     <artifactId>middleware-frameworks</artifactId>
     <version>${revision}</version>
-    <name>Middleware Frameworks ${revision}</name>
+    <name>Middleware Frameworks</name>
     <packaging>pom</packaging>
 
     <modules>
@@ -28,6 +28,11 @@
         <module>my-commons</module>
         <module>my-session</module>
         <module>my-distributed-lock</module>
+        <module>my-rpc</module>
+        <module>my-http-server</module>
+        <module>my-gateway</module>
+        <module>my-fault-tolerance</module>
+        <module>my-cdi</module>
     </modules>
 
     <properties>

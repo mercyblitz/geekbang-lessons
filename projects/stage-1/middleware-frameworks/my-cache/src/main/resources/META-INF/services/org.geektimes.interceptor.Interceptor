@@ -1,0 +1,4 @@
+org.geektimes.cache.annotation.interceptor.CachePutInterceptor
+org.geektimes.cache.annotation.interceptor.CacheRemoveInterceptor
+org.geektimes.cache.annotation.interceptor.CacheRemoveAllInterceptor
+org.geektimes.cache.annotation.interceptor.CacheResultInterceptor

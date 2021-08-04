@@ -174,12 +174,13 @@ public class DefaultResponse extends Response {
     @Override
     public <T> T readEntity(Class<T> entityType) {
         T entity = null;
-        try {
-            InputStream inputStream = connection.getInputStream();
+        try (InputStream inputStream = connection.getInputStream()) {
             // 参考 HttpMessageConverter 实现，实现运行时动态判断
             if (String.class.equals(entityType)) {
                 Object value = IOUtils.toString(inputStream, encoding);
                 entity = (T) value;
+            } else if (InputStream.class.equals(entityType)) {
+                return (T) inputStream;
             } else {
                 ObjectMapper objectMapper = new ObjectMapper();
                 entity = objectMapper.readValue(new InputStreamReader(inputStream, encoding), entityType);

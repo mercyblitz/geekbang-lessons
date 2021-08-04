@@ -1,0 +1,3 @@
+org.geektimes.microprofile.rest.uri.PathParamUriBuilderAssembler
+org.geektimes.microprofile.rest.uri.QueryParamUriBuilderAssembler
+org.geektimes.microprofile.rest.uri.MatrixParamUriBuilderAssembler
