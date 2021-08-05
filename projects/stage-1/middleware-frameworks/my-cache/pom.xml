@@ -55,6 +55,12 @@
             <artifactId>jedis</artifactId>
         </dependency>
 
+        <!-- Spring Framework Integration -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>junit</groupId>

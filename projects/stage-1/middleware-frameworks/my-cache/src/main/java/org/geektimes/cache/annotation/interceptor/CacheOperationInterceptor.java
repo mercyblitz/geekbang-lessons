@@ -38,10 +38,11 @@ import static org.geektimes.commons.reflect.util.ClassUtils.isDerived;
  * The abstract {@link Interceptor @Interceptor} class for Cache Annotation Operation
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
- * @see CacheDefaults
  * @see CachePut
  * @see CacheRemove
  * @see CacheRemoveAll
+ * @see CacheResult
+ * @see CacheDefaults
  * @since 1.0.0
  */
 public abstract class CacheOperationInterceptor<A extends Annotation> extends AnnotatedInterceptor<A> {

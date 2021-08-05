@@ -20,6 +20,7 @@ import javax.cache.Cache;
 import javax.cache.CacheManager;
 import javax.cache.Caching;
 import javax.cache.annotation.*;
+import javax.cache.configuration.MutableConfiguration;
 import javax.cache.spi.CachingProvider;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -47,7 +48,11 @@ public class DefaultCacheResolverFactory implements CacheResolverFactory {
 
             @Override
             public <K, V> Cache<K, V> resolveCache(CacheInvocationContext<? extends Annotation> cacheInvocationContext) {
-                return cacheManager.getCache(exceptionCacheName);
+                Cache exceptionCache = cacheManager.getCache(exceptionCacheName);
+                if (exceptionCache == null) {
+                    exceptionCache = cacheManager.createCache(exceptionCacheName, new MutableConfiguration<>());
+                }
+                return exceptionCache;
             }
         };
     }
@@ -56,7 +61,7 @@ public class DefaultCacheResolverFactory implements CacheResolverFactory {
         Method method = cacheMethodDetails.getMethod();
         Class<?> declaringClass = method.getDeclaringClass();
         ClassLoader classLoader = declaringClass.getClassLoader();
-        CachingProvider cachingProvider = Caching.getCachingProvider();
+        CachingProvider cachingProvider = Caching.getCachingProvider(classLoader);
         return cachingProvider.getCacheManager(cachingProvider.getDefaultURI(), classLoader);
     }
 }
