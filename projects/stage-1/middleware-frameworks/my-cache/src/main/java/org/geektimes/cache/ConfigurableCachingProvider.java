@@ -19,7 +19,6 @@ package org.geektimes.cache;
 import javax.cache.CacheException;
 import javax.cache.CacheManager;
 import javax.cache.Caching;
-import javax.cache.annotation.CachePut;
 import javax.cache.configuration.OptionalFeature;
 import javax.cache.spi.CachingProvider;
 import java.io.IOException;
@@ -29,15 +28,12 @@ import java.io.Reader;
 import java.lang.reflect.Constructor;
 import java.net.URI;
 import java.net.URL;
-import java.util.Enumeration;
-import java.util.Objects;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Supplier;
 
 import static java.lang.String.format;
-import static java.util.Collections.emptyMap;
 
 /**
  * Configurable {@link CachingProvider}
@@ -49,10 +45,21 @@ import static java.util.Collections.emptyMap;
  */
 public class ConfigurableCachingProvider implements CachingProvider {
 
+    public static final String DEFAULT_PROPERTIES_RESOURCE_NAME_PROPERTY_NAME =
+            "javax.cache.spi.CachingProvider.default-properties";
+
+    public static final String DEFAULT_PROPERTIES_PRIORITY_PROPERTY_NAME =
+            "javax.cache.spi.CachingProvider.default-properties.priority";
+
+    public static final String DEFAULT_URI_PROPERTY_NAME = "javax.cache.spi.CachingProvider.default-uri";
+
+    public static final String DEFAULT_URI_DEFAULT_PROPERTY_VALUE = "in-memory://localhost/";
     /**
      * The resource name of {@link #getDefaultProperties() the default properties}.
      */
-    public static final String DEFAULT_PROPERTIES_RESOURCE_NAME = "META-INF/default-caching-provider.properties";
+    public static final String DEFAULT_PROPERTIES_RESOURCE_NAME = System.getProperty(
+            DEFAULT_PROPERTIES_RESOURCE_NAME_PROPERTY_NAME,
+            "META-INF/caching-provider-default.properties");
 
     /**
      * The prefix of property name for the mappings of {@link CacheManager}, e.g:
@@ -63,9 +70,9 @@ public class ConfigurableCachingProvider implements CachingProvider {
 
     public static final String DEFAULT_ENCODING = System.getProperty("file.encoding", "UTF-8");
 
-    public static final URI DEFAULT_URI = URI.create("in-memory://localhost/");
-
     private Properties defaultProperties;
+
+    private URI defaultURI;
 
     private ConcurrentMap<String, CacheManager> cacheManagersRepository = new ConcurrentHashMap<>();
 
@@ -80,7 +87,11 @@ public class ConfigurableCachingProvider implements CachingProvider {
 
     @Override
     public URI getDefaultURI() {
-        return DEFAULT_URI;
+        if (defaultURI == null) {
+            String defaultURIValue = getDefaultProperties().getProperty(DEFAULT_URI_PROPERTY_NAME, DEFAULT_URI_DEFAULT_PROPERTY_VALUE);
+            defaultURI = URI.create(defaultURIValue);
+        }
+        return defaultURI;
     }
 
     @Override
@@ -93,20 +104,55 @@ public class ConfigurableCachingProvider implements CachingProvider {
 
     private Properties loadDefaultProperties() {
         ClassLoader classLoader = getDefaultClassLoader();
-        Properties defaultProperties = new Properties();
+        List<Properties> defaultPropertiesList = new LinkedList<>();
         try {
             Enumeration<URL> defaultPropertiesResources = classLoader.getResources(DEFAULT_PROPERTIES_RESOURCE_NAME);
             while (defaultPropertiesResources.hasMoreElements()) {
                 URL defaultPropertiesResource = defaultPropertiesResources.nextElement();
                 try (InputStream inputStream = defaultPropertiesResource.openStream();
                      Reader reader = new InputStreamReader(inputStream, DEFAULT_ENCODING)) {
+                    Properties defaultProperties = new Properties();
                     defaultProperties.load(reader);
+                    defaultPropertiesList.add(defaultProperties);
                 }
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        return defaultProperties;
+
+        // sort defaultPropertiesList
+        defaultPropertiesList.sort(DefaultPropertiesComparator.INSTANCE);
+
+        Properties effectiveDefaultProperties = new Properties();
+
+        for (Properties defaultProperties : defaultPropertiesList) {
+            for (String propertyName : defaultProperties.stringPropertyNames()) {
+                if (!effectiveDefaultProperties.containsKey(propertyName)) {
+                    effectiveDefaultProperties.put(propertyName, defaultProperties.getProperty(propertyName));
+                }
+            }
+        }
+
+        return effectiveDefaultProperties;
+    }
+
+    private static class DefaultPropertiesComparator implements Comparator<Properties> {
+
+        public static final Comparator<Properties> INSTANCE = new DefaultPropertiesComparator();
+
+        private DefaultPropertiesComparator() {
+        }
+
+        @Override
+        public int compare(Properties properties1, Properties properties2) {
+            Integer priority1 = getProperty(properties1);
+            Integer priority2 = getProperty(properties2);
+            return Integer.compare(priority1, priority2);
+        }
+
+        private Integer getProperty(Properties properties) {
+            return Integer.decode(properties.getProperty(DEFAULT_PROPERTIES_PRIORITY_PROPERTY_NAME, "0x7fffffff"));
+        }
     }
 
     @Override

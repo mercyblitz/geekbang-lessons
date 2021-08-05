@@ -16,6 +16,8 @@
  */
 package org.geektimes.cache;
 
+import org.geektimes.cache.configuration.CacheConfiguration;
+import org.geektimes.cache.configuration.PropertiesCacheConfiguration;
 import org.geektimes.commons.io.Deserializers;
 import org.geektimes.commons.io.Serializers;
 
@@ -65,14 +67,18 @@ public abstract class AbstractCacheManager implements CacheManager {
 
     private final Properties properties;
 
+    private final CacheConfiguration cacheConfiguration;
+
     private volatile boolean closed;
 
     private ConcurrentMap<String, Map<KeyValueTypePair, Cache>> cacheRepository = new ConcurrentHashMap<>();
+
 
     public AbstractCacheManager(CachingProvider cachingProvider, URI uri, ClassLoader classLoader, Properties properties) {
         this.cachingProvider = cachingProvider;
         this.uri = uri == null ? cachingProvider.getDefaultURI() : uri;
         this.properties = properties == null ? cachingProvider.getDefaultProperties() : properties;
+        this.cacheConfiguration = new PropertiesCacheConfiguration(this.properties);
         this.classLoader = classLoader == null ? cachingProvider.getDefaultClassLoader() : classLoader;
         this.serializers = initSerializers(this.classLoader);
         this.deserializers = initDeserializers(this.classLoader);
@@ -124,13 +130,13 @@ public abstract class AbstractCacheManager implements CacheManager {
 
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName, Class<K> keyType, Class<V> valueType) {
-        MutableConfiguration<K, V> configuration = new MutableConfiguration<K, V>().setTypes(keyType, valueType);
+        MutableConfiguration<K, V> configuration = new MutableConfiguration<K, V>(cacheConfiguration).setTypes(keyType, valueType);
         return getOrCreateCache(cacheName, configuration, false);
     }
 
     @Override
     public <K, V> Cache<K, V> getCache(String cacheName) {
-        return getCache(cacheName, (Class<K>) Object.class, (Class<V>) Object.class);
+        return getCache(cacheName, (Class<K>) cacheConfiguration.getKeyType(), (Class<V>) cacheConfiguration.getValueType());
     }
 
     protected <K, V, C extends Configuration<K, V>> Cache<K, V> getOrCreateCache(String cacheName, C configuration,

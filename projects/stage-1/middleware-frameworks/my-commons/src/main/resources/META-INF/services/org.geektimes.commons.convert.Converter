@@ -1,0 +1,12 @@
+org.geektimes.commons.convert.StringToBooleanConverter
+org.geektimes.commons.convert.StringToCharacterConverter
+org.geektimes.commons.convert.StringToCharArrayConverter
+org.geektimes.commons.convert.StringToClassConverter
+org.geektimes.commons.convert.StringToDoubleConverter
+org.geektimes.commons.convert.StringToFloatConverter
+org.geektimes.commons.convert.StringToIntegerConverter
+org.geektimes.commons.convert.StringToLongConverter
+org.geektimes.commons.convert.StringToOptionalConverter
+org.geektimes.commons.convert.StringToShortConverter
+org.geektimes.commons.convert.StringToStringConverter
+org.geektimes.commons.convert.StringToURIConverter

@@ -82,6 +82,9 @@ public interface TypeUtils {
                     Type[] typeArguments = parameterizedType.getActualTypeArguments();
                     for (int i = 0; i < typeArguments.length; i++) {
                         Type typeArgument = typeArguments[i];
+                        if (typeArgument instanceof ParameterizedType) {
+                            typeArgument = ((ParameterizedType)typeArgument).getRawType();
+                        }
                         if (typeArgument instanceof Class) {
                             actualTypeArguments.add(i, (Class) typeArgument);
                         }

@@ -16,54 +16,39 @@
  */
 package org.geektimes.cache.configuration;
 
+import org.geektimes.cache.AbstractCacheManager;
+import org.geektimes.commons.convert.multiple.MultiValueConverter;
+
 import javax.cache.Cache;
 import javax.cache.CacheManager;
 import javax.cache.configuration.CacheEntryListenerConfiguration;
 import javax.cache.configuration.CompleteConfiguration;
 import javax.cache.configuration.Configuration;
-import javax.cache.event.CacheEntryListener;
+import javax.cache.configuration.Factory;
+import javax.cache.expiry.ExpiryPolicy;
+import javax.cache.integration.CacheLoader;
+import javax.cache.integration.CacheWriter;
 import javax.cache.spi.CachingProvider;
-import java.util.function.Supplier;
+import java.net.URI;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static java.lang.String.format;
+import static org.geektimes.commons.convert.Converter.convertIfPossible;
 
 /**
  * Java Caching Configuration
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
+ * @see CompleteConfiguration
  * @since 1.0.0
  */
-public interface CachingConfiguration {
-
-    /**
-     * The property prefix for {@link CachingProvider}
-     */
-    String CACHING_PROVIDER_PROPERTY_PREFIX = "javax.cache.spi.CachingProvider.";
-
-    /**
-     * The property prefix for {@link CacheManager}
-     */
-    String CACHE_MANAGER_PROPERTY_PREFIX = "javax.cache.CacheManager.";
+public interface CacheConfiguration extends CompleteConfiguration {
 
     /**
      * The property prefix for {@link Cache}
      */
     String CACHE_PROPERTY_PREFIX = "javax.cache.Cache.";
-
-    /**
-     * The property prefix for {@link CacheEntryListener}
-     */
-    String CACHE_ENTRY_LISTENER_PROPERTY_PREFIX = "javax.cache.event.CacheEntryListener.";
-
-    /**
-     * The property name of {@link CachingProvider#getDefaultURI()}
-     */
-    String CACHING_PROVIDER_DEFAULT_URI_PROPERTY_NAME = CACHING_PROVIDER_PROPERTY_PREFIX + "default-uri";
-
-    /**
-     * The prefix of property name for the mappings of {@link CacheManager}, e.g:
-     * <p>
-     * javax.cache.CacheManager.mappings.${uri.scheme}=com.acme.SomeSchemeCacheManager
-     */
-    String CACHE_MANAGER_MAPPINGS_PROPERTY_PREFIX = "javax.cache.CacheManager.mappings.";
 
     /**
      * The property name for {@link Configuration#getKeyType()}
@@ -101,6 +86,11 @@ public interface CachingConfiguration {
     String MANAGEMENT_ENABLED_PROPERTY_NAME = CACHE_PROPERTY_PREFIX + "management-enabled";
 
     /**
+     * The property name for {@link CompleteConfiguration#getCacheEntryListenerConfigurations()}
+     */
+    String ENTRY_LISTENER_CONFIGURATIONS_PROPERTY_NAME = CACHE_PROPERTY_PREFIX + "entry-listener-configurations";
+
+    /**
      * The property name for {@link CompleteConfiguration#getCacheLoaderFactory()}
      */
     String CACHE_LOADER_FACTORY_PROPERTY_NAME = CACHE_PROPERTY_PREFIX + "loader.factory";
@@ -114,21 +104,6 @@ public interface CachingConfiguration {
      * The property name for {@link CompleteConfiguration#getExpiryPolicyFactory()}
      */
     String EXPIRY_POLICY_FACTORY_PROPERTY_NAME = CACHE_PROPERTY_PREFIX + "expiry-policy.factory";
-
-    /**
-     * The property name for {@link CacheEntryListenerConfiguration#getCacheEntryListenerFactory()}
-     */
-    String CACHE_ENTITY_LISTENER_PROPERTY_NAME = CACHE_ENTRY_LISTENER_PROPERTY_PREFIX + ".factory";
-
-    /**
-     * The property name for {@link CacheEntryListenerConfiguration#isOldValueRequired()}
-     */
-    String CACHE_ENTITY_LISTENER_OLD_VALUE_REQUIRED_PROPERTY_NAME = CACHE_ENTRY_LISTENER_PROPERTY_PREFIX + ".old-value";
-
-    /**
-     * The property name for {@link CacheEntryListenerConfiguration#isSynchronous()}
-     */
-    String CACHE_ENTITY_LISTENER_SYNCHRONOUS_PROPERTY_NAME = CACHE_ENTRY_LISTENER_PROPERTY_PREFIX + ".synchronous";
 
     /**
      * Get the string representing property value via the specified name
@@ -145,9 +120,9 @@ public interface CachingConfiguration {
      * @param defaultValue the default value
      * @return <code>defaultValue</code> if not found
      */
-    default String getProperty(String propertyName, Supplier<String> defaultValue) {
+    default String getProperty(String propertyName, String defaultValue) {
         String propertyValue = getProperty(propertyName);
-        return propertyValue == null ? defaultValue.get() : propertyValue;
+        return propertyValue == null ? defaultValue : propertyValue;
     }
 
     /**
@@ -157,18 +132,93 @@ public interface CachingConfiguration {
      * @param propertyType the type of property value
      * @return <code>null</code> if not found
      */
-    <T> T getProperty(String propertyName, Class<T> propertyType);
+    default <T> T getProperty(String propertyName, Class<T> propertyType) {
+        String propertyValue = getProperty(propertyName);
+        return convertIfPossible(propertyValue, propertyType);
+    }
 
     /**
      * Get the specified-type property value via the specified name
      *
      * @param propertyName the name of property
      * @param propertyType the type of property value
-     * @param defaultValue the default value as the supplier
+     * @param defaultValue the default value
      * @return <code>null</code> if not found
      */
-    default <T> T getProperty(String propertyName, Class<T> propertyType, Supplier<T> defaultValue) {
+    default <T> T getProperty(String propertyName, Class<T> propertyType, T defaultValue) {
         T propertyValue = getProperty(propertyName, propertyType);
-        return propertyValue == null ? defaultValue.get() : propertyValue;
+        return propertyValue == null ? defaultValue : propertyValue;
+    }
+
+    @Override
+    default Class<?> getKeyType() {
+        return getProperty(CACHE_KEY_TYPE_PROPERTY_NAME, Class.class, Object.class);
+    }
+
+    @Override
+    default Class<?> getValueType() {
+        return getProperty(CACHE_VALUE_TYPE_PROPERTY_NAME, Class.class, Object.class);
+    }
+
+    @Override
+    default boolean isStoreByValue() {
+        return getProperty(STORE_BY_VALUE_PROPERTY_NAME, Boolean.class, Boolean.TRUE);
+    }
+
+    @Override
+    default boolean isReadThrough() {
+        return getProperty(READ_THROUGH_PROPERTY_NAME, Boolean.class, Boolean.TRUE);
+    }
+
+    @Override
+    default boolean isWriteThrough() {
+        return getProperty(WRITE_THROUGH_PROPERTY_NAME, Boolean.class, Boolean.TRUE);
+    }
+
+    @Override
+    default boolean isStatisticsEnabled() {
+        return getProperty(STATISTICS_ENABLED_PROPERTY_NAME, Boolean.class, Boolean.TRUE);
+    }
+
+    @Override
+    default boolean isManagementEnabled() {
+        return getProperty(MANAGEMENT_ENABLED_PROPERTY_NAME, Boolean.class, Boolean.TRUE);
+    }
+
+    @Override
+    default Iterable<CacheEntryListenerConfiguration> getCacheEntryListenerConfigurations() {
+        String propertyValue = getProperty(ENTRY_LISTENER_CONFIGURATIONS_PROPERTY_NAME);
+        List<Class> configurationClasses = MultiValueConverter.convertIfPossible(propertyValue, List.class, Class.class);
+        return (List<CacheEntryListenerConfiguration>) configurationClasses.stream()
+                .map(this::unwrap)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    default Factory<CacheLoader> getCacheLoaderFactory() {
+        Class<Factory<CacheLoader>> factoryClass = getProperty(CACHE_LOADER_FACTORY_PROPERTY_NAME, Class.class);
+        return factoryClass == null ? null : unwrap(factoryClass);
+    }
+
+    @Override
+    default Factory<CacheWriter> getCacheWriterFactory() {
+        Class<Factory<CacheWriter>> factoryClass = getProperty(CACHE_WRITER_FACTORY_PROPERTY_NAME, Class.class);
+        return factoryClass == null ? null : unwrap(factoryClass);
+    }
+
+    @Override
+    default Factory<ExpiryPolicy> getExpiryPolicyFactory() {
+        Class<Factory<ExpiryPolicy>> factoryClass = getProperty(EXPIRY_POLICY_FACTORY_PROPERTY_NAME, Class.class);
+        return factoryClass == null ? null : unwrap(factoryClass);
+    }
+
+    default <T> T unwrap(java.lang.Class<T> clazz) {
+        T value = null;
+        try {
+            value = clazz.newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+        return value;
     }
 }
