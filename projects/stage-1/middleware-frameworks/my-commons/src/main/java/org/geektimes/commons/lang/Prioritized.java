@@ -16,6 +16,8 @@
  */
 package org.geektimes.commons.lang;
 
+import org.geektimes.commons.util.PriorityComparator;
+
 import java.util.Comparator;
 
 import static java.lang.Integer.compare;
@@ -40,8 +42,8 @@ public interface Prioritized extends Comparable<Prioritized> {
             return 1;
         } else if (b1 && b2) {  //  one and two both are Prioritized
             return ((Prioritized) one).compareTo((Prioritized) two);
-        } else {                // no different
-            return 0;
+        } else {                // Try to use @Priority Comparator
+            return PriorityComparator.INSTANCE.compare(one, two);
         }
     };
 

@@ -35,6 +35,8 @@ public class PriorityComparator implements Comparator<Object> {
 
     private static final Class<Priority> PRIORITY_CLASS = Priority.class;
 
+    private static final int UNDEFINED_VALUE = -1;
+
     /**
      * Singleton instance of {@link PriorityComparator}
      */
@@ -53,15 +55,15 @@ public class PriorityComparator implements Comparator<Object> {
         Priority priority1 = findAnnotation(type1, PRIORITY_CLASS);
         Priority priority2 = findAnnotation(type2, PRIORITY_CLASS);
 
-        if (priority1 != null && priority2 != null) {
-            return Integer.compare(priority1.value(), priority2.value());
-        } else if (priority1 != null && priority2 == null) {
-            return -1;
-        } else if (priority1 == null && priority2 != null) {
-            return 1;
-        }
-        // else
-        return 0;
+        int priorityValue1 = getValue(priority1);
+        int priorityValue2 = getValue(priority2);
+
+        return Integer.compare(priorityValue1, priorityValue2);
+    }
+
+    private static int getValue(Priority priority) {
+        int value = priority == null ? UNDEFINED_VALUE : priority.value();
+        return value < 0 ? UNDEFINED_VALUE : value;
     }
 
 }
