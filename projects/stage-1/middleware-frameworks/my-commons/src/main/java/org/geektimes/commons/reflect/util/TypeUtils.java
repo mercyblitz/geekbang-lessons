@@ -24,8 +24,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.unmodifiableList;
+import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.StreamSupport.stream;
@@ -83,7 +82,7 @@ public interface TypeUtils {
                     for (int i = 0; i < typeArguments.length; i++) {
                         Type typeArgument = typeArguments[i];
                         if (typeArgument instanceof ParameterizedType) {
-                            typeArgument = ((ParameterizedType)typeArgument).getRawType();
+                            typeArgument = ((ParameterizedType) typeArgument).getRawType();
                         }
                         if (typeArgument instanceof Class) {
                             actualTypeArguments.add(i, (Class) typeArgument);
@@ -279,5 +278,13 @@ public interface TypeUtils {
             return asClass(typeVariable.getBounds()[0]);
         }
         return null;
+    }
+
+    static Set<Type> getAllTypes(Class<?> type, Predicate<Type>... typeFilters) {
+
+        Set<Type> allTypes = new LinkedHashSet<>();
+
+
+        return unmodifiableSet(allTypes);
     }
 }

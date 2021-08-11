@@ -5,7 +5,7 @@ import org.eclipse.microprofile.config.spi.Converter;
 public abstract class AbstractConverter<T> implements Converter<T> {
 
     @Override
-    public T convert(String value) {
+    public final T convert(String value) {
         if (value == null) {
             throw new NullPointerException("The value must not be null!");
         }

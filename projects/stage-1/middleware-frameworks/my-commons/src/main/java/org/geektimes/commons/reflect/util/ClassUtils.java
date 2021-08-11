@@ -16,7 +16,6 @@
  */
 package org.geektimes.commons.reflect.util;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -27,6 +26,7 @@ import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableSet;
 import static org.apache.commons.lang.ArrayUtils.isNotEmpty;
 import static org.geektimes.commons.function.Streams.filterAll;
+import static org.geektimes.commons.function.ThrowableFunction.execute;
 import static org.geektimes.commons.util.CollectionUtils.ofSet;
 
 /**
@@ -555,6 +555,10 @@ public abstract class ClassUtils {
      */
     public static boolean isGenericClass(Class<?> type) {
         return type != null && !void.class.equals(type) && !Void.class.equals(type);
+    }
+
+    public static <T> T unwrap(Class<T> type) {
+        return execute(type, Class::newInstance);
     }
 
 }
