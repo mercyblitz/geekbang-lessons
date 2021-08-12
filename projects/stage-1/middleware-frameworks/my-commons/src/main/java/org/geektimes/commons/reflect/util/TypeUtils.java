@@ -195,7 +195,7 @@ public interface TypeUtils {
         // Add all super classes
         allTypes.addAll(getAllSuperClasses(rawClass, NON_OBJECT_TYPE_FILTER));
         // Add all super interfaces
-        allTypes.addAll(getAllInterfaces(rawClass));
+        allTypes.addAll(ClassUtils.getAllInterfaces(rawClass));
 
         List<ParameterizedType> allGenericInterfaces = allTypes
                 .stream()
@@ -280,11 +280,80 @@ public interface TypeUtils {
         return null;
     }
 
-    static Set<Type> getAllTypes(Class<?> type, Predicate<Type>... typeFilters) {
+    /**
+     * Get all super types from the specified type
+     *
+     * @param type        the specified type
+     * @param typeFilters the filters for type
+     * @return non-null read-only {@link Set}
+     * @since 1.0.0
+     */
+    static Set<Type> getAllSuperTypes(Type type, Predicate<Type>... typeFilters) {
+
+        Class<?> rawClass = getRawClass(type);
+
+        if (rawClass == null) {
+            return emptySet();
+        }
+
+        Set<Type> allSuperTypes = new LinkedHashSet<>();
+
+        Type superType = rawClass.getGenericSuperclass();
+        while (superType != null) {
+            // add current super class
+            allSuperTypes.add(superType);
+            Class<?> superClass = getRawClass(superType);
+            superType = superClass.getGenericSuperclass();
+        }
+
+        return unmodifiableSet(filterAll(allSuperTypes, typeFilters));
+    }
+
+    /**
+     * Get all super interfaces from the specified type
+     *
+     * @param type        the specified type
+     * @param typeFilters the filters for type
+     * @return non-null read-only {@link Set}
+     * @since 1.0.0
+     */
+    static Set<Type> getAllInterfaces(Type type, Predicate<Type>... typeFilters) {
+
+        Class<?> rawClass = getRawClass(type);
+
+        if (rawClass == null) {
+            return emptySet();
+        }
+
+        Set<Type> allSuperInterfaces = new LinkedHashSet<>();
+
+        Type[] interfaces = rawClass.getGenericInterfaces();
+
+        // find direct interfaces recursively
+        for (Type interfaceType : interfaces) {
+            allSuperInterfaces.add(interfaceType);
+            allSuperInterfaces.addAll(getAllInterfaces(interfaceType, typeFilters));
+        }
+
+        // find super types recursively
+        for (Type superType : getAllSuperTypes(type, typeFilters)) {
+            allSuperInterfaces.addAll(getAllInterfaces(superType));
+        }
+
+        return unmodifiableSet(filterAll(allSuperInterfaces, typeFilters));
+    }
+
+    static Set<Type> getAllTypes(Type type, Predicate<Type>... typeFilters) {
 
         Set<Type> allTypes = new LinkedHashSet<>();
 
+        // add the specified type
+        allTypes.add(type);
+        // add all super types
+        allTypes.addAll(getAllSuperTypes(type));
+        // add all super interfaces
+        allTypes.addAll(getAllInterfaces(type));
 
-        return unmodifiableSet(allTypes);
+        return unmodifiableSet(filterAll(allTypes, typeFilters));
     }
 }
