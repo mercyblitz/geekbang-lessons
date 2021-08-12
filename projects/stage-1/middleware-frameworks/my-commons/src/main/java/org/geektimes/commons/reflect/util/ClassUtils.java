@@ -17,6 +17,7 @@
 package org.geektimes.commons.reflect.util;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
@@ -37,13 +38,28 @@ import static org.geektimes.commons.util.CollectionUtils.ofSet;
  */
 public abstract class ClassUtils {
 
-    private ClassUtils() {
-    }
 
     /**
      * Suffix for array class names: "[]"
      */
     public static final String ARRAY_SUFFIX = "[]";
+
+    /**
+     * @see {@link Class#ANNOTATION}
+     */
+    private static final int ANNOTATION = 0x00002000;
+
+    /**
+     * @see {@link Class#ENUM}
+     */
+    private static final int ENUM = 0x00004000;
+
+    /**
+     * @see {@link Class#SYNTHETIC}
+     */
+    private static final int SYNTHETIC = 0x00001000;
+
+
     /**
      * Simple Types including:
      * <ul>
@@ -94,7 +110,10 @@ public abstract class ClassUtils {
      * as value, for example: Integer.class -> int.class.
      */
     private static final Map<Class<?>, Class<?>> PRIMITIVE_WRAPPER_TYPE_MAP = new HashMap<Class<?>, Class<?>>(16);
+
     private static final char PACKAGE_SEPARATOR_CHAR = '.';
+
+    static final Map<Class<?>, Boolean> concreteClassCache = new WeakHashMap<>();
 
     static {
         PRIMITIVE_WRAPPER_TYPE_MAP.put(Boolean.class, boolean.class);
@@ -114,6 +133,9 @@ public abstract class ClassUtils {
         for (Class<?> primitiveTypeName : primitiveTypeNames) {
             PRIMITIVE_TYPE_NAME_MAP.put(primitiveTypeName.getName(), primitiveTypeName);
         }
+    }
+
+    private ClassUtils() {
     }
 
     public static Class<?> forNameWithThreadContextClassLoader(String name)
@@ -559,6 +581,80 @@ public abstract class ClassUtils {
 
     public static <T> T unwrap(Class<T> type) {
         return execute(type, Class::newInstance);
+    }
+
+    /**
+     * Is the specified type a concrete class or not?
+     *
+     * @param type type to check
+     * @return <code>true</code> if concrete class, <code>false</code> otherwise.
+     */
+    public static boolean isConcreteClass(Class<?> type) {
+
+        if (type == null) {
+            return false;
+        }
+
+        if (concreteClassCache.containsKey(type)) {
+            return true;
+        }
+
+        int mod = type.getModifiers();
+        if (Modifier.isInterface(mod)
+                || Modifier.isAbstract(mod)
+                || isAnnotation(mod)
+                || isEnum(mod)
+                || isSynthetic(mod)) {
+            return false;
+        }
+
+        // native methods
+        if (type.isPrimitive() || type.isArray()) {
+            return false;
+        }
+
+        concreteClassCache.put(type, Boolean.TRUE);
+
+        return true;
+    }
+
+    public static boolean isTopLevelClass(Class<?> type) {
+        if (type == null) {
+            return false;
+        }
+
+        if (type.isLocalClass() || type.isMemberClass()) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * @param modifiers {@link Class#getModifiers()}
+     * @return true if this class's modifiers represents an annotation type; false otherwise
+     * @see Class#isAnnotation()
+     */
+    public static boolean isAnnotation(int modifiers) {
+        return (modifiers & ANNOTATION) != 0;
+    }
+
+    /**
+     * @param modifiers {@link Class#getModifiers()}
+     * @return true if this class's modifiers represents an enumeration type; false otherwise
+     * @see Class#isEnum()
+     */
+    public static boolean isEnum(int modifiers) {
+        return (modifiers & ENUM) != 0;
+    }
+
+    /**
+     * @param modifiers {@link Class#getModifiers()}
+     * @return true if this class's modifiers represents a synthetic type; false otherwise
+     * @see Class#isSynthetic()
+     */
+    public static boolean isSynthetic(int modifiers) {
+        return (modifiers & SYNTHETIC) != 0;
     }
 
 }

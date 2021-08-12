@@ -23,19 +23,26 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Set;
 
+import static java.util.Objects.requireNonNull;
+import static org.geektimes.commons.reflect.util.TypeUtils.getAllTypes;
+
 /**
- * Managed {@link Bean}
+ * Standard Managed {@link Bean} based on Java Reflection.
  *
  * @param <T> the type of bean
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class ManagedBean<T> implements Bean<T> {
+public class StandardManagedBean<T> implements Bean<T> {
 
     private final Class<T> beanClass;
 
-    public ManagedBean(Class<T> beanClass) {
+    private final Set<Type> types;
+
+    public StandardManagedBean(Class<T> beanClass) {
+        requireNonNull(beanClass, "The 'beanClass' argument must not be null!");
         this.beanClass = beanClass;
+        this.types = getAllTypes(beanClass);
     }
 
     @Override
@@ -48,7 +55,11 @@ public class ManagedBean<T> implements Bean<T> {
         return null;
     }
 
+    /**
+     * @return As of CDI 1.1 this method is deprecated and can safely always return false.
+     */
     @Override
+    @Deprecated
     public boolean isNullable() {
         return false;
     }

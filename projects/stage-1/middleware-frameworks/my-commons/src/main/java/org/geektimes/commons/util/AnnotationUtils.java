@@ -180,4 +180,8 @@ public class AnnotationUtils {
         return contained;
     }
 
+    public static boolean isAnnotated(AnnotatedElement annotatedElement, Class<? extends Annotation> annotationType) {
+        return annotatedElement != null && annotatedElement.isAnnotationPresent(annotationType);
+    }
+
 }
