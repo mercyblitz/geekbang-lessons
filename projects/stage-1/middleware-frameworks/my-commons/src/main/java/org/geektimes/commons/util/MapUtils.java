@@ -14,23 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.util;
+package org.geektimes.commons.util;
 
-import org.geektimes.enterprise.inject.BookShop;
-import org.junit.Test;
-
-import static org.geektimes.enterprise.inject.util.BeanUtils.validateManagedBean;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 /**
- * {@link BeanUtils} Test
- *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
- * @since 1.0.0
+ * @since
  */
-public class BeanUtilsTest {
+public abstract class MapUtils extends BaseUtils {
 
-    @Test
-    public void testValidateManagedBean() {
-        validateManagedBean(BookShop.class);
+    public static Map of(Object... values) {
+        Map map = new LinkedHashMap();
+        int length = values.length;
+        for (int i = 0; i < length; ) {
+            map.put(values[i++], values[i++]);
+        }
+        return map;
     }
 }

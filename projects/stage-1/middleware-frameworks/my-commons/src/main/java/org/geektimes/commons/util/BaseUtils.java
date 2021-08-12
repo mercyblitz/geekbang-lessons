@@ -16,21 +16,15 @@
  */
 package org.geektimes.commons.util;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
 /**
+ * The base utilities class
+ *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since
  */
-public interface Maps {
+public abstract class BaseUtils {
 
-    static Map of(Object... values) {
-        Map map = new LinkedHashMap();
-        int length = values.length;
-        for (int i = 0; i < length; ) {
-            map.put(values[i++], values[i++]);
-        }
-        return map;
+    protected BaseUtils() {
+        throw new RuntimeException("The utilities class must not be instantiated!");
     }
 }

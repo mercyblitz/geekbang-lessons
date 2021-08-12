@@ -20,8 +20,8 @@ import org.apache.commons.lang.StringUtils;
 
 import java.util.*;
 
-import static java.util.Collections.emptySet;
-import static java.util.Collections.unmodifiableSet;
+import static java.util.Arrays.asList;
+import static java.util.Collections.*;
 
 /**
  * Miscellaneous collection utility methods.
@@ -29,7 +29,7 @@ import static java.util.Collections.unmodifiableSet;
  *
  * @since 1.0.0
  */
-public class CollectionUtils {
+public abstract class CollectionUtils extends BaseUtils {
 
     /**
      * Return {@code true} if the supplied Collection is {@code null} or empty.
@@ -53,28 +53,46 @@ public class CollectionUtils {
         return !isEmpty(collection);
     }
 
-    /**
-     * Convert to multiple values to be {@link LinkedHashSet}
-     *
-     * @param values one or more values
-     * @param <T>    the type of <code>values</code>
-     * @return read-only {@link Set}
-     */
-    public static <T> Set<T> ofSet(T... values) {
-        int size = values == null ? 0 : values.length;
+    public static <T> Set<T> ofSet(Iterable<T> values) {
+        if (values == null) {
+            return emptySet();
+        }
+        if (values instanceof Collection) {
+            return ofSet((Collection<T>) values);
+        }
+        Set<T> elements = new LinkedHashSet<>();
+        values.forEach(elements::add);
+        return unmodifiableSet(elements);
+    }
+
+    public static <T> Set<T> ofSet(Collection<T> values) {
+        int size = values == null ? 0 : values.size();
         if (size < 1) {
             return emptySet();
         }
+        Set<T> elements = new LinkedHashSet<>(size + 1, Float.MIN_NORMAL);
+        elements.addAll(values);
+        return unmodifiableSet(elements);
+    }
 
-        float loadFactor = 1f / ((size + 1) * 1.0f);
-
-        if (loadFactor > 0.75f) {
-            loadFactor = 0.75f;
+    /**
+     * Convert to multiple values to be {@link LinkedHashSet}
+     *
+     * @param one    one value
+     * @param others others values
+     * @param <T>    the type of <code>values</code>
+     * @return read-only {@link Set}
+     */
+    public static <T> Set<T> ofSet(T one, T... others) {
+        int size = others == null ? 1 : others.length;
+        if (size < 1) {
+            return singleton(one);
         }
 
-        Set<T> elements = new LinkedHashSet<>(size, loadFactor);
+        Set<T> elements = new LinkedHashSet<>(size + 1, Float.MIN_NORMAL);
+        elements.add(one);
         for (int i = 0; i < size; i++) {
-            elements.add(values[i]);
+            elements.add(others[i]);
         }
         return unmodifiableSet(elements);
     }
@@ -166,5 +184,4 @@ public class CollectionUtils {
             return values.iterator().next();
         }
     }
-
 }

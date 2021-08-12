@@ -27,7 +27,7 @@ import static org.geektimes.commons.function.ThrowableSupplier.execute;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public interface ExceptionUtils {
+public abstract interface ExceptionUtils {
 
     static <T extends Throwable> T wrapThrowable(Throwable source, Class<T> exceptionType) {
         String message = source.getMessage();

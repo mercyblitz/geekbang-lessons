@@ -14,19 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.commons.util;
+package org.geektimes.enterprise.inject.util;
 
-import java.lang.reflect.Array;
+import org.geektimes.enterprise.inject.Book;
+import org.junit.Test;
+
+import javax.enterprise.context.NormalScope;
+import javax.inject.Singleton;
+
+import static org.junit.Assert.assertEquals;
 
 /**
- * The utilities class for {@link Array}
+ * {@link Scopes} Test
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public abstract class ArrayUtils extends BaseUtils {
+@Singleton
+public class ScopesTest {
 
-    public static <T> T[] of(T... values) {
-        return values;
+    @Test
+    public void testGetScope() {
+        assertEquals(Singleton.class, Scopes.getScopeType(ScopesTest.class));
+        assertEquals(NormalScope.class, Scopes.getScopeType(Book.class));
     }
 }

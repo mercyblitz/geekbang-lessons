@@ -17,15 +17,16 @@
 package org.geektimes.enterprise.inject.util;
 
 import org.geektimes.commons.reflect.util.ClassUtils;
+import org.geektimes.commons.util.ArrayUtils;
 
 import javax.decorator.Decorator;
+import javax.enterprise.inject.Typed;
 import javax.enterprise.inject.Vetoed;
 import javax.enterprise.inject.spi.DefinitionException;
-import javax.enterprise.inject.spi.Extension;
 import javax.inject.Inject;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Constructor;
+import java.lang.reflect.*;
 import java.util.Comparator;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Predicate;
@@ -33,7 +34,11 @@ import java.util.function.Predicate;
 import static java.lang.Integer.compare;
 import static java.lang.String.format;
 import static java.util.stream.Stream.of;
+import static org.geektimes.commons.reflect.util.ClassUtils.isAssignableFrom;
+import static org.geektimes.commons.reflect.util.TypeUtils.*;
+import static org.geektimes.commons.util.AnnotationUtils.findAnnotation;
 import static org.geektimes.commons.util.AnnotationUtils.isAnnotated;
+import static org.geektimes.commons.util.CollectionUtils.ofSet;
 
 /**
  * Bean Utilities class
@@ -41,7 +46,7 @@ import static org.geektimes.commons.util.AnnotationUtils.isAnnotated;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public abstract class BeanUtils {
+public abstract class Beans {
 
     /**
      * Bean Class - Constructor Cache
@@ -49,14 +54,50 @@ public abstract class BeanUtils {
      */
     static final ConcurrentMap<Class<?>, Constructor> beanConstructorsCache = new ConcurrentHashMap<>();
 
+
+    static final Predicate<Type> WILDCARD_PARAMETERIZED_TYPE_FILTER = type -> {
+        ParameterizedType parameterizedType = asParameterizedType(type);
+        if (parameterizedType != null) {
+            for (Type typeArgument : parameterizedType.getActualTypeArguments()) {
+                if (typeArgument instanceof WildcardType) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+
+    static final Predicate<Type> ARRAY_TYPE_FILTER = type -> {
+        Type componentType = getComponentType(type);
+        return !TYPE_VARIABLE_FILTER.test(componentType) || WILDCARD_PARAMETERIZED_TYPE_FILTER.test(componentType);
+    };
+
+    static final Predicate<Type>[] ILLEGAL_BEAN_TYPE_FILTERS = ArrayUtils.of(
+            // A type variable is not a legal bean type.
+            TYPE_VARIABLE_FILTER.negate(),
+            // A parameterized type that contains a wildcard type parameter is not a legal bean type.
+            WILDCARD_PARAMETERIZED_TYPE_FILTER.negate(),
+            // An array type whose component type is not a legal bean type.
+            ARRAY_TYPE_FILTER
+    );
+
     /**
      * Constructor's parameter count descent
      */
     private static final Comparator<Constructor> CONSTRUCTOR_PARAM_COUNT_COMPARATOR =
             (a, b) -> compare(b.getParameterCount(), a.getParameterCount());
 
-    private BeanUtils() {
+    private Beans() {
         throw new IllegalStateException("BeanUtils should not be instantiated!");
+    }
+
+    public static Set<Type> getBeanTypes(Class beanClass) {
+        Typed typed = findAnnotation(beanClass, Typed.class);
+        if (typed != null) {
+            return ofSet(Object.class, typed.value());
+        } else {
+            return getAllTypes(beanClass, ILLEGAL_BEAN_TYPE_FILTERS);
+        }
     }
 
     /**
@@ -117,7 +158,7 @@ public abstract class BeanUtils {
     }
 
     public static boolean isExtensionClass(Class<?> type) {
-        return Extension.class.isAssignableFrom(type);
+        return isAssignableFrom(Exception.class, type);
     }
 
     static <T> void validate(T target, Predicate<T> validator, String errorMessage) {

@@ -16,15 +16,29 @@
  */
 package org.geektimes.enterprise.inject;
 
+import org.apache.commons.lang.StringUtils;
+import org.geektimes.commons.reflect.util.ClassUtils;
+
 import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.Alternative;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.InjectionPoint;
+import javax.inject.Named;
+import java.beans.Introspector;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.util.Optional;
 import java.util.Set;
 
+import static java.beans.Introspector.decapitalize;
 import static java.util.Objects.requireNonNull;
-import static org.geektimes.commons.reflect.util.TypeUtils.getAllTypes;
+import static org.geektimes.commons.reflect.util.ClassUtils.unwrap;
+import static org.geektimes.commons.util.AnnotationUtils.*;
+import static org.geektimes.enterprise.inject.util.Beans.getBeanTypes;
+import static org.geektimes.enterprise.inject.util.Qualifiers.getAllQualifiers;
+import static org.geektimes.enterprise.inject.util.Scopes.getScopeType;
+import static org.geektimes.enterprise.inject.util.Stereotypes.getAllStereotypeTypes;
+import static org.geektimes.enterprise.inject.util.Stereotypes.getAllStereotypes;
 
 /**
  * Standard Managed {@link Bean} based on Java Reflection.
@@ -39,11 +53,44 @@ public class StandardManagedBean<T> implements Bean<T> {
 
     private final Set<Type> types;
 
+    private final Set<Annotation> qualifiers;
+
+    private final Optional<Named> named;
+
+    private final String beanName;
+
+    private final Class<? extends Annotation> scopeType;
+
+    private final Set<Class<? extends Annotation>> stereotypeTypes;
+
+    private final boolean alternative;
+
     public StandardManagedBean(Class<T> beanClass) {
         requireNonNull(beanClass, "The 'beanClass' argument must not be null!");
         this.beanClass = beanClass;
-        this.types = getAllTypes(beanClass);
+        this.types = getBeanTypes(beanClass);
+        this.qualifiers = getAllQualifiers(beanClass);
+        this.named = findNamed();
+        this.beanName = resolveBeanName();
+        this.scopeType = getScopeType(beanClass);
+        this.stereotypeTypes = getAllStereotypeTypes(beanClass);
+        this.alternative = isAnnotated(beanClass, Alternative.class);
     }
+
+    private Optional<Named> findNamed() {
+        return qualifiers.stream()
+                .filter(annotation -> Named.class.equals(annotation.annotationType()))
+                .map(Named.class::cast)
+                .findFirst();
+    }
+
+    private String resolveBeanName() {
+        String beanName = named.map(Named::value)
+                .filter(StringUtils::isNotBlank)
+                .orElseGet(() -> decapitalize(beanClass.getSimpleName()));
+        return beanName;
+    }
+
 
     @Override
     public Class<?> getBeanClass() {
@@ -52,6 +99,7 @@ public class StandardManagedBean<T> implements Bean<T> {
 
     @Override
     public Set<InjectionPoint> getInjectionPoints() {
+        // TODO
         return null;
     }
 
@@ -66,41 +114,43 @@ public class StandardManagedBean<T> implements Bean<T> {
 
     @Override
     public T create(CreationalContext<T> creationalContext) {
-        return null;
+        T instance = unwrap(beanClass);
+        creationalContext.push(instance);
+        return instance;
     }
 
     @Override
     public void destroy(T instance, CreationalContext<T> creationalContext) {
-
+        // TODO
     }
 
     @Override
     public Set<Type> getTypes() {
-        return null;
+        return types;
     }
 
     @Override
     public Set<Annotation> getQualifiers() {
-        return null;
+        return qualifiers;
     }
 
     @Override
     public Class<? extends Annotation> getScope() {
-        return null;
+        return scopeType;
     }
 
     @Override
     public String getName() {
-        return null;
+        return beanName;
     }
 
     @Override
     public Set<Class<? extends Annotation>> getStereotypes() {
-        return null;
+        return stereotypeTypes;
     }
 
     @Override
     public boolean isAlternative() {
-        return false;
+        return alternative;
     }
 }
