@@ -19,10 +19,18 @@ package org.geektimes.enterprise.inject.standard;
 import org.geektimes.enterprise.inject.util.Beans;
 
 import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.DefinitionException;
 import javax.enterprise.inject.spi.InjectionPoint;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Set;
+
+import static java.lang.String.format;
+import static java.util.Collections.emptySet;
+import static org.geektimes.enterprise.inject.util.ProducerFields.validateProducerFieldProduces;
 
 /**
  * Producer {@link Field} {@link Bean} based on Java Reflection
@@ -38,8 +46,9 @@ public class ProducerFieldBean<T> extends AbstractBean<Field, T> {
 
     @Override
     protected void validateAnnotatedElement(Field producerField) {
-
+        validateProducerFieldProduces(producerField);
     }
+
 
     @Override
     protected String getBeanName(Field producerField) {
@@ -48,16 +57,17 @@ public class ProducerFieldBean<T> extends AbstractBean<Field, T> {
 
     @Override
     public T create(CreationalContext<T> creationalContext) {
+        // TODO
         return null;
     }
 
     @Override
     public void destroy(T instance, CreationalContext<T> creationalContext) {
-
+        // TODO
     }
 
     @Override
     public Set<InjectionPoint> getInjectionPoints() {
-        return null;
+        return emptySet();
     }
 }
