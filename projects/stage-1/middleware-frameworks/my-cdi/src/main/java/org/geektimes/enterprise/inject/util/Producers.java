@@ -24,7 +24,7 @@ import java.lang.reflect.Field;
 import static java.lang.String.format;
 
 /**
- * The utilities class for Producer Method of Field
+ * The utilities class for Producer Method or Field
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
