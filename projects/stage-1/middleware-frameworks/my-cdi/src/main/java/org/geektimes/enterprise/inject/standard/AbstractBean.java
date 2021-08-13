@@ -18,10 +18,8 @@ package org.geektimes.enterprise.inject.standard;
 
 import org.geektimes.enterprise.inject.util.Qualifiers;
 
-import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.Alternative;
 import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.InjectionPoint;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
@@ -50,7 +48,7 @@ import static org.geektimes.enterprise.inject.util.Stereotypes.getStereotypeType
  */
 public abstract class AbstractBean<A extends AnnotatedElement, T> implements Bean<T> {
 
-    private final A annotatedSource;
+    private final A annotatedElement;
 
     private final Class<?> type;
 
@@ -66,18 +64,21 @@ public abstract class AbstractBean<A extends AnnotatedElement, T> implements Bea
 
     private final boolean alternative;
 
-    public AbstractBean(A annotatedSource, Class<?> type) {
-        requireNonNull(annotatedSource, "The 'annotatedSource' argument must not be null!");
+    public AbstractBean(A annotatedElement, Class<?> type) {
+        requireNonNull(annotatedElement, "The 'annotatedSource' argument must not be null!");
+        validateAnnotatedElement(annotatedElement);
         requireNonNull(type, "The 'type' argument must not be null!");
-        this.annotatedSource = annotatedSource;
+        this.annotatedElement = annotatedElement;
         this.type = type;
         this.beanTypes = getBeanTypes(getBeanClass());
-        this.qualifiers = Qualifiers.getQualifiers(annotatedSource);
-        this.beanName = getBeanName(annotatedSource);
-        this.scopeType = getScopeType(annotatedSource);
-        this.stereotypeTypes = getStereotypeTypes(annotatedSource);
-        this.alternative = isAnnotated(annotatedSource, Alternative.class);
+        this.qualifiers = Qualifiers.getQualifiers(annotatedElement);
+        this.beanName = getBeanName(annotatedElement);
+        this.scopeType = getScopeType(annotatedElement);
+        this.stereotypeTypes = getStereotypeTypes(annotatedElement);
+        this.alternative = isAnnotated(annotatedElement, Alternative.class);
     }
+
+    protected abstract void validateAnnotatedElement(A annotatedElement);
 
     @Override
     public Class<?> getBeanClass() {
@@ -123,8 +124,8 @@ public abstract class AbstractBean<A extends AnnotatedElement, T> implements Bea
         return alternative;
     }
 
-    public A getAnnotatedSource() {
-        return annotatedSource;
+    public A getAnnotatedElement() {
+        return annotatedElement;
     }
 
     // Abstract methods

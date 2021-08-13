@@ -33,11 +33,11 @@ import static org.geektimes.enterprise.inject.util.Beans.getBeanTypes;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public abstract class AbstractReflectiveAnnotated<A extends AnnotatedElement> implements Annotated {
+public abstract class ReflectiveAnnotated<A extends AnnotatedElement> implements Annotated {
 
     private final A annotatedElement;
 
-    public AbstractReflectiveAnnotated(A annotatedElement) {
+    public ReflectiveAnnotated(A annotatedElement) {
         this.annotatedElement = annotatedElement;
     }
 

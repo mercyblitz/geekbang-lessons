@@ -16,27 +16,32 @@
  */
 package org.geektimes.enterprise.inject.standard;
 
+
 import javax.enterprise.inject.spi.AnnotatedConstructor;
 import javax.enterprise.inject.spi.AnnotatedField;
 import javax.enterprise.inject.spi.AnnotatedMethod;
 import javax.enterprise.inject.spi.AnnotatedType;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.Collections;
 import java.util.Set;
 
-import static org.geektimes.commons.reflect.util.TypeUtils.asClass;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.unmodifiableSet;
+import static org.geektimes.commons.function.ThrowableSupplier.execute;
+import static org.geektimes.commons.util.ArrayUtils.of;
+import static org.geektimes.commons.util.CollectionUtils.newFixedSet;
 
 /**
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class ReflectiveAnnotatedType<X> extends AbstractReflectiveAnnotated<Class> implements AnnotatedType<X> {
+public class ReflectiveAnnotatedType<X> extends ReflectiveAnnotated<Class> implements AnnotatedType<X> {
 
-    public ReflectiveAnnotatedType(Type type){
-        this(asClass(type));
-    }
-
-    public ReflectiveAnnotatedType(Class annotatedElement) {
-        super(annotatedElement);
+    public ReflectiveAnnotatedType(Class type) {
+        super(type);
     }
 
     @Override
@@ -46,17 +51,59 @@ public class ReflectiveAnnotatedType<X> extends AbstractReflectiveAnnotated<Clas
 
     @Override
     public Set<AnnotatedConstructor<X>> getConstructors() {
-        return null;
+        Class<?> javaClass = getJavaClass();
+        Constructor[] constructors = javaClass.getDeclaredConstructors();
+        int size = constructors.length;
+        if (size < 1) {
+            constructors = of(execute(() -> javaClass.getDeclaredConstructor()));
+        }
+
+        Set<AnnotatedConstructor<X>> annotatedConstructors = newFixedSet(constructors.length);
+
+        for (Constructor constructor : constructors) {
+            AnnotatedConstructor annotatedConstructor = new ReflectiveAnnotatedConstructor(constructor, this);
+            annotatedConstructors.add(annotatedConstructor);
+        }
+
+        return unmodifiableSet(annotatedConstructors);
     }
 
     @Override
     public Set<AnnotatedMethod<? super X>> getMethods() {
-        return null;
+        Class<?> javaClass = getJavaClass();
+        Method[] methods = javaClass.getDeclaredMethods();
+        int size = methods.length;
+        if (size < 1) {
+            return emptySet();
+        }
+
+        Set<AnnotatedMethod<? super X>> annotatedMethods = newFixedSet(size);
+
+        for (Method method : methods) {
+            AnnotatedMethod annotatedMethod = new ReflectiveAnnotatedMethod(method, this);
+            annotatedMethods.add(annotatedMethod);
+        }
+
+        return unmodifiableSet(annotatedMethods);
     }
 
     @Override
     public Set<AnnotatedField<? super X>> getFields() {
-        return null;
+        Class<?> javaClass = getJavaClass();
+        Field[] fields = javaClass.getDeclaredFields();
+        int size = fields.length;
+        if (size < 1) {
+            return emptySet();
+        }
+
+        Set<AnnotatedField<? super X>> annotatedFields = newFixedSet(size);
+
+        for (Field field : fields) {
+            AnnotatedField annotatedField = new ReflectiveAnnotatedField(field, this);
+            annotatedFields.add(annotatedField);
+        }
+
+        return unmodifiableSet(annotatedFields);
     }
 
     @Override

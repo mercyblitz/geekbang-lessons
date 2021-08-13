@@ -16,48 +16,22 @@
  */
 package org.geektimes.enterprise.inject.standard;
 
-import org.geektimes.enterprise.inject.util.Beans;
-
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.InjectionPoint;
+import javax.enterprise.inject.spi.*;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.util.Set;
+import java.lang.reflect.Parameter;
 
 /**
- * Producer {@link Field} {@link Bean} based on Java Reflection
+ * {@link InjectionPoint} on {@link Constructor}'s {@link Parameter}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class ProducerFieldBean<T> extends AbstractBean<Field, T> {
+public class ConstructorParameterInjectionPoint extends AbstractInjectionPoint<AnnotatedParameter, AnnotatedConstructor, Constructor> {
 
-    public ProducerFieldBean(Field producerField) {
-        super(producerField, producerField.getType());
-    }
 
-    @Override
-    protected void validateAnnotatedElement(Field producerField) {
-
-    }
-
-    @Override
-    protected String getBeanName(Field producerField) {
-        return Beans.getBeanName(producerField);
-    }
-
-    @Override
-    public T create(CreationalContext<T> creationalContext) {
-        return null;
-    }
-
-    @Override
-    public void destroy(T instance, CreationalContext<T> creationalContext) {
-
-    }
-
-    @Override
-    public Set<InjectionPoint> getInjectionPoints() {
-        return null;
+    public ConstructorParameterInjectionPoint(AnnotatedParameter annotatedParameter,
+                                              AnnotatedConstructor annotatedConstructor, Bean<?> bean) {
+        super(annotatedParameter, annotatedConstructor, bean);
     }
 }

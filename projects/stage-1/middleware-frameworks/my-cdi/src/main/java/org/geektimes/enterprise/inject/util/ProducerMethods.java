@@ -14,22 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard;
+package org.geektimes.enterprise.inject.util;
 
-import javax.enterprise.inject.spi.AnnotatedField;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.InjectionPoint;
-import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 /**
- * {@link InjectionPoint} on {@link Field}
+ * The utilities class {@link Method Producer Methods}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class FieldInjectionPoint extends AbstractInjectionPoint<AnnotatedField, AnnotatedField, Field> {
-
-    public FieldInjectionPoint(AnnotatedField annotatedField, Bean<?> bean) {
-        super(annotatedField, annotatedField, bean);
-    }
+public abstract class ProducerMethods {
 }

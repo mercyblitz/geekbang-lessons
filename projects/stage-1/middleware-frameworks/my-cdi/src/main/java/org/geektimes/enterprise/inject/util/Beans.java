@@ -20,6 +20,7 @@ import org.geektimes.commons.reflect.util.ClassUtils;
 import org.geektimes.commons.util.ArrayUtils;
 
 import javax.decorator.Decorator;
+import javax.enterprise.inject.Specializes;
 import javax.enterprise.inject.Typed;
 import javax.enterprise.inject.Vetoed;
 import javax.enterprise.inject.spi.DefinitionException;
@@ -95,6 +96,18 @@ public abstract class Beans {
         throw new IllegalStateException("BeanUtils should not be instantiated!");
     }
 
+    /**
+     * The unrestricted set of bean types for a managed bean contains the bean class, every superclass and all
+     * interfaces it implements directly or indirectly.
+     * <p>
+     * The resulting set of bean types for a managed bean consists only of legal bean types, all other types are
+     * removed from the set of bean types.
+     * <p>
+     * Note the additional restrictions upon bean types of beans with normal scopes defined in Unproxyable bean types.
+     *
+     * @param beanClass
+     * @return
+     */
     public static Set<Type> getBeanTypes(Class<?> beanClass) {
         Typed typed = findAnnotation(beanClass, Typed.class);
         if (typed != null) {
@@ -163,7 +176,7 @@ public abstract class Beans {
      * @param beanClass the type of bean
      * @throws DefinitionException if the bean class does not meet above conditions
      */
-    public static void validateManagedBean(Class<?> beanClass) throws DefinitionException {
+    public static void validateManagedBeanType(Class<?> beanClass) throws DefinitionException {
         // It is not an inner class.
         validate(beanClass, ClassUtils::isTopLevelClass, "The Bean Class must not be an inner class!");
         // It is a non-abstract class, or is annotated @Decorator.
@@ -178,6 +191,21 @@ public abstract class Beans {
         validate(beanClass, validator, "The Bean Class must not annotated @Vetoed or in a package annotated @Vetoed!");
         // It has an appropriate constructor
         findAppropriateConstructor(beanClass);
+    }
+
+    /**
+     * If a bean class of a managed bean X is annotated @Specializes, then the bean class of X must directly extend the
+     * bean class of another managed bean Y. Then X directly specializes Y, as defined in Specialization.
+     *
+     * @param beanClass
+     * @throws DefinitionException If the bean class of X does not directly extend the bean class of another managed bean,
+     *                             the container automatically detects the problem and treats it as a definition error.
+     */
+    public static void validateManagedBeanSpecializes(Class beanClass) throws DefinitionException {
+        if (beanClass.isAnnotationPresent(Specializes.class)) {
+            Class<?> superClass = beanClass.getSuperclass();
+            validateManagedBeanType(superClass);
+        }
     }
 
     public static Constructor<?> findAppropriateConstructor(Class<?> beanClass) {

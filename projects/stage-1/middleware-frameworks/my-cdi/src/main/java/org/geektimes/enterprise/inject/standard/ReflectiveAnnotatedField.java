@@ -39,4 +39,13 @@ public class ReflectiveAnnotatedField<X> extends ReflectiveAnnotatedMember<Field
     public ReflectiveAnnotatedField(Field field) {
         super(field, field);
     }
+
+    public ReflectiveAnnotatedField(Field field, AnnotatedType<X> declaringType) {
+        super(field, field, declaringType);
+    }
+
+    @Override
+    public Type getBaseType() {
+        return getAnnotatedElement().getGenericType();
+    }
 }

@@ -20,6 +20,7 @@ import org.geektimes.enterprise.inject.util.Qualifiers;
 
 import javax.decorator.Delegate;
 import javax.enterprise.inject.spi.Annotated;
+import javax.enterprise.inject.spi.AnnotatedMember;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.InjectionPoint;
 import java.lang.annotation.Annotation;
@@ -36,7 +37,8 @@ import static java.util.Objects.requireNonNull;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class AbstractInjectionPoint<A extends Annotated, M extends Member> implements InjectionPoint {
+public abstract class AbstractInjectionPoint<A extends Annotated, AM extends AnnotatedMember, M extends Member>
+        implements InjectionPoint {
 
     private final A annotated;
 
@@ -44,46 +46,46 @@ public class AbstractInjectionPoint<A extends Annotated, M extends Member> imple
 
     private final Bean<?> bean;
 
-    public AbstractInjectionPoint(A annotated, M member, Bean<?> bean) {
+    public AbstractInjectionPoint(A annotated, AM annotatedMember, Bean<?> bean) {
         requireNonNull(annotated, "The 'annotated' argument must not be null!");
-        requireNonNull(member, "The 'member' argument must not be null!");
+        requireNonNull(annotatedMember, "The 'member' argument must not be null!");
         this.annotated = annotated;
-        this.member = member;
+        this.member = (M) annotatedMember.getJavaMember();
         this.bean = bean;
     }
 
     @Override
-    public Type getType() {
-        return annotated.getBaseType();
+    public final Type getType() {
+        return getAnnotated().getBaseType();
     }
 
     @Override
-    public Set<Annotation> getQualifiers() {
+    public final Set<Annotation> getQualifiers() {
         return Qualifiers.getQualifiers(getAnnotated().getAnnotations());
     }
 
     @Override
-    public Bean<?> getBean() {
+    public final Bean<?> getBean() {
         return bean;
     }
 
     @Override
-    public M getMember() {
+    public final M getMember() {
         return member;
     }
 
     @Override
-    public A getAnnotated() {
+    public final A getAnnotated() {
         return annotated;
     }
 
     @Override
-    public boolean isDelegate() {
+    public final boolean isDelegate() {
         return getAnnotated().isAnnotationPresent(Delegate.class);
     }
 
     @Override
-    public boolean isTransient() {
+    public final boolean isTransient() {
         return Modifier.isTransient(getMember().getModifiers());
     }
 }

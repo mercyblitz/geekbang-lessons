@@ -16,13 +16,11 @@
  */
 package org.geektimes.enterprise.inject.standard;
 
-import javax.enterprise.inject.spi.AnnotatedConstructor;
-import javax.enterprise.inject.spi.AnnotatedField;
-import javax.enterprise.inject.spi.AnnotatedMethod;
-import javax.enterprise.inject.spi.AnnotatedParameter;
+import javax.enterprise.inject.spi.*;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -40,5 +38,14 @@ public class ReflectiveAnnotatedConstructor<X> extends ReflectiveAnnotatedCallab
 
     public ReflectiveAnnotatedConstructor(Constructor constructor) {
         super(constructor);
+    }
+
+    public ReflectiveAnnotatedConstructor(Constructor constructor, AnnotatedType<X> declaringType) {
+        super(constructor, declaringType);
+    }
+
+    @Override
+    public Type getBaseType() {
+        return getDeclaringType().getBaseType();
     }
 }

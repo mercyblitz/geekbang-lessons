@@ -16,41 +16,21 @@
  */
 package org.geektimes.enterprise.inject.standard;
 
-import javax.enterprise.inject.spi.AnnotatedCallable;
-import javax.enterprise.inject.spi.AnnotatedParameter;
+import javax.enterprise.inject.spi.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.lang.reflect.Type;
 
 /**
- * {@link AnnotatedParameter} based on Java Reflection {@link Parameter}
+ * {@link InjectionPoint} on {@link Method}'s {@link Parameter}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class ReflectiveAnnotatedParameter<X> extends ReflectiveAnnotated<Parameter> implements AnnotatedParameter<X> {
+public class MethodParameterInjectionPoint extends AbstractInjectionPoint<AnnotatedParameter, AnnotatedMethod, Method> {
 
-    private final int index;
-
-    private final AnnotatedCallable<X> declaringCallable;
-
-    public ReflectiveAnnotatedParameter(Parameter parameter, int index, AnnotatedCallable<X> declaringCallable) {
-        super(parameter);
-        this.index = index;
-        this.declaringCallable = declaringCallable;
-    }
-
-    @Override
-    public int getPosition() {
-        return index;
-    }
-
-    @Override
-    public AnnotatedCallable<X> getDeclaringCallable() {
-        return declaringCallable;
-    }
-
-    @Override
-    public Type getBaseType() {
-        return getAnnotatedElement().getParameterizedType();
+    public MethodParameterInjectionPoint(AnnotatedParameter annotatedParameter,
+                                         AnnotatedMethod annotatedMethod, Bean<?> bean) {
+        super(annotatedParameter, annotatedMethod, bean);
     }
 }

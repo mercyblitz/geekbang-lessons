@@ -28,16 +28,20 @@ import static java.util.Collections.emptyList;
 import static java.util.Collections.unmodifiableList;
 
 /**
- * The implementation of {@link AnnotatedCallable} based on Java reflection {@link Member}
+ * The abstract implementation of {@link AnnotatedCallable} based on Java reflection {@link Executable}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class ReflectiveAnnotatedCallable<E extends Executable, X> extends
+public abstract class ReflectiveAnnotatedCallable<E extends Executable, X> extends
         ReflectiveAnnotatedMember<E, E, X> implements AnnotatedCallable<X> {
 
     public ReflectiveAnnotatedCallable(E executable) {
         super(executable, executable);
+    }
+
+    public ReflectiveAnnotatedCallable(E executable, AnnotatedType<X> declaringType) {
+        super(executable, executable, declaringType);
     }
 
     @Override

@@ -24,7 +24,7 @@ import java.lang.reflect.Type;
 import java.util.Set;
 
 import static org.geektimes.enterprise.inject.util.Beans.getBeanTypes;
-import static org.geektimes.enterprise.inject.util.Beans.validateManagedBean;
+import static org.geektimes.enterprise.inject.util.Beans.validateManagedBeanType;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -47,6 +47,6 @@ public class BeansTest {
 
     @Test
     public void testValidateManagedBean() {
-        validateManagedBean(BookShop.class);
+        validateManagedBeanType(BookShop.class);
     }
 }

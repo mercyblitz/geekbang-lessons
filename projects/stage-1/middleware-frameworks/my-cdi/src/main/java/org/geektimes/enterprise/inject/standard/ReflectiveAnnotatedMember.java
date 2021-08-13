@@ -21,13 +21,13 @@ import javax.enterprise.inject.spi.AnnotatedType;
 import java.lang.reflect.*;
 
 /**
- * The implementation of {@link AnnotatedMember} based on Java reflection {@link Member}
+ * The abstract implementation of {@link AnnotatedMember} based on Java reflection {@link Member}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class ReflectiveAnnotatedMember<A extends AnnotatedElement, M extends Member, X> extends
-        AbstractReflectiveAnnotated<A> implements AnnotatedMember<X> {
+public abstract class ReflectiveAnnotatedMember<A extends AnnotatedElement, M extends Member, X>
+        extends ReflectiveAnnotated<A> implements AnnotatedMember<X> {
 
     private final M member;
 
@@ -36,10 +36,14 @@ public class ReflectiveAnnotatedMember<A extends AnnotatedElement, M extends Mem
     private final AnnotatedType<X> declaringType;
 
     public ReflectiveAnnotatedMember(A annotatedElement, M member) {
+        this(annotatedElement, member, new ReflectiveAnnotatedType<>(member.getDeclaringClass()));
+    }
+
+    public ReflectiveAnnotatedMember(A annotatedElement, M member, AnnotatedType<X> declaringType) {
         super(annotatedElement);
         this.member = member;
         this.staticMember = Modifier.isStatic(member.getModifiers());
-        this.declaringType = new ReflectiveAnnotatedType<X>(getBaseType());
+        this.declaringType = declaringType;
     }
 
     @Override
@@ -53,12 +57,8 @@ public class ReflectiveAnnotatedMember<A extends AnnotatedElement, M extends Mem
     }
 
     @Override
-    public AnnotatedType<X> getDeclaringType() {
+    public final AnnotatedType<X> getDeclaringType() {
         return declaringType;
     }
 
-    @Override
-    public Type getBaseType() {
-        return member.getDeclaringClass();
-    }
 }
