@@ -22,6 +22,7 @@ import javax.enterprise.context.NormalScope;
 import javax.inject.Qualifier;
 import javax.inject.Scope;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 
 import static org.geektimes.commons.util.AnnotationUtils.findAnnotation;
 import static org.geektimes.commons.util.AnnotationUtils.isMetaAnnotation;
@@ -34,8 +35,8 @@ import static org.geektimes.commons.util.AnnotationUtils.isMetaAnnotation;
  */
 public abstract class Scopes {
 
-    public static Class<? extends Annotation> getScopeType(Class<?> beanClass) {
-        Annotation scope = findAnnotation(beanClass, Scopes::isScope);
+    public static Class<? extends Annotation> getScopeType(AnnotatedElement annotatedElement) {
+        Annotation scope = findAnnotation(annotatedElement, Scopes::isScope);
         final Class<? extends Annotation> scopeType;
         if (scope != null) {
             scopeType = scope.annotationType();

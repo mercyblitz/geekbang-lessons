@@ -24,14 +24,18 @@ import javax.enterprise.inject.Typed;
 import javax.enterprise.inject.Vetoed;
 import javax.enterprise.inject.spi.DefinitionException;
 import javax.inject.Inject;
+import javax.inject.Named;
 import java.lang.reflect.*;
 import java.util.Comparator;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.function.Predicate;
 
+import static java.beans.Introspector.decapitalize;
 import static java.lang.Integer.compare;
+import static java.lang.Integer.max;
 import static java.lang.String.format;
 import static java.util.stream.Stream.of;
 import static org.geektimes.commons.reflect.util.ClassUtils.isAssignableFrom;
@@ -39,6 +43,7 @@ import static org.geektimes.commons.reflect.util.TypeUtils.*;
 import static org.geektimes.commons.util.AnnotationUtils.findAnnotation;
 import static org.geektimes.commons.util.AnnotationUtils.isAnnotated;
 import static org.geektimes.commons.util.CollectionUtils.ofSet;
+import static org.geektimes.enterprise.inject.util.Qualifiers.findQualifier;
 
 /**
  * Bean Utilities class
@@ -52,8 +57,7 @@ public abstract class Beans {
      * Bean Class - Constructor Cache
      * default access for testing
      */
-    static final ConcurrentMap<Class<?>, Constructor> beanConstructorsCache = new ConcurrentHashMap<>();
-
+    static final Map<Class<?>, Constructor> beanConstructorsCache = new ConcurrentHashMap<>();
 
     static final Predicate<Type> WILDCARD_PARAMETERIZED_TYPE_FILTER = type -> {
         ParameterizedType parameterizedType = asParameterizedType(type);
@@ -91,13 +95,52 @@ public abstract class Beans {
         throw new IllegalStateException("BeanUtils should not be instantiated!");
     }
 
-    public static Set<Type> getBeanTypes(Class beanClass) {
+    public static Set<Type> getBeanTypes(Class<?> beanClass) {
         Typed typed = findAnnotation(beanClass, Typed.class);
         if (typed != null) {
             return ofSet(Object.class, typed.value());
         } else {
             return getAllTypes(beanClass, ILLEGAL_BEAN_TYPE_FILTERS);
         }
+    }
+
+    /**
+     * Get the bean name from {@link Named} annotation
+     *
+     * @param annotatedElement the element annotated {@link Named}
+     * @return {@link Named#value()} if {@link Named} annotated, <code>null</code> otherwise.
+     */
+    public static String getAnnotatedBeanName(AnnotatedElement annotatedElement) {
+        Named named = findQualifier(annotatedElement, Named.class);
+        String name = null;
+        if (named != null) {
+            name = named.value().trim();
+        }
+        return name;
+    }
+
+    public static String getBeanName(Class<?> beanClass) {
+        String name = getAnnotatedBeanName(beanClass);
+        if (name == null || "".equals(name)) {
+            name = decapitalize(beanClass.getSimpleName());
+        }
+        return name;
+    }
+
+    public static String getBeanName(Method producerMethod) {
+        String name = getAnnotatedBeanName(producerMethod);
+        if (name == null || "".equals(name)) {
+            name = producerMethod.getName();
+        }
+        return name;
+    }
+
+    public static String getBeanName(Field producerField) {
+        String name = getAnnotatedBeanName(producerField);
+        if (name == null || "".equals(name)) {
+            name = producerField.getName();
+        }
+        return name;
     }
 
     /**

@@ -24,8 +24,7 @@ import java.util.*;
 import java.util.function.Predicate;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptyList;
-import static java.util.Collections.unmodifiableList;
+import static java.util.Collections.*;
 import static org.geektimes.commons.function.Streams.filterAll;
 import static org.geektimes.commons.function.Streams.filterFirst;
 import static org.geektimes.commons.reflect.util.ClassUtils.getAllInheritedTypes;
@@ -118,6 +117,11 @@ public abstract class AnnotationUtils extends BaseUtils {
         } else {
             return getDeclaredAnnotations(annotatedElement, annotationsToFilter);
         }
+    }
+
+    public static Set<Annotation> filterAnnotations(Collection<Annotation> annotations,
+                                                    Predicate<Annotation>... annotationsToFilter) {
+        return unmodifiableSet(filterAll(new LinkedHashSet<>(annotations), annotationsToFilter));
     }
 
     /**

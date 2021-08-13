@@ -14,23 +14,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.commons.util;
+package org.geektimes.enterprise.inject.standard;
 
-import java.lang.reflect.Array;
+import javax.enterprise.inject.spi.AnnotatedConstructor;
+import javax.enterprise.inject.spi.AnnotatedField;
+import javax.enterprise.inject.spi.AnnotatedMethod;
+import javax.enterprise.inject.spi.AnnotatedParameter;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+import static java.util.Collections.emptyList;
 
 /**
- * The utilities class for {@link Array}
+ * {@link AnnotatedConstructor} based on Java reflection {@link Constructor}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public abstract class ArrayUtils extends BaseUtils {
+public class ReflectiveAnnotatedConstructor<X> extends ReflectiveAnnotatedCallable<Constructor, X>
+        implements AnnotatedConstructor<X> {
 
-    public static <T> T[] of(T... values) {
-        return values;
-    }
-
-    public static <T> int length(T... values) {
-        return values == null ? 0 : values.length;
+    public ReflectiveAnnotatedConstructor(Constructor constructor) {
+        super(constructor);
     }
 }

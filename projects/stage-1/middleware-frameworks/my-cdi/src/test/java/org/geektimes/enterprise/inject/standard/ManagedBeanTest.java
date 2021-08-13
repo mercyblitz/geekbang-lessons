@@ -14,8 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject;
+package org.geektimes.enterprise.inject.standard;
 
+import org.geektimes.enterprise.inject.BookShop;
+import org.geektimes.enterprise.inject.Business;
 import org.junit.Test;
 
 import javax.enterprise.context.NormalScope;
@@ -27,16 +29,16 @@ import static org.geektimes.commons.util.CollectionUtils.ofSet;
 import static org.junit.Assert.*;
 
 /**
- * {@link StandardManagedBean} Test
+ * {@link ManagedBean} Test
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class StandardManagedBeanTest {
+public class ManagedBeanTest {
 
     @Test
     public void test() {
-        StandardManagedBean bean = new StandardManagedBean(BookShop.class);
+        ManagedBean bean = new ManagedBean(BookShop.class);
         assertEquals(BookShop.class, bean.getBeanClass());
         assertFalse(bean.isNullable());
         assertEquals(4, bean.getTypes().size());

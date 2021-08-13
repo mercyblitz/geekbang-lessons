@@ -16,11 +16,8 @@
  */
 package org.geektimes.commons.util;
 
-import org.apache.commons.lang.StringUtils;
-
 import java.util.*;
 
-import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 
 /**
@@ -53,25 +50,42 @@ public abstract class CollectionUtils extends BaseUtils {
         return !isEmpty(collection);
     }
 
-    public static <T> Set<T> ofSet(Iterable<T> values) {
-        if (values == null) {
-            return emptySet();
+
+    public static <T> Set<T> ofSet(Collection<T> values, T... others) {
+        int size = size(values);
+
+        if (size < 1) {
+            return ofSet(others);
         }
-        if (values instanceof Collection) {
-            return ofSet((Collection<T>) values);
+
+        Set<T> elements = newFixedSet(size + others.length);
+        // add values
+        elements.addAll(values);
+
+        // add others
+        for (T other : others) {
+            elements.add(other);
         }
-        Set<T> elements = new LinkedHashSet<>();
-        values.forEach(elements::add);
         return unmodifiableSet(elements);
     }
 
-    public static <T> Set<T> ofSet(Collection<T> values) {
-        int size = values == null ? 0 : values.size();
+    /**
+     * Convert to multiple values to be {@link LinkedHashSet}
+     *
+     * @param values values
+     * @param <T>    the type of <code>values</code>
+     * @return read-only {@link Set}
+     */
+    public static <T> Set<T> ofSet(T[] values) {
+        int size = ArrayUtils.length(values);
         if (size < 1) {
             return emptySet();
         }
-        Set<T> elements = new LinkedHashSet<>(size + 1, Float.MIN_NORMAL);
-        elements.addAll(values);
+
+        Set<T> elements = newFixedSet(size);
+        for (int i = 0; i < size; i++) {
+            elements.add(values[i]);
+        }
         return unmodifiableSet(elements);
     }
 
@@ -84,7 +98,7 @@ public abstract class CollectionUtils extends BaseUtils {
      * @return read-only {@link Set}
      */
     public static <T> Set<T> ofSet(T one, T... others) {
-        int size = others == null ? 1 : others.length;
+        int size = others == null ? 0 : others.length;
         if (size < 1) {
             return singleton(one);
         }
@@ -95,6 +109,10 @@ public abstract class CollectionUtils extends BaseUtils {
             elements.add(others[i]);
         }
         return unmodifiableSet(elements);
+    }
+
+    public static <T> Set<T> newFixedSet(int size) {
+        return new LinkedHashSet<>(size, Float.MIN_NORMAL);
     }
 
     /**

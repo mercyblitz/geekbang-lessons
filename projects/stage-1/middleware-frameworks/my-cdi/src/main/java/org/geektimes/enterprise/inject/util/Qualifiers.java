@@ -16,18 +16,18 @@
  */
 package org.geektimes.enterprise.inject.util;
 
-import org.geektimes.commons.util.AnnotationUtils;
-import org.geektimes.commons.util.BaseUtils;
-
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Default;
 import javax.inject.Qualifier;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
-import static org.geektimes.commons.util.AnnotationUtils.getAllDeclaredAnnotations;
-import static org.geektimes.commons.util.AnnotationUtils.isAnnotated;
+import static org.geektimes.commons.util.AnnotationUtils.*;
 import static org.geektimes.commons.util.CollectionUtils.ofSet;
 
 /**
@@ -38,6 +38,8 @@ import static org.geektimes.commons.util.CollectionUtils.ofSet;
  */
 public abstract class Qualifiers {
 
+    static final Map<AnnotatedElement, Set<Annotation>> qualifiersCache = new ConcurrentHashMap<>();
+
     public static boolean isQualifier(Annotation annotation) {
         return isQualifier(annotation.annotationType());
     }
@@ -46,12 +48,27 @@ public abstract class Qualifiers {
         return annotationType.isAnnotation() && isAnnotated(annotationType, Qualifier.class);
     }
 
-    public static Set<Annotation> getAllQualifiers(Class<?> beanClass) {
-        List<Annotation> qualifiers = getAllDeclaredAnnotations(beanClass, Qualifiers::isQualifier);
-        if (qualifiers.isEmpty()) {
-            return ofSet(Any.Literal.INSTANCE, Default.Literal.INSTANCE);
-        } else {
-            return ofSet(qualifiers);
+    public static Set<Annotation> getQualifiers(AnnotatedElement annotatedElement) {
+        return qualifiersCache.computeIfAbsent(annotatedElement, e -> {
+            List<Annotation> annotations = getAllDeclaredAnnotations(e);
+            return getQualifiers(annotations);
+        });
+    }
+
+    public static Set<Annotation> getQualifiers(Collection<Annotation> annotations) {
+        Set<Annotation> qualifiers = filterAnnotations(annotations, Qualifiers::isQualifier);
+        return ofSet(qualifiers, Any.Literal.INSTANCE, Default.Literal.INSTANCE);
+    }
+
+    public static <A extends Annotation> A findQualifier(AnnotatedElement annotatedElement, Class<A> qualifierType) {
+        Set<Annotation> qualifiers = getQualifiers(annotatedElement);
+        Annotation foundQualifier = null;
+        for (Annotation qualifier : qualifiers) {
+            if (qualifierType.equals(qualifier.annotationType())) {
+                foundQualifier = qualifier;
+                break;
+            }
         }
+        return (A) foundQualifier;
     }
 }

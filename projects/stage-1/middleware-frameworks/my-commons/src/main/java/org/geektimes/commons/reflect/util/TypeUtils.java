@@ -284,6 +284,9 @@ public abstract class TypeUtils extends BaseUtils {
         } else if (type instanceof TypeVariable) {
             TypeVariable typeVariable = (TypeVariable) type;
             return asClass(typeVariable.getBounds()[0]);
+        } else if (type instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType) type;
+            return asClass(parameterizedType.getRawType());
         }
         return null;
     }

@@ -14,23 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.commons.util;
+package org.geektimes.enterprise.inject.standard;
 
-import java.lang.reflect.Array;
+import javax.enterprise.inject.spi.AnnotatedField;
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.InjectionPoint;
+import java.lang.reflect.Field;
 
 /**
- * The utilities class for {@link Array}
+ * {@link InjectionPoint} on {@link Field}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public abstract class ArrayUtils extends BaseUtils {
+public class FieldInjectionPoint extends AbstractInjectionPoint<AnnotatedField, Field> {
 
-    public static <T> T[] of(T... values) {
-        return values;
-    }
-
-    public static <T> int length(T... values) {
-        return values == null ? 0 : values.length;
+    public FieldInjectionPoint(AnnotatedField annotated, Field member, Bean<?> bean) {
+        super(annotated, member, bean);
     }
 }

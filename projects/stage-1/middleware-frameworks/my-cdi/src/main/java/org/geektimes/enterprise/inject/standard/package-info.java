@@ -14,23 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.commons.util;
-
-import java.lang.reflect.Array;
 
 /**
- * The utilities class for {@link Array}
+ * The standard implementations for "javax.enterprise.inject.spi.*"
+ * based on Java Reflection.
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public abstract class ArrayUtils extends BaseUtils {
-
-    public static <T> T[] of(T... values) {
-        return values;
-    }
-
-    public static <T> int length(T... values) {
-        return values == null ? 0 : values.length;
-    }
-}
+package org.geektimes.enterprise.inject.standard;
