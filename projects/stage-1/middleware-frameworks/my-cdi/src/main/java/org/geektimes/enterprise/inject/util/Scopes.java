@@ -53,4 +53,9 @@ public abstract class Scopes {
     public static boolean isScope(Class<? extends Annotation> annotationType) {
         return annotationType.isAnnotation() && isMetaAnnotation(annotationType, Scope.class);
     }
+
+    public static boolean isPassivatingScope(Class<? extends Annotation> annotationType) {
+        NormalScope normalScope = annotationType.getAnnotation(NormalScope.class);
+        return normalScope.passivating();
+    }
 }

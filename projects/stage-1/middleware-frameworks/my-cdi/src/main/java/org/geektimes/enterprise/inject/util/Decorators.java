@@ -14,26 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard;
+package org.geektimes.enterprise.inject.util;
 
-import javax.enterprise.inject.spi.AnnotatedField;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.InjectionPoint;
-import java.lang.reflect.Field;
+import javax.decorator.Decorator;
+import java.lang.reflect.AnnotatedElement;
+
+import static org.geektimes.commons.util.AnnotationUtils.isAnnotated;
 
 /**
- * {@link InjectionPoint} on {@link Field}
+ * The utilities class for {@link Decorator}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class FieldInjectionPoint extends AbstractInjectionPoint<AnnotatedField, AnnotatedField, Field> {
+public abstract class Decorators {
 
-    public FieldInjectionPoint(AnnotatedField annotatedField) {
-        this(annotatedField, null);
-    }
-
-    public FieldInjectionPoint(AnnotatedField annotatedField, Bean<?> bean) {
-        super(annotatedField, annotatedField, bean);
+    public static boolean isDecorator(AnnotatedElement annotatedElement) {
+        return isAnnotated(annotatedElement, Decorator.class);
     }
 }

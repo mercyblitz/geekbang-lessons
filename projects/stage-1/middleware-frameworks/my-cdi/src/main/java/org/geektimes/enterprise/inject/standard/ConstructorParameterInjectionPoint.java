@@ -29,6 +29,14 @@ import java.lang.reflect.Parameter;
  */
 public class ConstructorParameterInjectionPoint extends AbstractInjectionPoint<AnnotatedParameter, AnnotatedConstructor, Constructor> {
 
+    public ConstructorParameterInjectionPoint(AnnotatedParameter annotatedParameter) {
+        this(annotatedParameter, (AnnotatedConstructor) annotatedParameter.getDeclaringCallable());
+    }
+
+    public ConstructorParameterInjectionPoint(AnnotatedParameter annotatedParameter,
+                                              AnnotatedConstructor annotatedConstructor) {
+        this(annotatedParameter, annotatedConstructor, null);
+    }
 
     public ConstructorParameterInjectionPoint(AnnotatedParameter annotatedParameter,
                                               AnnotatedConstructor annotatedConstructor, Bean<?> bean) {

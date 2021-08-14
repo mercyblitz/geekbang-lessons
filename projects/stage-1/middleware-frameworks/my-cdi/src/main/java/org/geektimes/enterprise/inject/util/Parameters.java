@@ -14,26 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard;
+package org.geektimes.enterprise.inject.util;
 
-import javax.enterprise.inject.spi.AnnotatedField;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.InjectionPoint;
-import java.lang.reflect.Field;
+import javax.enterprise.inject.spi.AnnotatedConstructor;
+import javax.enterprise.inject.spi.AnnotatedMethod;
+import javax.enterprise.inject.spi.AnnotatedParameter;
 
 /**
- * {@link InjectionPoint} on {@link Field}
+ * The utilities class for parameters
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class FieldInjectionPoint extends AbstractInjectionPoint<AnnotatedField, AnnotatedField, Field> {
+public abstract class Parameters {
 
-    public FieldInjectionPoint(AnnotatedField annotatedField) {
-        this(annotatedField, null);
+    public static boolean isConstructorParameter(AnnotatedParameter parameter) {
+        return parameter != null && parameter.getDeclaringCallable() instanceof AnnotatedConstructor;
     }
 
-    public FieldInjectionPoint(AnnotatedField annotatedField, Bean<?> bean) {
-        super(annotatedField, annotatedField, bean);
+    public static boolean isMethodParameter(AnnotatedParameter parameter) {
+        return parameter != null && parameter.getDeclaringCallable() instanceof AnnotatedMethod;
     }
 }

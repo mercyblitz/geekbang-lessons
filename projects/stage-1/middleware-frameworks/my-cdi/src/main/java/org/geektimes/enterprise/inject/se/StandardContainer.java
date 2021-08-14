@@ -16,15 +16,21 @@
  */
 package org.geektimes.enterprise.inject.se;
 
+import org.geektimes.commons.reflect.util.ClassUtils;
+import org.geektimes.enterprise.inject.standard.StandardBeanManager;
+
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.se.SeContainer;
+import javax.enterprise.inject.se.SeContainerInitializer;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.util.TypeLiteral;
 import java.lang.annotation.Annotation;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Consumer;
+import java.util.stream.Stream;
+
+import static org.geektimes.commons.reflect.util.ClassUtils.getClassLoader;
 
 /**
  * Standard {@link SeContainer} implementation
@@ -34,11 +40,7 @@ import java.util.Set;
  */
 public class StandardContainer implements SeContainer {
 
-    private final ClassLoader classLoader;
-
     private final Map<String, Object> properties;
-
-    private final boolean enabledDiscovery;
 
     private final Set<Class<?>> beanClasses;
 
@@ -54,24 +56,87 @@ public class StandardContainer implements SeContainer {
 
     private final Set<Class<? extends Annotation>> alternativeStereotypeClasses;
 
+    private ClassLoader classLoader;
+
+    private boolean enabledDiscovery;
+
     private boolean running;
 
-    public StandardContainer(StandardContainerInitializer initializer) {
-        this.classLoader = initializer.classLoader;
-        this.properties = initializer.properties;
-        this.enabledDiscovery = initializer.enabledDiscovery;
-        this.beanClasses = initializer.beanClasses;
-        this.packagesToDiscovery = initializer.packagesToDiscovery;
-        this.typedExtensions = initializer.typedExtensions;
-        this.interceptorClasses = initializer.interceptorClasses;
-        this.decoratorClasses = initializer.decoratorClasses;
-        this.alternativeClasses = initializer.alternativeClasses;
-        this.alternativeStereotypeClasses = initializer.alternativeStereotypeClasses;
+    private StandardBeanManager standardBeanManager;
+
+    public StandardContainer() {
+        this.classLoader = ClassUtils.getClassLoader(getClass());
+        this.properties = new HashMap<>();
+        this.enabledDiscovery = true;
+        this.beanClasses = new LinkedHashSet<>();
+        this.packagesToDiscovery = new LinkedHashMap<>();
+        this.typedExtensions = new LinkedHashMap<>();
+        this.interceptorClasses = new LinkedHashSet<>();
+        this.decoratorClasses = new LinkedHashSet<>();
+        this.alternativeClasses = new LinkedHashSet<>();
+        this.alternativeStereotypeClasses = new LinkedHashSet<>();
+        this.running = false;
     }
 
-    public StandardContainer initialize() {
+
+    void addBeanClasses(Class<?>... classes) {
+        // TODO Validate the Bean Classes ?
+        iterateNonNull(classes, this.beanClasses::add);
+    }
+
+    void addPackages(boolean scanRecursively, Package... packages) {
+        iterateNonNull(packages, p -> packagesToDiscovery.put(p, scanRecursively));
+    }
+
+    void addExtensions(Extension... extensions) {
+        iterateNonNull(extensions, e -> typedExtensions.put(e.getClass(), e));
+    }
+
+    void addInterceptors(Class<?>... interceptorClasses) {
+        iterateNonNull(interceptorClasses, this.interceptorClasses::add);
+    }
+
+    void addDecorators(Class<?>... decoratorClasses) {
+        iterateNonNull(decoratorClasses, this.decoratorClasses::add);
+    }
+
+    void addAlternatives(Class<?>... alternativeClasses) {
+        iterateNonNull(alternativeClasses, this.alternativeClasses::add);
+    }
+
+    void addAlternativeStereotypes(Class<? extends Annotation>... alternativeStereotypeClasses) {
+        iterateNonNull(alternativeStereotypeClasses, this.alternativeStereotypeClasses::add);
+    }
+
+    void setProperty(String key, Object value) {
+        this.properties.put(key, value);
+    }
+
+    void setProperties(Map<String, Object> properties) {
+        this.properties.clear();
+        this.properties.putAll(properties);
+    }
+
+    void disableDiscovery() {
+        enabledDiscovery = false;
+    }
+
+    void setClassLoader(ClassLoader classLoader) {
+        this.classLoader = classLoader;
+    }
+
+    public static <T> void iterateNonNull(T[] values, Consumer<T> consumer) {
+        Objects.requireNonNull(values, "The argument must not be null!");
+        for (T value : values) {
+            Objects.requireNonNull(value, "Any element of the argument must not be null!");
+            consumer.accept(value);
+        }
+    }
+
+    public void initialize() {
         running = true;
-        return this;
+        standardBeanManager = new StandardBeanManager(this);
+        // TODO
     }
 
     @Override
@@ -89,7 +154,7 @@ public class StandardContainer implements SeContainer {
 
     @Override
     public BeanManager getBeanManager() {
-        return null;
+        return standardBeanManager;
     }
 
     @Override
@@ -130,5 +195,45 @@ public class StandardContainer implements SeContainer {
     @Override
     public Object get() {
         return null;
+    }
+
+    public ClassLoader getClassLoader() {
+        return classLoader;
+    }
+
+    public Map<String, Object> getProperties() {
+        return properties;
+    }
+
+    public boolean isEnabledDiscovery() {
+        return enabledDiscovery;
+    }
+
+    public Set<Class<?>> getBeanClasses() {
+        return beanClasses;
+    }
+
+    public Map<Package, Boolean> getPackagesToDiscovery() {
+        return packagesToDiscovery;
+    }
+
+    public Map<Class<? extends Extension>, Extension> getTypedExtensions() {
+        return typedExtensions;
+    }
+
+    public Set<Class<?>> getInterceptorClasses() {
+        return interceptorClasses;
+    }
+
+    public Set<Class<?>> getDecoratorClasses() {
+        return decoratorClasses;
+    }
+
+    public Set<Class<?>> getAlternativeClasses() {
+        return alternativeClasses;
+    }
+
+    public Set<Class<? extends Annotation>> getAlternativeStereotypeClasses() {
+        return alternativeStereotypeClasses;
     }
 }

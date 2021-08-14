@@ -29,6 +29,15 @@ import java.lang.reflect.Parameter;
  */
 public class MethodParameterInjectionPoint extends AbstractInjectionPoint<AnnotatedParameter, AnnotatedMethod, Method> {
 
+    public MethodParameterInjectionPoint(AnnotatedParameter annotatedParameter) {
+        this(annotatedParameter, (AnnotatedMethod) annotatedParameter.getDeclaringCallable());
+    }
+
+    public MethodParameterInjectionPoint(AnnotatedParameter annotatedParameter,
+                                         AnnotatedMethod annotatedMethod) {
+        this(annotatedParameter, annotatedMethod, null);
+    }
+
     public MethodParameterInjectionPoint(AnnotatedParameter annotatedParameter,
                                          AnnotatedMethod annotatedMethod, Bean<?> bean) {
         super(annotatedParameter, annotatedMethod, bean);

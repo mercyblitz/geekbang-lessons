@@ -23,7 +23,6 @@ import javax.enterprise.inject.se.SeContainerInitializer;
 import javax.enterprise.inject.spi.Extension;
 import java.lang.annotation.Annotation;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import static org.geektimes.commons.reflect.util.ClassUtils.getClassLoader;
@@ -36,43 +35,15 @@ import static org.geektimes.commons.reflect.util.ClassUtils.getClassLoader;
  */
 public class StandardContainerInitializer extends SeContainerInitializer {
 
-    ClassLoader classLoader;
-
-    final Map<String, Object> properties;
-
-    boolean enabledDiscovery;
-
-    final Set<Class<?>> beanClasses;
-
-    final Map<Package, Boolean> packagesToDiscovery;
-
-    final Map<Class<? extends Extension>, Extension> typedExtensions;
-
-    final Set<Class<?>> interceptorClasses;
-
-    final Set<Class<?>> decoratorClasses;
-
-    final Set<Class<?>> alternativeClasses;
-
-    final Set<Class<? extends Annotation>> alternativeStereotypeClasses;
+    private final StandardContainer standardContainer;
 
     public StandardContainerInitializer() {
-        this.classLoader = getClassLoader(getClass());
-        this.properties = new HashMap<>();
-        this.enabledDiscovery = true;
-        this.beanClasses = new LinkedHashSet<>();
-        this.packagesToDiscovery = new LinkedHashMap<>();
-        this.typedExtensions = new LinkedHashMap<>();
-        this.interceptorClasses = new LinkedHashSet<>();
-        this.decoratorClasses = new LinkedHashSet<>();
-        this.alternativeClasses = new LinkedHashSet<>();
-        this.alternativeStereotypeClasses = new LinkedHashSet<>();
+        this.standardContainer = new StandardContainer();
     }
 
     @Override
     public SeContainerInitializer addBeanClasses(Class<?>... classes) {
-        // TODO Validate the Bean Classes ?
-        iterateNonNull(classes, this.beanClasses::add);
+        standardContainer.addBeanClasses(classes);
         return this;
     }
 
@@ -96,13 +67,13 @@ public class StandardContainerInitializer extends SeContainerInitializer {
 
     @Override
     public SeContainerInitializer addPackages(boolean scanRecursively, Package... packages) {
-        iterateNonNull(packages, p -> packagesToDiscovery.put(p, scanRecursively));
+        standardContainer.addPackages(scanRecursively, packages);
         return this;
     }
 
     @Override
     public SeContainerInitializer addExtensions(Extension... extensions) {
-        iterateNonNull(extensions, e -> typedExtensions.put(e.getClass(), e));
+        standardContainer.addExtensions(extensions);
         return this;
     }
 
@@ -116,63 +87,55 @@ public class StandardContainerInitializer extends SeContainerInitializer {
 
     @Override
     public SeContainerInitializer enableInterceptors(Class<?>... interceptorClasses) {
-        iterateNonNull(interceptorClasses, this.interceptorClasses::add);
+        standardContainer.addInterceptors(interceptorClasses);
         return this;
     }
 
     @Override
     public SeContainerInitializer enableDecorators(Class<?>... decoratorClasses) {
-        iterateNonNull(decoratorClasses, this.decoratorClasses::add);
+        standardContainer.addDecorators(decoratorClasses);
         return this;
     }
 
     @Override
     public SeContainerInitializer selectAlternatives(Class<?>... alternativeClasses) {
-        iterateNonNull(alternativeClasses, this.alternativeClasses::add);
+        standardContainer.addAlternatives(alternativeClasses);
         return this;
     }
 
     @Override
     public SeContainerInitializer selectAlternativeStereotypes(Class<? extends Annotation>... alternativeStereotypeClasses) {
-        iterateNonNull(alternativeStereotypeClasses, this.alternativeStereotypeClasses::add);
+        standardContainer.addAlternativeStereotypes(alternativeStereotypeClasses);
         return this;
     }
 
     @Override
     public SeContainerInitializer addProperty(String key, Object value) {
-        this.properties.put(key, value);
+        standardContainer.setProperty(key, value);
         return this;
     }
 
     @Override
     public SeContainerInitializer setProperties(Map<String, Object> properties) {
-        this.properties.clear();
-        this.properties.putAll(properties);
+        standardContainer.setProperties(properties);
         return this;
     }
 
     @Override
     public SeContainerInitializer disableDiscovery() {
-        enabledDiscovery = false;
+        standardContainer.disableDiscovery();
         return this;
     }
 
     @Override
     public SeContainerInitializer setClassLoader(ClassLoader classLoader) {
-        this.classLoader = classLoader;
+        standardContainer.setClassLoader(classLoader);
         return this;
-    }
-
-    public static <T> void iterateNonNull(T[] values, Consumer<T> consumer) {
-        Objects.requireNonNull(values, "The argument must not be null!");
-        for (T value : values) {
-            Objects.requireNonNull(value, "Any element of the argument must not be null!");
-            consumer.accept(value);
-        }
     }
 
     @Override
     public SeContainer initialize() {
-        return new StandardContainer(this).initialize();
+        standardContainer.initialize();
+        return standardContainer;
     }
 }
