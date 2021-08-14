@@ -70,7 +70,8 @@ public class CircuitBreakerInterceptor extends AnnotatedInterceptor<CircuitBreak
     }
 
     CountableSlidingWindow getSlidingWindow(CircuitBreaker circuitBreaker) {
-        return slidingWindowsCache.computeIfAbsent(circuitBreaker, key -> new CountableSlidingWindow(key));
+        return slidingWindowsCache.computeIfAbsent(circuitBreaker, key -> new CountableSlidingWindow(key))
+                .calculateStatus();
     }
 
     static class CountableSlidingWindow {
@@ -129,14 +130,12 @@ public class CircuitBreakerInterceptor extends AnnotatedInterceptor<CircuitBreak
                 successTrials.increment();
             }
             requests.increment();
-            calculateStatus();
             return this;
         }
 
         private CountableSlidingWindow failure(Throwable failure) {
             if (isOnFailure(failure)) {
                 failures.increment();
-                calculateStatus();
             }
             requests.increment();
             return this;
@@ -147,7 +146,7 @@ public class CircuitBreakerInterceptor extends AnnotatedInterceptor<CircuitBreak
             return isDerived(failureClass, appliedFailures) && !isDerived(failureClass, ignoredFailures);
         }
 
-        private void calculateStatus() {
+        private CountableSlidingWindow calculateStatus() {
             if (isClosed()) {
 
                 // Status : CLOSED -> OPEN
@@ -181,6 +180,8 @@ public class CircuitBreakerInterceptor extends AnnotatedInterceptor<CircuitBreak
                 }
 
             }
+
+            return this;
         }
 
         boolean shouldOpen() {
