@@ -16,17 +16,24 @@
  */
 package org.geektimes.commons.util;
 
+import org.geektimes.commons.function.Predicates;
+import org.geektimes.commons.function.Streams;
+import org.geektimes.commons.function.ThrowableFunction;
+import org.geektimes.commons.function.ThrowableSupplier;
+
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static org.geektimes.commons.function.Streams.filterAll;
 import static org.geektimes.commons.function.Streams.filterFirst;
+import static org.geektimes.commons.function.ThrowableSupplier.execute;
 import static org.geektimes.commons.reflect.util.ClassUtils.getAllInheritedTypes;
 import static org.geektimes.commons.reflect.util.ClassUtils.isDerived;
 
@@ -213,6 +220,28 @@ public abstract class AnnotationUtils extends BaseUtils {
 
     public static boolean isAnnotated(AnnotatedElement annotatedElement, Class<? extends Annotation> annotationType) {
         return annotatedElement != null && annotatedElement.isAnnotationPresent(annotationType);
+    }
+
+    public static Object[] getAttributeValues(Annotation annotation, Predicate<Method>... attributesToFilter) {
+        return getAttributeMethods(annotation, attributesToFilter)
+                .map(method -> execute(() -> method.invoke(annotation)))
+                .toArray(Object[]::new);
+    }
+
+    public static Map<String, Object> getAttributesMap(Annotation annotation, Predicate<Method>... attributesToFilter) {
+        Map<String, Object> attributesMap = new LinkedHashMap<>();
+        getAttributeMethods(annotation, attributesToFilter)
+                .forEach(method -> {
+                    Object value = execute(() -> method.invoke(annotation));
+                    attributesMap.put(method.getName(), value);
+                });
+        return unmodifiableMap(attributesMap);
+    }
+
+    private static Stream<Method> getAttributeMethods(Annotation annotation, Predicate<Method>... attributesToFilter) {
+        Class<? extends Annotation> annotationType = annotation.annotationType();
+        return Stream.of(annotationType.getMethods())
+                .filter(Predicates.and(attributesToFilter));
     }
 
 }

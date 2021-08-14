@@ -17,10 +17,7 @@
 package org.geektimes.enterprise.inject.standard;
 
 import org.geektimes.enterprise.inject.se.StandardContainer;
-import org.geektimes.enterprise.inject.util.Interceptors;
-import org.geektimes.enterprise.inject.util.Qualifiers;
-import org.geektimes.enterprise.inject.util.Scopes;
-import org.geektimes.enterprise.inject.util.Stereotypes;
+import org.geektimes.enterprise.inject.util.*;
 
 import javax.el.ELResolver;
 import javax.el.ExpressionFactory;
@@ -55,41 +52,48 @@ import static org.geektimes.enterprise.inject.util.Parameters.isMethodParameter;
 public class StandardBeanManager implements BeanManager {
 
     public StandardBeanManager(StandardContainer standardContainer) {
-
+        // TODO
     }
 
     @Override
     public Object getReference(Bean<?> bean, Type beanType, CreationalContext<?> ctx) {
+        // TODO
         return null;
     }
 
     @Override
     public Object getInjectableReference(InjectionPoint ij, CreationalContext<?> ctx) {
+        // TODO
         return null;
     }
 
     @Override
     public <T> CreationalContext<T> createCreationalContext(Contextual<T> contextual) {
+        // TODO
         return null;
     }
 
     @Override
     public Set<Bean<?>> getBeans(Type beanType, Annotation... qualifiers) {
+        // TODO
         return null;
     }
 
     @Override
     public Set<Bean<?>> getBeans(String name) {
+        // TODO
         return null;
     }
 
     @Override
     public Bean<?> getPassivationCapableBean(String id) {
+        // TODO
         return null;
     }
 
     @Override
     public <X> Bean<? extends X> resolve(Set<Bean<? extends X>> beans) {
+        // TODO
         return null;
     }
 
@@ -144,21 +148,24 @@ public class StandardBeanManager implements BeanManager {
     @Override
     @Deprecated
     public void fireEvent(Object event, Annotation... qualifiers) {
-
+        // TODO
     }
 
     @Override
     public <T> Set<ObserverMethod<? super T>> resolveObserverMethods(T event, Annotation... qualifiers) {
+        // TODO
         return null;
     }
 
     @Override
     public List<Decorator<?>> resolveDecorators(Set<Type> types, Annotation... qualifiers) {
+        // TODO
         return null;
     }
 
     @Override
     public List<Interceptor<?>> resolveInterceptors(InterceptionType type, Annotation... interceptorBindings) {
+        // TODO
         return null;
     }
 
@@ -169,7 +176,7 @@ public class StandardBeanManager implements BeanManager {
 
     @Override
     public boolean isNormalScope(Class<? extends Annotation> annotationType) {
-        return annotationType.isAnnotationPresent(NormalScope.class);
+        return Scopes.isNormalScope(annotationType);
     }
 
     @Override
@@ -194,32 +201,34 @@ public class StandardBeanManager implements BeanManager {
 
     @Override
     public Set<Annotation> getInterceptorBindingDefinition(Class<? extends Annotation> bindingType) {
+        // TODO
         return null;
     }
 
     @Override
     public Set<Annotation> getStereotypeDefinition(Class<? extends Annotation> stereotype) {
+        // TODO
         return null;
     }
 
     @Override
     public boolean areQualifiersEquivalent(Annotation qualifier1, Annotation qualifier2) {
-        return false;
+        return Annotations.equals(qualifier1, qualifier2);
     }
 
     @Override
     public boolean areInterceptorBindingsEquivalent(Annotation interceptorBinding1, Annotation interceptorBinding2) {
-        return false;
+        return Annotations.equals(interceptorBinding1, interceptorBinding2);
     }
 
     @Override
     public int getQualifierHashCode(Annotation qualifier) {
-        return 0;
+        return Annotations.hashCode(qualifier);
     }
 
     @Override
     public int getInterceptorBindingHashCode(Annotation interceptorBinding) {
-        return 0;
+        return Annotations.hashCode(interceptorBinding);
     }
 
     @Override
