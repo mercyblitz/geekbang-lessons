@@ -233,16 +233,19 @@ public class StandardBeanManager implements BeanManager {
 
     @Override
     public Context getContext(Class<? extends Annotation> scopeType) {
+        // TODO
         return null;
     }
 
     @Override
     public ELResolver getELResolver() {
+        // TODO
         return null;
     }
 
     @Override
     public ExpressionFactory wrapExpressionFactory(ExpressionFactory expressionFactory) {
+        // TODO
         return null;
     }
 
@@ -253,42 +256,50 @@ public class StandardBeanManager implements BeanManager {
 
     @Override
     public <T> InjectionTarget<T> createInjectionTarget(AnnotatedType<T> type) {
+        // TODO
         return null;
     }
 
     @Override
     public <T> InjectionTargetFactory<T> getInjectionTargetFactory(AnnotatedType<T> annotatedType) {
+        // TODO
         return null;
     }
 
     @Override
     public <X> ProducerFactory<X> getProducerFactory(AnnotatedField<? super X> field, Bean<X> declaringBean) {
+        // TODO
         return null;
     }
 
     @Override
     public <X> ProducerFactory<X> getProducerFactory(AnnotatedMethod<? super X> method, Bean<X> declaringBean) {
+        // TODO
         return null;
     }
 
     @Override
     public <T> BeanAttributes<T> createBeanAttributes(AnnotatedType<T> type) {
+        // TODO
         return null;
     }
 
     @Override
     public BeanAttributes<?> createBeanAttributes(AnnotatedMember<?> type) {
+        // TODO
         return null;
     }
 
     @Override
     public <T> Bean<T> createBean(BeanAttributes<T> attributes, Class<T> beanClass,
                                   InjectionTargetFactory<T> injectionTargetFactory) {
+        // TODO
         return null;
     }
 
     @Override
     public <T, X> Bean<T> createBean(BeanAttributes<T> attributes, Class<X> beanClass, ProducerFactory<X> producerFactory) {
+        // TODO
         return null;
     }
 
@@ -307,21 +318,25 @@ public class StandardBeanManager implements BeanManager {
 
     @Override
     public <T extends Extension> T getExtension(Class<T> extensionClass) {
+        // TODO
         return null;
     }
 
     @Override
     public <T> InterceptionFactory<T> createInterceptionFactory(CreationalContext<T> ctx, Class<T> clazz) {
+        // TODO
         return null;
     }
 
     @Override
     public Event<Object> getEvent() {
+        // TODO
         return null;
     }
 
     @Override
     public Instance<Object> createInstance() {
+        // TODO
         return null;
     }
 }
