@@ -21,14 +21,15 @@ import org.geektimes.enterprise.inject.standard.StandardBeanManager;
 
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.se.SeContainer;
-import javax.enterprise.inject.se.SeContainerInitializer;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.util.TypeLiteral;
+import java.io.File;
 import java.lang.annotation.Annotation;
+import java.net.URL;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.stream.Stream;
+import java.util.logging.Logger;
 
 import static org.geektimes.commons.reflect.util.ClassUtils.getClassLoader;
 
@@ -39,6 +40,8 @@ import static org.geektimes.commons.reflect.util.ClassUtils.getClassLoader;
  * @since 1.0.0
  */
 public class StandardContainer implements SeContainer {
+
+    private final Logger logger = Logger.getLogger(getClass().getName());
 
     private final Map<String, Object> properties;
 
@@ -135,8 +138,62 @@ public class StandardContainer implements SeContainer {
 
     public void initialize() {
         running = true;
+        // Create BeanManager
         standardBeanManager = new StandardBeanManager(this);
+
+        discover();
         // TODO
+    }
+
+    private void discover() {
+        if (!enabledDiscovery) {
+            // TODO log
+            return;
+        }
+        Set<Class<?>> classes = scanClasses();
+        discoverTypes();
+        discoverBeans();
+    }
+
+    private Set<Class<?>> scanClasses() {
+        Set<Class<?>> classes = new LinkedHashSet<>();
+        ClassLoader classLoader = getClassLoader();
+        for (Map.Entry<Package, Boolean> packageEntry : packagesToDiscovery.entrySet()) {
+            Package packageToDiscovery = packageEntry.getKey();
+            boolean scanRecursively = Boolean.TRUE.equals(packageEntry.getValue());
+            scanClasses(classes, classLoader, packageToDiscovery, scanRecursively);
+        }
+        return classes;
+    }
+
+    private void scanClasses(Set<Class<?>> classes, ClassLoader classLoader,
+                             Package packageToDiscovery, boolean scanRecursively) {
+        String resourcePath = packageToDiscovery.getName().replace('.', '/');
+        URL packageResource = classLoader.getResource(resourcePath);
+        String protocol = packageResource.getProtocol();
+        switch (protocol) {
+            case "file":
+                scanClassesInDirectory(classes, packageResource.getPath(), scanRecursively);
+                break;
+            case "jar":
+                scanClassesInJar(classes, classLoader, packageResource, scanRecursively);
+                break;
+        }
+    }
+
+    private void scanClassesInDirectory(Set<Class<?>> classes, String directoryPath, boolean scanRecursively) {
+        File directory = new File(directoryPath);
+    }
+
+    private void scanClassesInJar(Set<Class<?>> classes, ClassLoader classLoader, URL packageResource,
+                                  boolean scanRecursively) {
+
+    }
+
+    private void discoverTypes() {
+    }
+
+    private void discoverBeans() {
     }
 
     @Override

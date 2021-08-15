@@ -24,6 +24,10 @@ import javax.enterprise.context.NormalScope;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Default;
 
+import java.io.IOException;
+import java.net.URL;
+import java.util.Enumeration;
+
 import static java.util.Collections.emptySet;
 import static org.geektimes.commons.util.CollectionUtils.ofSet;
 import static org.junit.Assert.*;
@@ -50,5 +54,15 @@ public class ManagedBeanTest {
         assertEquals("bookShop", bean.getName());
         assertEquals(emptySet(), bean.getStereotypes());
         assertFalse(bean.isAlternative());
+    }
+
+    @Test
+    public void testA() throws IOException {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        Enumeration<URL> resources = classLoader.getResources("javax/enterprise/context");
+        while (resources.hasMoreElements()) {
+            URL resource = resources.nextElement();
+            System.out.println(resource);
+        }
     }
 }
