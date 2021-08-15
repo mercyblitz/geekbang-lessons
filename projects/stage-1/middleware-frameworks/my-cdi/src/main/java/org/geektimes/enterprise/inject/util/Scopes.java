@@ -16,10 +16,7 @@
  */
 package org.geektimes.enterprise.inject.util;
 
-import org.geektimes.commons.util.BaseUtils;
-
 import javax.enterprise.context.NormalScope;
-import javax.inject.Qualifier;
 import javax.inject.Scope;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
@@ -46,15 +43,19 @@ public abstract class Scopes {
     }
 
     public static boolean isScope(Annotation annotation) {
-        return isScope(annotation.annotationType());
+        return annotation != null && isScope(annotation.annotationType());
     }
 
     public static boolean isScope(Class<? extends Annotation> annotationType) {
-        return isAnnotated(annotationType, Scope.class);
+        return existsAnnotated(annotationType, Scope.class);
+    }
+
+    public static boolean isNormalScope(Annotation annotation) {
+        return annotation != null && isNormalScope(annotation.annotationType());
     }
 
     public static boolean isNormalScope(Class<? extends Annotation> annotationType) {
-        return isAnnotated(annotationType, NormalScope.class);
+        return existsAnnotated(annotationType, NormalScope.class);
     }
 
     public static boolean isPassivatingScope(Class<? extends Annotation> annotationType) {

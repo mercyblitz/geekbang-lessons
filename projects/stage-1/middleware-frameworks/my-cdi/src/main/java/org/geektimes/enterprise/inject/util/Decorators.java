@@ -19,7 +19,7 @@ package org.geektimes.enterprise.inject.util;
 import javax.decorator.Decorator;
 import java.lang.reflect.AnnotatedElement;
 
-import static org.geektimes.commons.util.AnnotationUtils.isAnnotated;
+import static org.geektimes.commons.util.AnnotationUtils.existsAnnotated;
 
 /**
  * The utilities class for {@link Decorator}
@@ -30,6 +30,6 @@ import static org.geektimes.commons.util.AnnotationUtils.isAnnotated;
 public abstract class Decorators {
 
     public static boolean isDecorator(AnnotatedElement annotatedElement) {
-        return isAnnotated(annotatedElement, Decorator.class);
+        return existsAnnotated(annotatedElement, Decorator.class);
     }
 }

@@ -21,7 +21,7 @@ import javax.interceptor.InterceptorBinding;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 
-import static org.geektimes.commons.util.AnnotationUtils.isAnnotated;
+import static org.geektimes.commons.util.AnnotationUtils.existsAnnotated;
 
 /**
  * The utilties class for {@link Interceptor}
@@ -36,6 +36,6 @@ public abstract class Interceptors {
     }
 
     public static boolean isInterceptor(AnnotatedElement annotatedElement) {
-        return isAnnotated(annotatedElement, Interceptor.class);
+        return existsAnnotated(annotatedElement, Interceptor.class);
     }
 }

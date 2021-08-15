@@ -16,10 +16,13 @@
  */
 package org.geektimes.commons.function;
 
+import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -69,6 +72,18 @@ public interface Streams {
                 .filter(and(predicates))
                 .findFirst()
                 .orElse(null);
+    }
+
+    static <T, R> List<R> map(List<T> values, Function<T, R> mapper) {
+        return stream(values)
+                .map(mapper)
+                .collect(Collectors.toList());
+    }
+
+    static <T, R> Set<R> map(Set<T> values, Function<T, R> mapper) {
+        return stream(values)
+                .map(mapper)
+                .collect(Collectors.toSet());
     }
 }
 

@@ -21,7 +21,6 @@ import org.geektimes.enterprise.inject.util.*;
 
 import javax.el.ELResolver;
 import javax.el.ExpressionFactory;
-import javax.enterprise.context.NormalScope;
 import javax.enterprise.context.spi.Context;
 import javax.enterprise.context.spi.Contextual;
 import javax.enterprise.context.spi.CreationalContext;
@@ -38,7 +37,6 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Set;
 
-import static java.lang.String.format;
 import static org.geektimes.enterprise.inject.util.Injections.validateForbiddenAnnotation;
 import static org.geektimes.enterprise.inject.util.Parameters.isConstructorParameter;
 import static org.geektimes.enterprise.inject.util.Parameters.isMethodParameter;

@@ -28,7 +28,7 @@ import java.lang.reflect.Type;
 import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
-import static org.geektimes.commons.util.AnnotationUtils.isAnnotated;
+import static org.geektimes.commons.util.AnnotationUtils.existsAnnotated;
 import static org.geektimes.enterprise.inject.util.Beans.getBeanTypes;
 import static org.geektimes.enterprise.inject.util.Scopes.getScopeType;
 import static org.geektimes.enterprise.inject.util.Stereotypes.getStereotypeTypes;
@@ -75,7 +75,7 @@ public abstract class AbstractBean<A extends AnnotatedElement, T> implements Bea
         this.beanName = getBeanName(annotatedElement);
         this.scopeType = getScopeType(annotatedElement);
         this.stereotypeTypes = getStereotypeTypes(annotatedElement);
-        this.alternative = isAnnotated(annotatedElement, Alternative.class);
+        this.alternative = existsAnnotated(annotatedElement, Alternative.class);
     }
 
     protected abstract void validateAnnotatedElement(A annotatedElement);

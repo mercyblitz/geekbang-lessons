@@ -17,9 +17,6 @@
 package org.geektimes.commons.util;
 
 import org.geektimes.commons.function.Predicates;
-import org.geektimes.commons.function.Streams;
-import org.geektimes.commons.function.ThrowableFunction;
-import org.geektimes.commons.function.ThrowableSupplier;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
@@ -31,11 +28,12 @@ import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
+import static java.util.Optional.ofNullable;
 import static org.geektimes.commons.function.Streams.filterAll;
 import static org.geektimes.commons.function.Streams.filterFirst;
 import static org.geektimes.commons.function.ThrowableSupplier.execute;
 import static org.geektimes.commons.reflect.util.ClassUtils.getAllInheritedTypes;
-import static org.geektimes.commons.reflect.util.ClassUtils.isDerived;
+import static org.geektimes.commons.util.ArrayUtils.length;
 
 /**
  * {@link Annotation} Utilities class
@@ -104,7 +102,7 @@ public abstract class AnnotationUtils extends BaseUtils {
                                            Class<? extends Annotation>... metaAnnotationTypes) {
         boolean annotated = true;
         for (Class<? extends Annotation> metaAnnotationType : metaAnnotationTypes) {
-            annotated &= isAnnotated(annotationType, metaAnnotationType);
+            annotated &= existsAnnotated(annotationType, metaAnnotationType);
         }
         return annotated;
     }
@@ -126,9 +124,19 @@ public abstract class AnnotationUtils extends BaseUtils {
         }
     }
 
-    public static Set<Annotation> filterAnnotations(Collection<Annotation> annotations,
-                                                    Predicate<Annotation>... annotationsToFilter) {
-        return unmodifiableSet(filterAll(new LinkedHashSet<>(annotations), annotationsToFilter));
+    public static <S extends Iterable<Annotation>> Optional<Annotation> filterAnnotation(S annotations,
+                                                                                         Predicate<Annotation>... annotationsToFilter) {
+        return ofNullable(filterFirst(annotations, annotationsToFilter));
+    }
+
+    public static List<Annotation> filterAnnotations(Annotation[] annotations,
+                                                     Predicate<Annotation>... annotationsToFilter) {
+        return filterAnnotations(asList(annotations), annotationsToFilter);
+    }
+
+    public static <S extends Iterable<Annotation>> S filterAnnotations(S annotations,
+                                                                       Predicate<Annotation>... annotationsToFilter) {
+        return filterAll(annotations, annotationsToFilter);
     }
 
     /**
@@ -218,8 +226,60 @@ public abstract class AnnotationUtils extends BaseUtils {
         return contained;
     }
 
-    public static boolean isAnnotated(AnnotatedElement annotatedElement, Class<? extends Annotation> annotationType) {
-        return annotatedElement != null && annotatedElement.isAnnotationPresent(annotationType);
+    public static boolean exists(Iterable<Annotation> annotations, Class<? extends Annotation> annotationType) {
+        if (annotations == null || annotationType == null) {
+            return false;
+        }
+
+        boolean found = false;
+        for (Annotation annotation : annotations) {
+            if (Objects.equals(annotation.annotationType(), annotationType)) {
+                found = true;
+                break;
+            }
+        }
+
+        return found;
+    }
+
+    public static boolean exists(Annotation[] annotations, Class<? extends Annotation> annotationType) {
+        int length = length(annotations);
+        if (length < 1 || annotationType == null) {
+            return false;
+        }
+
+        boolean found = false;
+        for (int i = 0; i < length; i++) {
+            if (Objects.equals(annotations[i].annotationType(), annotationType)) {
+                found = true;
+                break;
+            }
+        }
+
+        return found;
+    }
+
+    public static boolean existsAnnotated(AnnotatedElement[] annotatedElements, Class<? extends Annotation> annotationType) {
+        int length = length(annotatedElements);
+        if (length < 1 || annotationType == null) {
+            return false;
+        }
+
+        boolean annotated = false;
+        for (int i = 0; i < length; i++) {
+            if (existsAnnotated(annotatedElements[i], annotationType)) {
+                annotated = true;
+                break;
+            }
+        }
+
+        return annotated;
+    }
+
+    public static boolean existsAnnotated(AnnotatedElement annotatedElement, Class<? extends Annotation> annotationType) {
+        return annotatedElement != null &&
+                annotationType != null &&
+                annotatedElement.isAnnotationPresent(annotationType);
     }
 
     public static Object[] getAttributeValues(Annotation annotation, Predicate<Method>... attributesToFilter) {

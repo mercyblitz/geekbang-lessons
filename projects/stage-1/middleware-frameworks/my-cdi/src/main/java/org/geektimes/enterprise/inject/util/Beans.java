@@ -31,18 +31,16 @@ import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.function.Predicate;
 
 import static java.beans.Introspector.decapitalize;
 import static java.lang.Integer.compare;
-import static java.lang.Integer.max;
 import static java.lang.String.format;
 import static java.util.stream.Stream.of;
 import static org.geektimes.commons.reflect.util.ClassUtils.isAssignableFrom;
 import static org.geektimes.commons.reflect.util.TypeUtils.*;
 import static org.geektimes.commons.util.AnnotationUtils.findAnnotation;
-import static org.geektimes.commons.util.AnnotationUtils.isAnnotated;
+import static org.geektimes.commons.util.AnnotationUtils.existsAnnotated;
 import static org.geektimes.commons.util.CollectionUtils.ofSet;
 import static org.geektimes.enterprise.inject.util.Qualifiers.findQualifier;
 
@@ -221,11 +219,11 @@ public abstract class Beans {
     }
 
     public static boolean isAnnotatedDecorator(Class<?> type) {
-        return isAnnotated(type, Decorator.class);
+        return existsAnnotated(type, Decorator.class);
     }
 
     public static boolean isAnnotatedVetoed(AnnotatedElement annotatedElement) {
-        return isAnnotated(annotatedElement, Vetoed.class);
+        return existsAnnotated(annotatedElement, Vetoed.class);
     }
 
     public static boolean isExtensionClass(Class<?> type) {
