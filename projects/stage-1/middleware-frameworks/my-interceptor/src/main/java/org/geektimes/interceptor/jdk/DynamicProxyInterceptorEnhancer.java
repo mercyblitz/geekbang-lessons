@@ -18,10 +18,8 @@ package org.geektimes.interceptor.jdk;
 
 import org.geektimes.interceptor.InterceptorEnhancer;
 
-import java.lang.reflect.Proxy;
-
 import static java.lang.reflect.Proxy.newProxyInstance;
-import static org.geektimes.commons.reflect.util.ClassUtils.getClassLoader;
+import static org.geektimes.commons.lang.util.ClassLoaderUtils.getClassLoader;
 
 /**
  * {@link InterceptorEnhancer} based on JDK Dynamic Proxy

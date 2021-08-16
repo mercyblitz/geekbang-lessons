@@ -7,7 +7,6 @@ import org.geektimes.commons.io.Deserializers;
 import org.geektimes.commons.io.Serializer;
 import org.geektimes.commons.io.Serializers;
 import redis.clients.jedis.Jedis;
-import redis.clients.jedis.params.SetParams;
 
 import javax.cache.CacheException;
 import javax.cache.configuration.Configuration;

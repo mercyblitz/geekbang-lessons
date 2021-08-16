@@ -16,8 +16,6 @@
  */
 package org.geektimes.interceptor;
 
-import org.geektimes.commons.util.ServiceLoaders;
-
 import static org.geektimes.commons.util.ServiceLoaders.loadAsArray;
 
 /**

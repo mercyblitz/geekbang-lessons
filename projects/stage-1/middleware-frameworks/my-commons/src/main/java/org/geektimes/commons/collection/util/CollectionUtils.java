@@ -14,7 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.commons.util;
+package org.geektimes.commons.collection.util;
+
+import org.geektimes.commons.lang.util.ArrayUtils;
+import org.geektimes.commons.util.BaseUtils;
 
 import java.util.*;
 
@@ -58,7 +61,7 @@ public abstract class CollectionUtils extends BaseUtils {
             return ofSet(others);
         }
 
-        Set<T> elements = newFixedSet(size + others.length);
+        Set<T> elements = newLinkedHashSet(size + others.length);
         // add values
         elements.addAll(values);
 
@@ -82,7 +85,7 @@ public abstract class CollectionUtils extends BaseUtils {
             return emptySet();
         }
 
-        Set<T> elements = newFixedSet(size);
+        Set<T> elements = newLinkedHashSet(size);
         for (int i = 0; i < size; i++) {
             elements.add(values[i]);
         }
@@ -111,8 +114,42 @@ public abstract class CollectionUtils extends BaseUtils {
         return unmodifiableSet(elements);
     }
 
-    public static <T> Set<T> newFixedSet(int size) {
-        return new LinkedHashSet<>(size, Float.MIN_NORMAL);
+    public static <T> Set<T> newLinkedHashSet() {
+        return new LinkedHashSet<>();
+    }
+
+    public static <T> Set<T> newLinkedHashSet(int size) {
+        return newLinkedHashSet(size, Float.MIN_NORMAL);
+    }
+
+    public static <T> Set<T> newLinkedHashSet(int size, float loadFactor) {
+        return new LinkedHashSet<>(size, loadFactor);
+    }
+
+    public static <T> Set<T> newLinkedHashSet(Iterable<T> values) {
+        Set<T> set = newLinkedHashSet();
+        values.forEach(set::add);
+        return set;
+    }
+
+    public static <T> List<T> newArrayList(int size) {
+        return new ArrayList<>(size);
+    }
+
+    public static <T> List<T> newArrayList(Iterable<T> values) {
+        List<T> list = new ArrayList<>();
+        values.forEach(list::add);
+        return list;
+    }
+
+    public static <T> List<T> newLinkedList(Iterable<T> values) {
+        List<T> list = newLinkedList();
+        values.forEach(list::add);
+        return list;
+    }
+
+    public static <T> List<T> newLinkedList() {
+        return new LinkedList<>();
     }
 
     /**

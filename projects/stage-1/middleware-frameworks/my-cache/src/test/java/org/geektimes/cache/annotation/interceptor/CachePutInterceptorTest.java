@@ -22,12 +22,10 @@ import org.geektimes.interceptor.DefaultInterceptorEnhancer;
 import org.geektimes.interceptor.InterceptorEnhancer;
 import org.junit.Test;
 
-import javax.cache.Cache;
 import javax.cache.CacheManager;
 import javax.cache.Caching;
 import javax.cache.spi.CachingProvider;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**

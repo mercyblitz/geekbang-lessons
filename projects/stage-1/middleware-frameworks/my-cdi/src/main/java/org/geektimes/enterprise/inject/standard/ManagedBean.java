@@ -19,14 +19,14 @@ package org.geektimes.enterprise.inject.standard;
 import org.geektimes.enterprise.inject.util.Beans;
 
 import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.*;
-import javax.inject.Inject;
-import java.util.*;
+import javax.enterprise.inject.spi.AnnotatedType;
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.InjectionPoint;
+import java.util.Set;
 
 import static java.util.Collections.unmodifiableSet;
-import static java.util.Objects.requireNonNull;
+import static org.geektimes.commons.collection.util.CollectionUtils.newLinkedHashSet;
 import static org.geektimes.commons.reflect.util.ClassUtils.unwrap;
-import static org.geektimes.commons.util.CollectionUtils.newFixedSet;
 import static org.geektimes.enterprise.inject.util.Beans.validateManagedBeanSpecializes;
 import static org.geektimes.enterprise.inject.util.Beans.validateManagedBeanType;
 import static org.geektimes.enterprise.inject.util.Injections.*;
@@ -81,7 +81,7 @@ public class ManagedBean<T> extends AbstractBean<Class, T> {
         int size = constructorParameterInjectionPoints.size() + fieldInjectionPoints.size()
                 + methodParameterInjectionPoints.size();
 
-        Set<InjectionPoint> injectionPoints = newFixedSet(size);
+        Set<InjectionPoint> injectionPoints = newLinkedHashSet(size);
         // add the InjectionPoints from Constructors' parameters
         injectionPoints.addAll(constructorParameterInjectionPoints);
         // add the InjectionPoints from Fields

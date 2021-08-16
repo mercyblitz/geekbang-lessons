@@ -23,13 +23,12 @@ import org.junit.Test;
 import javax.enterprise.context.NormalScope;
 import javax.enterprise.inject.Any;
 import javax.enterprise.inject.Default;
-
 import java.io.IOException;
 import java.net.URL;
 import java.util.Enumeration;
 
 import static java.util.Collections.emptySet;
-import static org.geektimes.commons.util.CollectionUtils.ofSet;
+import static org.geektimes.commons.collection.util.CollectionUtils.ofSet;
 import static org.junit.Assert.*;
 
 /**

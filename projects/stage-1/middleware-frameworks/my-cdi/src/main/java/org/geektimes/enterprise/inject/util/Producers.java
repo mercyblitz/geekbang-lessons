@@ -19,7 +19,6 @@ package org.geektimes.enterprise.inject.util;
 import javax.enterprise.inject.spi.DefinitionException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Field;
 
 import static java.lang.String.format;
 

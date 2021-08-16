@@ -21,11 +21,9 @@ import javax.cache.annotation.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import static java.util.Arrays.asList;
-import static org.geektimes.commons.util.AnnotationUtils.findAnnotation;
+import static org.geektimes.commons.lang.util.AnnotationUtils.findAnnotation;
 
 /**
  * The utilities class for Java Cache {@link Annotation}

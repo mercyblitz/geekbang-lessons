@@ -28,7 +28,7 @@ import java.lang.reflect.Type;
 import java.util.Set;
 
 import static java.util.Objects.requireNonNull;
-import static org.geektimes.commons.util.AnnotationUtils.existsAnnotated;
+import static org.geektimes.commons.lang.util.AnnotationUtils.existsAnnotated;
 import static org.geektimes.enterprise.inject.util.Beans.getBeanTypes;
 import static org.geektimes.enterprise.inject.util.Scopes.getScopeType;
 import static org.geektimes.enterprise.inject.util.Stereotypes.getStereotypeTypes;

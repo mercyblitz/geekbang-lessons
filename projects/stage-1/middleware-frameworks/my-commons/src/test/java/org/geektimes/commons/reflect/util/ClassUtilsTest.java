@@ -16,10 +16,15 @@
  */
 package org.geektimes.commons.reflect.util;
 
+import org.geektimes.commons.collection.util.MapUtils;
+import org.geektimes.commons.lang.util.ClassPathUtils;
 import org.junit.Test;
 
+import java.io.IOException;
+import java.net.URL;
 import java.util.AbstractCollection;
 import java.util.Map;
+import java.util.Set;
 
 import static org.geektimes.commons.reflect.util.ClassUtils.*;
 import static org.junit.Assert.*;
@@ -61,4 +66,62 @@ public class ClassUtilsTest {
         assertFalse(isTopLevelClass(A.class));
     }
 
+    @Test
+    public void testGetClassNamesInClassPath() {
+        Set<String> classPaths = ClassPathUtils.getClassPaths();
+        for (String classPath : classPaths) {
+            Set<String> classNames = ClassUtils.getClassNamesInClassPath(classPath, true);
+            assertNotNull(classNames);
+        }
+    }
+
+    @Test
+    public void testGetClassNamesInPackage() {
+        Set<String> packageNames = ClassUtils.getAllPackageNamesInClassPaths();
+        for (String packageName : packageNames) {
+            Set<String> classNames = ClassUtils.getClassNamesInPackage(packageName);
+            assertFalse(classNames.isEmpty());
+            assertNotNull(classNames);
+        }
+    }
+
+
+    @Test
+    public void testGetAllPackageNamesInClassPaths() {
+        Set<String> packageNames = ClassUtils.getAllPackageNamesInClassPaths();
+        assertNotNull(packageNames);
+    }
+
+    @Test
+    public void testFindClassPath() {
+        String classPath = ClassUtils.findClassPath(MapUtils.class);
+        assertNotNull(classPath);
+
+        classPath = ClassUtils.findClassPath(String.class);
+        assertNotNull(classPath);
+    }
+
+    @Test
+    public void testGetAllClassNamesMapInClassPath() {
+        Map<String, Set<String>> allClassNamesMapInClassPath = ClassUtils.getClassPathToClassNamesMap();
+        assertFalse(allClassNamesMapInClassPath.isEmpty());
+    }
+
+    @Test
+    public void testGetAllClassNamesInClassPath() {
+        Set<String> allClassNames = ClassUtils.getAllClassNamesInClassPaths();
+        assertFalse(allClassNames.isEmpty());
+    }
+
+    @Test
+    public void testGetCodeSourceLocation() throws IOException {
+        URL codeSourceLocation = null;
+        assertNull(codeSourceLocation);
+
+        codeSourceLocation = ClassUtils.getCodeSourceLocation(getClass());
+        assertNotNull(codeSourceLocation);
+
+        codeSourceLocation = ClassUtils.getCodeSourceLocation(String.class);
+        assertNotNull(codeSourceLocation);
+    }
 }

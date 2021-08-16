@@ -14,9 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.commons.util;
+package org.geektimes.commons.lang.util;
 
 import org.geektimes.commons.function.Predicates;
+import org.geektimes.commons.util.BaseUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
@@ -32,8 +33,8 @@ import static java.util.Optional.ofNullable;
 import static org.geektimes.commons.function.Streams.filterAll;
 import static org.geektimes.commons.function.Streams.filterFirst;
 import static org.geektimes.commons.function.ThrowableSupplier.execute;
+import static org.geektimes.commons.lang.util.ArrayUtils.length;
 import static org.geektimes.commons.reflect.util.ClassUtils.getAllInheritedTypes;
-import static org.geektimes.commons.util.ArrayUtils.length;
 
 /**
  * {@link Annotation} Utilities class

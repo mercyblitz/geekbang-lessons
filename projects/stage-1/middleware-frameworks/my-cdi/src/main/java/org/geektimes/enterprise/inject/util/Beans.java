@@ -16,8 +16,8 @@
  */
 package org.geektimes.enterprise.inject.util;
 
+import org.geektimes.commons.lang.util.ArrayUtils;
 import org.geektimes.commons.reflect.util.ClassUtils;
-import org.geektimes.commons.util.ArrayUtils;
 
 import javax.decorator.Decorator;
 import javax.enterprise.inject.Specializes;
@@ -37,11 +37,11 @@ import static java.beans.Introspector.decapitalize;
 import static java.lang.Integer.compare;
 import static java.lang.String.format;
 import static java.util.stream.Stream.of;
+import static org.geektimes.commons.collection.util.CollectionUtils.ofSet;
+import static org.geektimes.commons.lang.util.AnnotationUtils.existsAnnotated;
+import static org.geektimes.commons.lang.util.AnnotationUtils.findAnnotation;
 import static org.geektimes.commons.reflect.util.ClassUtils.isAssignableFrom;
 import static org.geektimes.commons.reflect.util.TypeUtils.*;
-import static org.geektimes.commons.util.AnnotationUtils.findAnnotation;
-import static org.geektimes.commons.util.AnnotationUtils.existsAnnotated;
-import static org.geektimes.commons.util.CollectionUtils.ofSet;
 import static org.geektimes.enterprise.inject.util.Qualifiers.findQualifier;
 
 /**

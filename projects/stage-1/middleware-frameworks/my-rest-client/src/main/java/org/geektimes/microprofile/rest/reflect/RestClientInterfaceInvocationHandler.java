@@ -20,7 +20,6 @@ import org.geektimes.microprofile.rest.RequestTemplate;
 import org.geektimes.microprofile.rest.uri.UriBuilderAssembler;
 
 import javax.ws.rs.BeanParam;
-import javax.ws.rs.Consumes;
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;

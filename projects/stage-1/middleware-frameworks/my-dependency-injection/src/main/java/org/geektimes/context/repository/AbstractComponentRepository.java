@@ -24,7 +24,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.logging.Logger;
 
-import static java.util.Collections.unmodifiableMap;
 import static org.geektimes.commons.function.ThrowableFunction.execute;
 
 /**

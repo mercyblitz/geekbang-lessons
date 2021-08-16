@@ -16,14 +16,10 @@
  */
 package org.geektimes.enterprise.inject.standard;
 
-import javax.enterprise.inject.spi.AnnotatedField;
 import javax.enterprise.inject.spi.AnnotatedMethod;
-import javax.enterprise.inject.spi.AnnotatedParameter;
 import javax.enterprise.inject.spi.AnnotatedType;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.List;
 
 /**
  * {@link AnnotatedMethod} based on Java reflection {@link Method}

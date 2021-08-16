@@ -21,7 +21,8 @@ import javax.inject.Scope;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 
-import static org.geektimes.commons.util.AnnotationUtils.*;
+import static org.geektimes.commons.lang.util.AnnotationUtils.existsAnnotated;
+import static org.geektimes.commons.lang.util.AnnotationUtils.findAnnotation;
 
 /**
  * The utilities class for {@link Scope}

@@ -17,16 +17,15 @@
 package org.geektimes.enterprise.inject.util;
 
 import javax.enterprise.inject.Stereotype;
-import javax.inject.Qualifier;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
-import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.unmodifiableSet;
-import static org.geektimes.commons.util.AnnotationUtils.*;
-import static org.geektimes.commons.util.CollectionUtils.ofSet;
+import static org.geektimes.commons.collection.util.CollectionUtils.ofSet;
+import static org.geektimes.commons.lang.util.AnnotationUtils.getAllDeclaredAnnotations;
+import static org.geektimes.commons.lang.util.AnnotationUtils.isMetaAnnotation;
 
 /**
  * The utilities class for {@link Stereotype}

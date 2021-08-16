@@ -19,9 +19,7 @@ package org.geektimes.cache.annotation.interceptor;
 import org.geektimes.cache.annotation.util.CacheOperationAnnotationInfo;
 
 import javax.cache.Cache;
-import javax.cache.CacheManager;
 import javax.cache.annotation.*;
-import javax.cache.configuration.MutableConfiguration;
 import javax.interceptor.Interceptor;
 import java.util.Optional;
 

@@ -19,16 +19,11 @@ package org.geektimes.enterprise.inject.standard;
 import org.geektimes.enterprise.inject.util.Beans;
 
 import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.DefinitionException;
 import javax.enterprise.inject.spi.InjectionPoint;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.util.Set;
 
-import static java.lang.String.format;
 import static java.util.Collections.emptySet;
 import static org.geektimes.enterprise.inject.util.ProducerFields.validateProducerFieldProduces;
 

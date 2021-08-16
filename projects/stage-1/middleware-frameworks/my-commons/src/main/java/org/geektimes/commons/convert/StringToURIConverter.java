@@ -16,9 +16,9 @@
  */
 package org.geektimes.commons.convert;
 
-import org.apache.commons.lang.StringUtils;
-
 import java.net.URI;
+
+import static org.geektimes.commons.lang.util.StringUtils.isBlank;
 
 /**
  * The class to convert {@link String} to {@link URI}
@@ -29,7 +29,7 @@ public class StringToURIConverter implements StringConverter<URI> {
 
     @Override
     public URI convert(String source) {
-        if (StringUtils.isBlank(source)) {
+        if (isBlank(source)) {
             return null;
         }
         return URI.create(source);

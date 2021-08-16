@@ -22,8 +22,8 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Type;
 import java.util.Set;
 
+import static org.geektimes.commons.collection.util.CollectionUtils.ofSet;
 import static org.geektimes.commons.reflect.util.TypeUtils.asClass;
-import static org.geektimes.commons.util.CollectionUtils.ofSet;
 import static org.geektimes.enterprise.inject.util.Beans.getBeanTypes;
 
 /**

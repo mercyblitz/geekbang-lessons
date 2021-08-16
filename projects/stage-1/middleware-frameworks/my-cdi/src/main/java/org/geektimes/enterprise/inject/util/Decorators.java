@@ -19,7 +19,7 @@ package org.geektimes.enterprise.inject.util;
 import javax.decorator.Decorator;
 import java.lang.reflect.AnnotatedElement;
 
-import static org.geektimes.commons.util.AnnotationUtils.existsAnnotated;
+import static org.geektimes.commons.lang.util.AnnotationUtils.existsAnnotated;
 
 /**
  * The utilities class for {@link Decorator}

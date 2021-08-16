@@ -19,7 +19,6 @@ package org.geektimes.enterprise.inject.util;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.DefinitionException;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 
 import static org.geektimes.enterprise.inject.util.Producers.validateProducerRequiredAnnotation;
 

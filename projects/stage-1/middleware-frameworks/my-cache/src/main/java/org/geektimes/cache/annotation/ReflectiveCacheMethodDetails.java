@@ -22,7 +22,8 @@ import java.lang.reflect.Method;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import static java.util.Collections.*;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.unmodifiableSet;
 import static java.util.Objects.requireNonNull;
 import static org.geektimes.cache.annotation.util.CacheAnnotationUtils.findCacheAnnotation;
 import static org.geektimes.cache.annotation.util.CacheAnnotationUtils.findCacheName;

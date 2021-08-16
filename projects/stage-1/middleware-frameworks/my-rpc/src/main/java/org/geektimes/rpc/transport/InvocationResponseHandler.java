@@ -16,7 +16,6 @@
  */
 package org.geektimes.rpc.transport;
 
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import org.geektimes.rpc.InvocationResponse;

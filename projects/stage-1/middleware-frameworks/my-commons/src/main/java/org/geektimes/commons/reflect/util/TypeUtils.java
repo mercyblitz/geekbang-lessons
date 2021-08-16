@@ -34,7 +34,8 @@ import static java.util.stream.StreamSupport.stream;
 import static org.geektimes.commons.function.Predicates.and;
 import static org.geektimes.commons.function.Streams.filterAll;
 import static org.geektimes.commons.function.Streams.filterList;
-import static org.geektimes.commons.reflect.util.ClassUtils.*;
+import static org.geektimes.commons.reflect.util.ClassUtils.getAllSuperClasses;
+import static org.geektimes.commons.reflect.util.ClassUtils.isAssignableFrom;
 
 /**
  * Type utilities class

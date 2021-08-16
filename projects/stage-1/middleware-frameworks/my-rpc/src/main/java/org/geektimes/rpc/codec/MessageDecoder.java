@@ -19,7 +19,6 @@ package org.geektimes.rpc.codec;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
-import org.geektimes.rpc.InvocationRequest;
 import org.geektimes.rpc.InvocationResponse;
 import org.geektimes.rpc.serializer.Serializer;
 import org.slf4j.Logger;

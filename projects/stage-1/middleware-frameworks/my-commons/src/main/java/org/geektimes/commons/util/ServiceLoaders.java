@@ -16,14 +16,12 @@
  */
 package org.geektimes.commons.util;
 
-import org.geektimes.commons.function.Streams;
-
 import java.util.ServiceLoader;
 import java.util.stream.Stream;
 
 import static java.util.ServiceLoader.load;
 import static org.geektimes.commons.function.Streams.stream;
-import static org.geektimes.commons.reflect.util.ClassUtils.getClassLoader;
+import static org.geektimes.commons.lang.util.ClassLoaderUtils.getClassLoader;
 
 /**
  * {@link ServiceLoader} Utilities Class

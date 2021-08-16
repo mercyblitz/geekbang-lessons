@@ -7,7 +7,6 @@ import java.util.Iterator;
 import java.util.SortedSet;
 import java.util.concurrent.ConcurrentSkipListSet;
 
-import static java.util.Collections.sort;
 import static java.util.ServiceLoader.load;
 import static java.util.stream.Stream.of;
 

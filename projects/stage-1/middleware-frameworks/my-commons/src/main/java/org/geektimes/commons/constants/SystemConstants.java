@@ -14,23 +14,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.commons.util;
+package org.geektimes.commons.constants;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+import static java.lang.System.getProperty;
 
 /**
+ * System Constants
+ *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
- * @since
+ * @since 1.0.0
  */
-public abstract class MapUtils extends BaseUtils {
+public interface SystemConstants {
 
-    public static Map of(Object... values) {
-        Map map = new LinkedHashMap();
-        int length = values.length;
-        for (int i = 0; i < length; ) {
-            map.put(values[i++], values[i++]);
-        }
-        return map;
-    }
+    String JAVA_VERSION = getProperty("java.version");
+
+    String JAVA_VENDOR = getProperty("java.vendor");
+
+    String JAVA_HOME = getProperty("java.home");
+
+    String JAVA_CLASS_VERSION = getProperty("java.class.version");
+
+    String JAVA_CLASS_PATH = getProperty("java.class.path");
+
+    String FILE_SEPARATOR = getProperty("file.separator");
+
+    String PATH_SEPARATOR = getProperty("path.separator");
+
+    String LINE_SEPARATOR = getProperty("line.separator");
+
+    String USER_NAME = getProperty("user.name");
+
+    String USER_HOME = getProperty("user.home");
+
+    String USER_DIR = getProperty("user.dir");
+
+    String JAVA_IO_TMPDIR = getProperty("java.io.tmpdir");
 }

@@ -16,7 +16,7 @@
  */
 package org.geektimes.enterprise.inject.se;
 
-import org.geektimes.commons.reflect.util.ClassUtils;
+import org.geektimes.commons.lang.util.ClassLoaderUtils;
 import org.geektimes.enterprise.inject.standard.StandardBeanManager;
 
 import javax.enterprise.inject.Instance;
@@ -31,7 +31,6 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
-import static org.geektimes.commons.reflect.util.ClassUtils.getClassLoader;
 
 /**
  * Standard {@link SeContainer} implementation
@@ -68,7 +67,7 @@ public class StandardContainer implements SeContainer {
     private StandardBeanManager standardBeanManager;
 
     public StandardContainer() {
-        this.classLoader = ClassUtils.getClassLoader(getClass());
+        this.classLoader = ClassLoaderUtils.getClassLoader(getClass());
         this.properties = new HashMap<>();
         this.enabledDiscovery = true;
         this.beanClasses = new LinkedHashSet<>();

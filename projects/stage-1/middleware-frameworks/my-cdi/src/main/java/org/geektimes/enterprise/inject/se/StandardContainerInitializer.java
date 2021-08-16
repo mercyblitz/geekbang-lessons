@@ -22,10 +22,9 @@ import javax.enterprise.inject.se.SeContainer;
 import javax.enterprise.inject.se.SeContainerInitializer;
 import javax.enterprise.inject.spi.Extension;
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.Map;
 import java.util.stream.Stream;
 
-import static org.geektimes.commons.reflect.util.ClassUtils.getClassLoader;
 
 /**
  * Standard {@link SeContainerInitializer}

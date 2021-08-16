@@ -21,7 +21,7 @@ import javax.interceptor.InterceptorBinding;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 
-import static org.geektimes.commons.util.AnnotationUtils.existsAnnotated;
+import static org.geektimes.commons.lang.util.AnnotationUtils.existsAnnotated;
 
 /**
  * The utilties class for {@link Interceptor}

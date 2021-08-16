@@ -25,8 +25,6 @@ import java.lang.reflect.Type;
 import java.net.URI;
 import java.util.*;
 
-import static java.lang.String.valueOf;
-
 /**
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since

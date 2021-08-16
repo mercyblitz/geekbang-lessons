@@ -16,7 +16,6 @@
  */
 package org.geektimes.http.server.jdk.servlet;
 
-import org.geektimes.http.server.jdk.SimpleWebServer;
 import org.junit.Test;
 
 /**

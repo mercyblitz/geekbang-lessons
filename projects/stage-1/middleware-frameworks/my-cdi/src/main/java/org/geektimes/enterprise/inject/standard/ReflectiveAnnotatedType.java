@@ -25,14 +25,13 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.Collections;
 import java.util.Set;
 
 import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableSet;
+import static org.geektimes.commons.collection.util.CollectionUtils.newLinkedHashSet;
 import static org.geektimes.commons.function.ThrowableSupplier.execute;
-import static org.geektimes.commons.util.ArrayUtils.of;
-import static org.geektimes.commons.util.CollectionUtils.newFixedSet;
+import static org.geektimes.commons.lang.util.ArrayUtils.of;
 
 /**
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
@@ -58,7 +57,7 @@ public class ReflectiveAnnotatedType<X> extends ReflectiveAnnotated<Class> imple
             constructors = of(execute(() -> javaClass.getDeclaredConstructor()));
         }
 
-        Set<AnnotatedConstructor<X>> annotatedConstructors = newFixedSet(constructors.length);
+        Set<AnnotatedConstructor<X>> annotatedConstructors = newLinkedHashSet(constructors.length);
 
         for (Constructor constructor : constructors) {
             AnnotatedConstructor annotatedConstructor = new ReflectiveAnnotatedConstructor(constructor, this);
@@ -77,7 +76,7 @@ public class ReflectiveAnnotatedType<X> extends ReflectiveAnnotated<Class> imple
             return emptySet();
         }
 
-        Set<AnnotatedMethod<? super X>> annotatedMethods = newFixedSet(size);
+        Set<AnnotatedMethod<? super X>> annotatedMethods = newLinkedHashSet(size);
 
         for (Method method : methods) {
             AnnotatedMethod annotatedMethod = new ReflectiveAnnotatedMethod(method, this);
@@ -96,7 +95,7 @@ public class ReflectiveAnnotatedType<X> extends ReflectiveAnnotated<Class> imple
             return emptySet();
         }
 
-        Set<AnnotatedField<? super X>> annotatedFields = newFixedSet(size);
+        Set<AnnotatedField<? super X>> annotatedFields = newLinkedHashSet(size);
 
         for (Field field : fields) {
             AnnotatedField annotatedField = new ReflectiveAnnotatedField(field, this);

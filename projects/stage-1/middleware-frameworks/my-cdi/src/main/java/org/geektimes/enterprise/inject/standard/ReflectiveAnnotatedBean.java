@@ -27,9 +27,9 @@ import java.lang.annotation.Annotation;
 import java.util.Optional;
 import java.util.Set;
 
+import static org.geektimes.commons.collection.util.CollectionUtils.ofSet;
 import static org.geektimes.commons.function.Streams.map;
-import static org.geektimes.commons.util.AnnotationUtils.*;
-import static org.geektimes.commons.util.CollectionUtils.ofSet;
+import static org.geektimes.commons.lang.util.AnnotationUtils.*;
 
 /**
  * {@link AnnotatedBean} based on Java reflection

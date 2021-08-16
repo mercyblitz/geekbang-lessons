@@ -19,7 +19,6 @@ package org.geektimes.interceptor;
 import org.geektimes.commons.lang.Prioritized;
 import org.geektimes.commons.reflect.util.TypeUtils;
 
-import javax.annotation.Priority;
 import javax.interceptor.AroundInvoke;
 import javax.interceptor.InterceptorBinding;
 import javax.interceptor.InvocationContext;
@@ -37,7 +36,7 @@ import java.util.logging.Logger;
 import static java.lang.String.format;
 import static java.util.ServiceLoader.load;
 import static org.geektimes.commons.function.Streams.stream;
-import static org.geektimes.commons.util.AnnotationUtils.findAnnotation;
+import static org.geektimes.commons.lang.util.AnnotationUtils.findAnnotation;
 
 /**
  * The abstract annotated {@link javax.interceptor.Interceptor @Interceptor} class

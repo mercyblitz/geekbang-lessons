@@ -16,7 +16,6 @@
  */
 package org.geektimes.rpc.client;
 
-import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.ChannelFuture;
 import org.geektimes.rpc.InvocationRequest;
 import org.geektimes.rpc.loadbalancer.ServiceInstanceSelector;
@@ -28,7 +27,6 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
 import static org.geektimes.rpc.client.ExchangeFuture.createExchangeFuture;
 import static org.geektimes.rpc.client.ExchangeFuture.removeExchangeFuture;

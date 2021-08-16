@@ -16,9 +16,8 @@
  */
 package org.geektimes.commons.convert;
 
-import org.apache.commons.lang.StringUtils;
-import org.geektimes.commons.reflect.util.ClassUtils;
-
+import static org.geektimes.commons.lang.util.ClassLoaderUtils.getClassLoader;
+import static org.geektimes.commons.lang.util.StringUtils.isBlank;
 import static org.geektimes.commons.reflect.util.ClassUtils.resolveClass;
 
 /**
@@ -30,10 +29,10 @@ public class StringToClassConverter implements StringConverter<Class<?>> {
 
     @Override
     public Class<?> convert(String source) {
-        if (StringUtils.isBlank(source)) {
+        if (isBlank(source)) {
             return null;
         }
-        ClassLoader classLoader = ClassUtils.getClassLoader(getClass());
+        ClassLoader classLoader = getClassLoader(getClass());
         return resolveClass(source, classLoader);
     }
 }

@@ -18,14 +18,14 @@ package org.geektimes.cache.annotation.interceptor;
 
 import org.geektimes.cache.DataRepository;
 import org.geektimes.cache.InMemoryDataRepository;
-import org.geektimes.commons.util.ServiceLoaders;
 import org.geektimes.interceptor.DefaultInterceptorEnhancer;
 import org.geektimes.interceptor.Interceptor;
 import org.geektimes.interceptor.InterceptorEnhancer;
 import org.junit.Test;
 
 import static org.geektimes.commons.util.ServiceLoaders.loadAsArray;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * {@link CacheResultInterceptor} Test

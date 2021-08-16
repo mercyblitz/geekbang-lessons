@@ -16,17 +16,6 @@
  */
 package org.geektimes.commons.sql;
 
-import org.geektimes.commons.function.ThrowableAction;
-import org.geektimes.commons.function.ThrowableSupplier;
-
-import java.sql.*;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Set;
-
-import static java.util.Collections.unmodifiableSet;
-import static org.geektimes.commons.function.ThrowableSupplier.execute;
-
 /**
  * JDBC Utilities class
  *

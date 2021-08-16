@@ -17,10 +17,10 @@
 package org.geektimes.commons.convert.multiple;
 
 
-import org.apache.commons.lang.ArrayUtils;
+import org.geektimes.commons.lang.util.ArrayUtils;
 
-import static org.apache.commons.lang.StringUtils.isEmpty;
-import static org.apache.commons.lang.StringUtils.split;
+import static org.geektimes.commons.lang.util.StringUtils.isEmpty;
+import static org.geektimes.commons.lang.util.StringUtils.split;
 
 /**
  * The class to convert {@link String} to multiple value object

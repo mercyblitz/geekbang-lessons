@@ -1,6 +1,6 @@
 package org.geektimes.commons.function;
 
-import static org.geektimes.commons.util.ExceptionUtils.wrapThrowable;
+import static org.geektimes.commons.lang.util.ExceptionUtils.wrapThrowable;
 
 @FunctionalInterface
 public interface ThrowableSupplier<T> {

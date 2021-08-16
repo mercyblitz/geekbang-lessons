@@ -16,9 +16,10 @@
  */
 package org.geektimes.commons.util;
 
+import org.geektimes.commons.lang.util.ExceptionUtils;
 import org.junit.Test;
 
-import static org.geektimes.commons.util.ExceptionUtils.wrapThrowable;
+import static org.geektimes.commons.lang.util.ExceptionUtils.wrapThrowable;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 

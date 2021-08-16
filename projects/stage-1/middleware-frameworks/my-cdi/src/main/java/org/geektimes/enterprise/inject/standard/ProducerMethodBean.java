@@ -18,26 +18,16 @@ package org.geektimes.enterprise.inject.standard;
 
 import org.geektimes.enterprise.inject.util.Beans;
 
-import javax.decorator.Decorator;
 import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.event.Observes;
-import javax.enterprise.event.ObservesAsync;
-import javax.enterprise.inject.Disposes;
-import javax.enterprise.inject.Produces;
-import javax.enterprise.inject.Specializes;
-import javax.enterprise.inject.spi.*;
-import javax.inject.Inject;
-import javax.interceptor.Interceptor;
-import java.lang.annotation.Annotation;
+import javax.enterprise.inject.spi.AnnotatedMethod;
+import javax.enterprise.inject.spi.AnnotatedParameter;
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.InjectionPoint;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
-import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 
-import static java.lang.String.format;
-import static java.util.Arrays.asList;
 import static java.util.Collections.unmodifiableSet;
 import static org.geektimes.enterprise.inject.util.ProducerMethods.*;
 

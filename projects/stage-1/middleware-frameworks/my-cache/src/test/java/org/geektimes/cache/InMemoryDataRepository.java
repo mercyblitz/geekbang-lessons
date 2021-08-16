@@ -16,7 +16,6 @@
  */
 package org.geektimes.cache;
 
-import javax.cache.annotation.CacheKey;
 import java.util.HashMap;
 import java.util.Map;
 

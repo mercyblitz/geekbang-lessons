@@ -21,7 +21,6 @@ import org.junit.Test;
 import java.io.Serializable;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.RandomAccess;
 import java.util.Set;

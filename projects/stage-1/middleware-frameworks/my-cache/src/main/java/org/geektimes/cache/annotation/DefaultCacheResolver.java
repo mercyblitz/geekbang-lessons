@@ -16,8 +16,6 @@
  */
 package org.geektimes.cache.annotation;
 
-import org.geektimes.cache.annotation.util.CacheAnnotationUtils;
-
 import javax.cache.Cache;
 import javax.cache.CacheManager;
 import javax.cache.annotation.CacheInvocationContext;

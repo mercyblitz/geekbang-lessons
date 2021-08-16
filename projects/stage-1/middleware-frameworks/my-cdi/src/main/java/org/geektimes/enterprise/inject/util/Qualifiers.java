@@ -24,8 +24,8 @@ import java.lang.reflect.AnnotatedElement;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static org.geektimes.commons.util.AnnotationUtils.*;
-import static org.geektimes.commons.util.CollectionUtils.ofSet;
+import static org.geektimes.commons.collection.util.CollectionUtils.ofSet;
+import static org.geektimes.commons.lang.util.AnnotationUtils.*;
 
 /**
  * The utilities class for {@link Qualifier}

@@ -19,8 +19,6 @@ package org.geektimes.configuration.demo.netflix.archaius;
 import com.netflix.config.DynamicIntProperty;
 import com.netflix.config.DynamicPropertyFactory;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 /**
  * TODO Comment
  *

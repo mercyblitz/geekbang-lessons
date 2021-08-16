@@ -17,8 +17,6 @@
 package org.geektimes.http.server;
 
 
-import java.io.IOException;
-
 /**
  * Web Server Interface
  *

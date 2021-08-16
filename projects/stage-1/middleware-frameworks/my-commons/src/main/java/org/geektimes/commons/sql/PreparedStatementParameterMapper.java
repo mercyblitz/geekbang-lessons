@@ -17,14 +17,10 @@
 package org.geektimes.commons.sql;
 
 import org.geektimes.commons.lang.Prioritized;
-import org.geektimes.commons.reflect.util.ClassUtils;
-import org.geektimes.commons.reflect.util.TypeUtils;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.ServiceLoader;
-import java.util.stream.Collectors;
 
 import static java.util.ServiceLoader.load;
 import static java.util.stream.Collectors.toList;

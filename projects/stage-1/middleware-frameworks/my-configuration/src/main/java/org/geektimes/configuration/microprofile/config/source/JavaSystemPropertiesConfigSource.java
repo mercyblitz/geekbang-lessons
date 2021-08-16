@@ -1,6 +1,5 @@
 package org.geektimes.configuration.microprofile.config.source;
 
-import java.util.HashMap;
 import java.util.Map;
 
 public class JavaSystemPropertiesConfigSource extends MapBasedConfigSource {

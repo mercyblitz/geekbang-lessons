@@ -30,7 +30,6 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-import static java.lang.Boolean.TRUE;
 import static org.geektimes.cache.annotation.util.CacheAnnotationUtils.findCacheDefaults;
 import static org.geektimes.commons.reflect.util.ClassUtils.isDerived;
 

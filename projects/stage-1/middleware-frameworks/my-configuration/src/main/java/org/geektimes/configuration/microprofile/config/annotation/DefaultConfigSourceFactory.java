@@ -16,7 +16,6 @@
  */
 package org.geektimes.configuration.microprofile.config.annotation;
 
-import org.apache.commons.lang.StringUtils;
 import org.eclipse.microprofile.config.spi.ConfigSource;
 import org.geektimes.configuration.microprofile.config.source.MapConfigSource;
 
@@ -25,6 +24,8 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.Properties;
+
+import static org.geektimes.commons.lang.util.StringUtils.isBlank;
 
 /**
  * The default implementation of  {@link ConfigSourceFactory}
@@ -41,7 +42,7 @@ public class DefaultConfigSourceFactory implements ConfigSourceFactory {
              InputStreamReader reader = new InputStreamReader(inputStream, encoding)) {
             Properties properties = new Properties();
             properties.load(reader);
-            String actualName = StringUtils.isBlank(name) ? resource.toString() : name;
+            String actualName = isBlank(name) ? resource.toString() : name;
             configSource = new MapConfigSource(actualName, ordinal, properties);
         } catch (IOException e) {
             throw new RuntimeException(e);

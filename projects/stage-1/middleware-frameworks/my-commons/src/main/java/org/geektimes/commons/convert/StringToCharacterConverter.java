@@ -17,7 +17,7 @@
 package org.geektimes.commons.convert;
 
 
-import static org.apache.commons.lang.StringUtils.length;
+import static org.geektimes.commons.lang.util.StringUtils.length;
 
 /**
  * The class to convert {@link String} to {@link Character}

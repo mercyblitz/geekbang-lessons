@@ -20,7 +20,6 @@ import org.geektimes.microprofile.rest.annotation.AnnotatedParamMetadata;
 
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.UriBuilder;
-import java.util.List;
 
 /**
  * {@link PathParam} {@link UriBuilderAssembler}

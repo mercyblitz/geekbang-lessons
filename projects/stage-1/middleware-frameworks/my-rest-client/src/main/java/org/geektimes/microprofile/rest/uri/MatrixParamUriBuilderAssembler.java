@@ -19,7 +19,6 @@ package org.geektimes.microprofile.rest.uri;
 import org.geektimes.microprofile.rest.annotation.AnnotatedParamMetadata;
 
 import javax.ws.rs.MatrixParam;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.UriBuilder;
 
 /**

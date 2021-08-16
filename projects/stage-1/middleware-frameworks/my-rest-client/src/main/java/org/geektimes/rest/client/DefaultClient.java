@@ -1,7 +1,5 @@
 package org.geektimes.rest.client;
 
-import org.geektimes.rest.core.DefaultUriBuilder;
-
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.client.Client;

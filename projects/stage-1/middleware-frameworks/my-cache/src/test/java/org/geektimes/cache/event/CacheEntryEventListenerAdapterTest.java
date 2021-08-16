@@ -16,12 +16,9 @@
  */
 package org.geektimes.cache.event;
 
-import org.geektimes.cache.InMemoryCache;
 import org.junit.Test;
 
 import javax.cache.Cache;
-import javax.cache.configuration.CacheEntryListenerConfiguration;
-import javax.cache.configuration.MutableCacheEntryListenerConfiguration;
 import javax.cache.event.EventType;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;

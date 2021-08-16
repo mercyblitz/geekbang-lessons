@@ -20,12 +20,7 @@ import net.sf.cglib.proxy.MethodProxy;
 import org.geektimes.interceptor.ReflectiveMethodInvocationContext;
 
 import javax.interceptor.InvocationContext;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-
-import static java.util.Objects.requireNonNull;
 
 /**
  * {@link InvocationContext} on method using CGLIB

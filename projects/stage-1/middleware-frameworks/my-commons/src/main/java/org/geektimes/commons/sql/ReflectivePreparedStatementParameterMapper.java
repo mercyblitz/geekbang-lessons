@@ -16,20 +16,17 @@
  */
 package org.geektimes.commons.sql;
 
-import org.apache.commons.lang.reflect.MethodUtils;
 import org.geektimes.commons.function.ThrowableAction;
-import org.geektimes.commons.lang.Prioritized;
+import org.geektimes.commons.reflect.util.MethodUtils;
 
 import java.io.InputStream;
 import java.io.Reader;
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.*;
 import java.util.List;
 
 import static java.util.Arrays.asList;
-import static org.apache.commons.lang.reflect.MethodUtils.invokeExactMethod;
 import static org.geektimes.commons.reflect.util.ClassUtils.isAssignableFrom;
 import static org.geektimes.commons.reflect.util.ClassUtils.resolvePrimitiveType;
 import static org.geektimes.commons.sql.ReflectivePreparedStatementParameterMapper.MethodInfo.of;
@@ -98,7 +95,7 @@ public class ReflectivePreparedStatementParameterMapper implements PreparedState
 
         Object[] args = new Object[]{parameterIndex, parameter};
 
-        ThrowableAction.execute(() -> invokeExactMethod(preparedStatement, methodName, args, parameterTypes)
+        ThrowableAction.execute(() -> MethodUtils.invokeMethod(preparedStatement, methodName, parameterTypes, args)
                 , SQLException.class);
     }
 

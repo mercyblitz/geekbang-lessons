@@ -18,7 +18,6 @@ package org.geektimes.enterprise.inject.standard.event;
 
 import org.geektimes.enterprise.inject.se.StandardContainer;
 
-import javax.enterprise.inject.se.SeContainer;
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.configurator.AnnotatedTypeConfigurator;

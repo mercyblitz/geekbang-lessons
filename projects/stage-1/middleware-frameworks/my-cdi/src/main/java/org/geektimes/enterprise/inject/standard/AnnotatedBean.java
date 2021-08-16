@@ -16,7 +16,7 @@
  */
 package org.geektimes.enterprise.inject.standard;
 
-import org.geektimes.commons.util.AnnotationUtils;
+import org.geektimes.commons.lang.util.AnnotationUtils;
 
 import javax.decorator.Decorator;
 import javax.enterprise.context.*;

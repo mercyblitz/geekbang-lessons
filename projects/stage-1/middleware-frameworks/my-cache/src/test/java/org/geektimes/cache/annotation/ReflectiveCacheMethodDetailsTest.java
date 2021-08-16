@@ -20,7 +20,6 @@ import org.geektimes.cache.DataRepository;
 import org.junit.Test;
 
 import javax.cache.annotation.CachePut;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
 import static org.junit.Assert.assertEquals;

@@ -18,8 +18,8 @@ package org.geektimes.commons.sql;
 
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
 import static org.geektimes.commons.sql.PreparedStatementParameterMapper.getInstance;
+import static org.junit.Assert.assertEquals;
 
 /**
  * {@link PreparedStatementParameterMapper} Test

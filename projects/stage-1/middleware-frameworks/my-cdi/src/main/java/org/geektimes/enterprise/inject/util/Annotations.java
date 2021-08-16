@@ -16,16 +16,12 @@
  */
 package org.geektimes.enterprise.inject.util;
 
-import org.geektimes.commons.function.ThrowableSupplier;
-
 import javax.enterprise.util.Nonbinding;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.Objects;
 
-import static org.geektimes.commons.util.AnnotationUtils.getAttributeValues;
+import static org.geektimes.commons.lang.util.AnnotationUtils.getAttributeValues;
 
 /**
  * The utilities class for {@link Annotation}

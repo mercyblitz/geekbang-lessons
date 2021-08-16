@@ -16,16 +16,10 @@
  */
 package org.geektimes.enterprise.inject.standard;
 
-import org.geektimes.enterprise.inject.util.Beans;
-
 import javax.enterprise.inject.spi.AnnotatedField;
 import javax.enterprise.inject.spi.AnnotatedType;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
-import java.util.Set;
-
-import static org.geektimes.enterprise.inject.util.Beans.getBeanTypes;
 
 /**
  * {@link AnnotatedField} based on Java reflection {@link Field}

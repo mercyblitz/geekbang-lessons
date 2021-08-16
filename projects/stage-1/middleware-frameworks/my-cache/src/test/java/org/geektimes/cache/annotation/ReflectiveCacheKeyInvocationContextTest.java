@@ -18,7 +18,7 @@ package org.geektimes.cache.annotation;
 
 import org.geektimes.cache.DataRepository;
 import org.geektimes.cache.InMemoryDataRepository;
-import org.geektimes.commons.util.ArrayUtils;
+import org.geektimes.commons.lang.util.ArrayUtils;
 import org.junit.Test;
 
 import javax.cache.annotation.CacheInvocationParameter;

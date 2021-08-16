@@ -20,7 +20,7 @@ import javax.annotation.Priority;
 import java.util.Comparator;
 import java.util.Objects;
 
-import static org.geektimes.commons.util.AnnotationUtils.findAnnotation;
+import static org.geektimes.commons.lang.util.AnnotationUtils.findAnnotation;
 
 /**
  * The {@link Comparator} for the annotation {@link Priority}

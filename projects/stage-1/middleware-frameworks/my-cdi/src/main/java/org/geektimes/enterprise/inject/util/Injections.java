@@ -20,14 +20,11 @@ import org.geektimes.enterprise.inject.standard.ConstructorParameterInjectionPoi
 import org.geektimes.enterprise.inject.standard.FieldInjectionPoint;
 import org.geektimes.enterprise.inject.standard.MethodParameterInjectionPoint;
 
-import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.*;
 import javax.inject.Inject;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;

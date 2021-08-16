@@ -18,7 +18,9 @@ package org.geektimes.enterprise.inject.standard;
 
 import javax.enterprise.inject.spi.AnnotatedMember;
 import javax.enterprise.inject.spi.AnnotatedType;
-import java.lang.reflect.*;
+import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Member;
+import java.lang.reflect.Modifier;
 
 /**
  * The abstract implementation of {@link AnnotatedMember} based on Java reflection {@link Member}

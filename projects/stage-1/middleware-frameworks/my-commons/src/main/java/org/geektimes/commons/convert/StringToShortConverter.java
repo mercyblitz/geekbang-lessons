@@ -17,7 +17,7 @@
 package org.geektimes.commons.convert;
 
 import static java.lang.Short.valueOf;
-import static org.apache.commons.lang.StringUtils.isNotEmpty;
+import static org.geektimes.commons.lang.util.StringUtils.isNotEmpty;
 
 /**
  * The class to convert {@link String} to {@link Short}
