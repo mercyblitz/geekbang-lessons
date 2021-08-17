@@ -16,6 +16,8 @@
  */
 package org.geektimes.enterprise.inject.standard;
 
+import org.geektimes.commons.lang.util.AnnotationUtils;
+
 import javax.decorator.Decorator;
 import javax.enterprise.context.*;
 import javax.enterprise.inject.Alternative;
@@ -30,7 +32,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.geektimes.commons.function.Streams.map;
-import static org.geektimes.commons.lang.util.AnnotationUtils.existsAnnotated;
 
 /**
  * {@link Annotated} {@link Bean}
@@ -101,7 +102,7 @@ public interface AnnotatedBean<X> extends Bean<X> {
 
     @Override
     default boolean isAlternative() {
-        return existsAnnotated(getBeanClass(), Alternative.class);
+        return AnnotationUtils.isAnnotationPresent(getBeanClass(), Alternative.class);
     }
 
     default boolean isAnnotatedScope() {
@@ -135,7 +136,7 @@ public interface AnnotatedBean<X> extends Bean<X> {
     default boolean isAnnotated(Class<? extends Annotation> annotationType,
                                 Class<? extends Annotation> metaAnnotationType) {
         return Objects.equals(annotationType, metaAnnotationType) ||
-                existsAnnotated(annotationType, metaAnnotationType);
+                AnnotationUtils.isAnnotationPresent(annotationType, metaAnnotationType);
     }
 
     /**

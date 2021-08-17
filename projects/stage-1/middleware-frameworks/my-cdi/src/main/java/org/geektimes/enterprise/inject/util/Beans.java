@@ -16,6 +16,7 @@
  */
 package org.geektimes.enterprise.inject.util;
 
+import org.geektimes.commons.lang.util.AnnotationUtils;
 import org.geektimes.commons.lang.util.ArrayUtils;
 import org.geektimes.commons.reflect.util.ClassUtils;
 
@@ -38,7 +39,6 @@ import static java.lang.Integer.compare;
 import static java.lang.String.format;
 import static java.util.stream.Stream.of;
 import static org.geektimes.commons.collection.util.CollectionUtils.ofSet;
-import static org.geektimes.commons.lang.util.AnnotationUtils.existsAnnotated;
 import static org.geektimes.commons.lang.util.AnnotationUtils.findAnnotation;
 import static org.geektimes.commons.reflect.util.ClassUtils.isAssignableFrom;
 import static org.geektimes.commons.reflect.util.TypeUtils.*;
@@ -219,11 +219,11 @@ public abstract class Beans {
     }
 
     public static boolean isAnnotatedDecorator(Class<?> type) {
-        return existsAnnotated(type, Decorator.class);
+        return AnnotationUtils.isAnnotationPresent(type, Decorator.class);
     }
 
     public static boolean isAnnotatedVetoed(AnnotatedElement annotatedElement) {
-        return existsAnnotated(annotatedElement, Vetoed.class);
+        return AnnotationUtils.isAnnotationPresent(annotatedElement, Vetoed.class);
     }
 
     public static boolean isExtensionClass(Class<?> type) {

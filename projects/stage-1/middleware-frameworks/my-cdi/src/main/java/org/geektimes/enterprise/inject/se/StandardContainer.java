@@ -20,7 +20,6 @@ import org.geektimes.commons.lang.util.ClassLoaderUtils;
 import org.geektimes.commons.reflect.util.SimpleClassScanner;
 import org.geektimes.enterprise.inject.standard.AnnotatedBean;
 import org.geektimes.enterprise.inject.standard.ReflectiveAnnotatedBean;
-import org.geektimes.enterprise.inject.standard.StandardBeanManager;
 
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.se.SeContainer;
@@ -51,8 +50,6 @@ public class StandardContainer implements SeContainer {
 
     private final Map<Package, Boolean> packagesToDiscovery;
 
-    private final Map<Class<? extends Extension>, Extension> typedExtensions;
-
     private final Set<Class<?>> interceptorClasses;
 
     private final Set<Class<?>> decoratorClasses;
@@ -67,7 +64,7 @@ public class StandardContainer implements SeContainer {
 
     private boolean running;
 
-    private StandardBeanManager standardBeanManager;
+    private final StandardBeanManager standardBeanManager;
 
     public StandardContainer() {
         this.classScanner = SimpleClassScanner.INSTANCE;
@@ -76,12 +73,13 @@ public class StandardContainer implements SeContainer {
         this.enabledDiscovery = true;
         this.beanClasses = new LinkedHashSet<>();
         this.packagesToDiscovery = new LinkedHashMap<>();
-        this.typedExtensions = new LinkedHashMap<>();
         this.interceptorClasses = new LinkedHashSet<>();
         this.decoratorClasses = new LinkedHashSet<>();
         this.alternativeClasses = new LinkedHashSet<>();
         this.alternativeStereotypeClasses = new LinkedHashSet<>();
         this.running = false;
+        // Create BeanManager
+        standardBeanManager = new StandardBeanManager(this);
     }
 
 
@@ -95,7 +93,7 @@ public class StandardContainer implements SeContainer {
     }
 
     void addExtensions(Extension... extensions) {
-        iterateNonNull(extensions, e -> typedExtensions.put(e.getClass(), e));
+        iterateNonNull(extensions, standardBeanManager::addExtension);
     }
 
     void addInterceptors(Class<?>... interceptorClasses) {
@@ -141,8 +139,6 @@ public class StandardContainer implements SeContainer {
 
     public void initialize() {
         running = true;
-        // Create BeanManager
-        standardBeanManager = new StandardBeanManager(this);
         // TODO
         performContainerLifecycleEvents();
         performBeforeBeanDiscovery();
@@ -161,6 +157,8 @@ public class StandardContainer implements SeContainer {
      * service provider class for observer methods of initialization events.
      */
     private void performContainerLifecycleEvents() {
+        standardBeanManager.loadExtensions();
+        standardBeanManager.discoverObserverMethods();
     }
 
     /**
@@ -331,10 +329,6 @@ public class StandardContainer implements SeContainer {
 
     public Map<Package, Boolean> getPackagesToDiscovery() {
         return packagesToDiscovery;
-    }
-
-    public Map<Class<? extends Extension>, Extension> getTypedExtensions() {
-        return typedExtensions;
     }
 
     public Set<Class<?>> getInterceptorClasses() {

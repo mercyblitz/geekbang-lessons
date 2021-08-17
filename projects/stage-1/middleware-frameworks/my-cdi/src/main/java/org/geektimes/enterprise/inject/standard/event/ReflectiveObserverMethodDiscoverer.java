@@ -16,6 +16,8 @@
  */
 package org.geektimes.enterprise.inject.standard.event;
 
+import org.geektimes.enterprise.inject.standard.ReflectiveObserverMethod;
+
 import javax.enterprise.inject.spi.ObserverMethod;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -23,6 +25,7 @@ import java.util.stream.Collectors;
 
 import static java.util.Collections.unmodifiableList;
 import static java.util.stream.Stream.of;
+import static org.geektimes.enterprise.inject.util.Events.validateObserverMethod;
 
 /**
  * {@link ObserverMethodDiscoverer} Implementation based on Java Reflection.
@@ -41,13 +44,20 @@ public class ReflectiveObserverMethodDiscoverer implements ObserverMethodDiscove
     }
 
     private ObserverMethod<?> createObserverMethod(Method method) {
-        // TODO
-        return null;
+        return new ReflectiveObserverMethod(method);
     }
 
+    /**
+     * An observer method is a non-abstract method of a managed bean class or of an extension,
+     * as defined in Container lifecycle events. An observer method may be either static or non-static.
+     * <p>
+     * Each observer method must have exactly one event parameter, of the same type as the event type it observes.
+     *
+     * @param method {@link Method}
+     * @return <code>true</code> if observer method, <code>false</code> otherwise
+     */
     private boolean isObserverMethod(Method method) {
-        return false;
+        return validateObserverMethod(method);
     }
-
 
 }

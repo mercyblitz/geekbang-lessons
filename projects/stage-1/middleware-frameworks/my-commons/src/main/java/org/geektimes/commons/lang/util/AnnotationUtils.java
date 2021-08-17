@@ -103,7 +103,7 @@ public abstract class AnnotationUtils extends BaseUtils {
                                            Class<? extends Annotation>... metaAnnotationTypes) {
         boolean annotated = true;
         for (Class<? extends Annotation> metaAnnotationType : metaAnnotationTypes) {
-            annotated &= existsAnnotated(annotationType, metaAnnotationType);
+            annotated &= isAnnotationPresent(annotationType, metaAnnotationType);
         }
         return annotated;
     }
@@ -268,7 +268,7 @@ public abstract class AnnotationUtils extends BaseUtils {
 
         boolean annotated = false;
         for (int i = 0; i < length; i++) {
-            if (existsAnnotated(annotatedElements[i], annotationType)) {
+            if (isAnnotationPresent(annotatedElements[i], annotationType)) {
                 annotated = true;
                 break;
             }
@@ -277,7 +277,7 @@ public abstract class AnnotationUtils extends BaseUtils {
         return annotated;
     }
 
-    public static boolean existsAnnotated(AnnotatedElement annotatedElement, Class<? extends Annotation> annotationType) {
+    public static boolean isAnnotationPresent(AnnotatedElement annotatedElement, Class<? extends Annotation> annotationType) {
         return annotatedElement != null &&
                 annotationType != null &&
                 annotatedElement.isAnnotationPresent(annotationType);

@@ -14,28 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.util;
+package org.geektimes.enterprise.inject;
 
-import org.geektimes.commons.lang.util.AnnotationUtils;
-
-import javax.interceptor.Interceptor;
-import javax.interceptor.InterceptorBinding;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
+import javax.enterprise.event.Observes;
+import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.BeforeBeanDiscovery;
+import javax.enterprise.inject.spi.Extension;
+import javax.inject.Inject;
 
 /**
- * The utilties class for {@link Interceptor}
+ * My {@link Extension}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public abstract class Interceptors {
+public class MyExtension implements Extension {
 
-    public static boolean isInterceptorBinding(Class<? extends Annotation> annotationType) {
-        return annotationType.isAnnotationPresent(InterceptorBinding.class);
-    }
+    @Inject
+    private BeanManager beanManager;
 
-    public static boolean isInterceptor(AnnotatedElement annotatedElement) {
-        return AnnotationUtils.isAnnotationPresent(annotatedElement, Interceptor.class);
+    public void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery) {
+
     }
 }

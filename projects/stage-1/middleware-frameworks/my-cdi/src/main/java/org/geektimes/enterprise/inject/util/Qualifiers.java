@@ -42,7 +42,7 @@ public abstract class Qualifiers {
     }
 
     public static boolean isQualifier(Class<? extends Annotation> annotationType) {
-        return annotationType.isAnnotation() && existsAnnotated(annotationType, Qualifier.class);
+        return annotationType.isAnnotation() && isAnnotationPresent(annotationType, Qualifier.class);
     }
 
     public static Set<Annotation> getQualifiers(AnnotatedElement annotatedElement) {
