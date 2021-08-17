@@ -16,11 +16,11 @@
  */
 package org.geektimes.enterprise.inject.standard;
 
-import org.geektimes.commons.lang.util.AnnotationUtils;
-
 import javax.decorator.Decorator;
 import javax.enterprise.context.*;
+import javax.enterprise.inject.Alternative;
 import javax.enterprise.inject.Stereotype;
+import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.Bean;
 import javax.inject.Scope;
 import javax.interceptor.Interceptor;
@@ -30,13 +30,17 @@ import java.util.Optional;
 import java.util.Set;
 
 import static org.geektimes.commons.function.Streams.map;
+import static org.geektimes.commons.lang.util.AnnotationUtils.existsAnnotated;
 
 /**
+ * {@link Annotated} {@link Bean}
+ *
+ * @param <X> The type of bean
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @see Bean
  * @since 1.0.0
  */
-public interface AnnotatedBean {
+public interface AnnotatedBean<X> extends Bean<X> {
 
     /**
      * Get all {@link Annotation annotations} of the bean
@@ -50,6 +54,7 @@ public interface AnnotatedBean {
      *
      * @return the {@linkplain javax.inject.Qualifier qualifiers}
      */
+    @Override
     Set<Annotation> getQualifiers();
 
     /**
@@ -57,7 +62,7 @@ public interface AnnotatedBean {
      *
      * @return
      */
-    Optional<Annotation> getScope();
+    Optional<Annotation> getScopeAnnotation();
 
     /**
      * Obtains the {@linkplain javax.enterprise.context scope} of the bean.
@@ -65,8 +70,9 @@ public interface AnnotatedBean {
      * @return the {@linkplain javax.enterprise.context scope} if found
      * @see {@link Bean#getScope()}
      */
-    default Class<? extends Annotation> getScopeType() {
-        return getScope().map(Annotation::annotationType).orElse(null);
+    @Override
+    default Class<? extends Annotation> getScope() {
+        return getScopeAnnotation().map(Annotation::annotationType).orElse(null);
     }
 
     /**
@@ -74,7 +80,7 @@ public interface AnnotatedBean {
      *
      * @return the set of {@linkplain javax.enterprise.inject.Stereotype stereotypes}
      */
-    Set<Annotation> getStereotypes();
+    Set<Annotation> getStereotypeAnnotations();
 
     /**
      * Obtains the types of {@linkplain javax.enterprise.inject.Stereotype stereotypes} of the bean.
@@ -82,42 +88,54 @@ public interface AnnotatedBean {
      * @return the set of {@linkplain javax.enterprise.inject.Stereotype stereotypes}
      * @see {@link Bean#getStereotypes()}
      */
-    default Set<Class<? extends Annotation>> getStereotypeTypes() {
-        return map(getStereotypes(), Annotation::annotationType);
+    @Override
+    default Set<Class<? extends Annotation>> getStereotypes() {
+        return map(getStereotypeAnnotations(), Annotation::annotationType);
+    }
+
+    @Deprecated
+    @Override
+    default boolean isNullable() {
+        return false;
+    }
+
+    @Override
+    default boolean isAlternative() {
+        return existsAnnotated(getBeanClass(), Alternative.class);
     }
 
     default boolean isAnnotatedScope() {
-        return isAnnotated(getScopeType(), Scope.class);
+        return isAnnotated(getScope(), Scope.class);
     }
 
     default boolean isAnnotatedNormalScope() {
-        return isAnnotated(getScopeType(), NormalScope.class);
+        return isAnnotated(getScope(), NormalScope.class);
     }
 
     default boolean isAnnotatedApplicationScoped() {
-        return isAnnotated(getScopeType(), ApplicationScoped.class);
+        return isAnnotated(getScope(), ApplicationScoped.class);
     }
 
     default boolean isAnnotatedSessionScoped() {
-        return isAnnotated(getScopeType(), SessionScoped.class);
+        return isAnnotated(getScope(), SessionScoped.class);
     }
 
     default boolean isAnnotatedConversationScoped() {
-        return isAnnotated(getScopeType(), ConversationScoped.class);
+        return isAnnotated(getScope(), ConversationScoped.class);
     }
 
     default boolean isAnnotatedRequestScoped() {
-        return isAnnotated(getScopeType(), RequestScoped.class);
+        return isAnnotated(getScope(), RequestScoped.class);
     }
 
     default boolean isAnnotatedDependent() {
-        return isAnnotated(getScopeType(), Dependent.class);
+        return isAnnotated(getScope(), Dependent.class);
     }
 
     default boolean isAnnotated(Class<? extends Annotation> annotationType,
                                 Class<? extends Annotation> metaAnnotationType) {
         return Objects.equals(annotationType, metaAnnotationType) ||
-                AnnotationUtils.existsAnnotated(annotationType, metaAnnotationType);
+                existsAnnotated(annotationType, metaAnnotationType);
     }
 
     /**
@@ -135,7 +153,7 @@ public interface AnnotatedBean {
     boolean isAnnotatedDecorator();
 
     /**
-     * Bean defining annotations
+     * Has Bean defining annotations or not.
      * <p>
      * A bean class may have a bean defining annotation, allowing it to be placed anywhere in an application,
      * as defined in Bean archives. A bean class with a bean defining annotation is said to be an implicit bean.
@@ -152,7 +170,7 @@ public interface AnnotatedBean {
      *
      * @return
      */
-    default boolean isDefiningAnnotation() {
+    default boolean hasDefiningAnnotation() {
         return isAnnotatedScope() ||
                 isAnnotatedNormalScope() ||
                 isAnnotatedInterceptor() ||

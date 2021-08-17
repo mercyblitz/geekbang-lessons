@@ -17,6 +17,9 @@
 package org.geektimes.enterprise.inject.se;
 
 import org.geektimes.commons.lang.util.ClassLoaderUtils;
+import org.geektimes.commons.reflect.util.SimpleClassScanner;
+import org.geektimes.enterprise.inject.standard.AnnotatedBean;
+import org.geektimes.enterprise.inject.standard.ReflectiveAnnotatedBean;
 import org.geektimes.enterprise.inject.standard.StandardBeanManager;
 
 import javax.enterprise.inject.Instance;
@@ -24,9 +27,7 @@ import javax.enterprise.inject.se.SeContainer;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.util.TypeLiteral;
-import java.io.File;
 import java.lang.annotation.Annotation;
-import java.net.URL;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
@@ -41,6 +42,8 @@ import java.util.logging.Logger;
 public class StandardContainer implements SeContainer {
 
     private final Logger logger = Logger.getLogger(getClass().getName());
+
+    private final SimpleClassScanner classScanner;
 
     private final Map<String, Object> properties;
 
@@ -67,6 +70,7 @@ public class StandardContainer implements SeContainer {
     private StandardBeanManager standardBeanManager;
 
     public StandardContainer() {
+        this.classScanner = SimpleClassScanner.INSTANCE;
         this.classLoader = ClassLoaderUtils.getClassLoader(getClass());
         this.properties = new HashMap<>();
         this.enabledDiscovery = true;
@@ -139,19 +143,95 @@ public class StandardContainer implements SeContainer {
         running = true;
         // Create BeanManager
         standardBeanManager = new StandardBeanManager(this);
-
-        discover();
         // TODO
+        performContainerLifecycleEvents();
+        performBeforeBeanDiscovery();
+        performTypeDiscovery();
+        performAfterTypeDiscovery();
+        performBeanDiscovery();
+        performAfterBeanDiscovery();
+        performDeploymentValidation();
+        performAfterDeploymentValidation();
+
     }
 
-    private void discover() {
+    /**
+     * First, the container must search for service providers for the service javax.enterprise.inject.spi.Extension
+     * defined in Container lifecycle events, instantiate a single instance of each service provider, and search the
+     * service provider class for observer methods of initialization events.
+     */
+    private void performContainerLifecycleEvents() {
+    }
+
+    /**
+     * the container must fire an event of type BeforeBeanDiscovery, as defined in BeforeBeanDiscovery event.
+     */
+    private void performBeforeBeanDiscovery() {
+    }
+
+    /**
+     * the container must perform type discovery, as defined in Type discovery.
+     */
+    private void performTypeDiscovery() {
         if (!enabledDiscovery) {
             // TODO log
             return;
         }
+
         Set<Class<?>> classes = scanClasses();
-        discoverTypes();
-        discoverBeans();
+        // filter Beans with definition annotations
+        Set<AnnotatedBean<?>> annotatedBeans = filterDefiningAnnotationBeans(classes);
+        // dispatch all kinds of classes, e.g Bean Classes , Interceptor Classes or others
+        dispatchClasses(annotatedBeans);
+    }
+
+    /**
+     * the container must fire an event of type AfterTypeDiscovery, as defined in AfterTypeDiscovery event.
+     */
+    private void performAfterTypeDiscovery() {
+    }
+
+    /**
+     * the container must perform bean discovery, as defined in Bean discovery.
+     */
+    private void performBeanDiscovery() {
+    }
+
+    /**
+     * the container must fire an event of type AfterBeanDiscovery, as defined in AfterBeanDiscovery event, and abort
+     * initialization of the application if any observer registers a definition error.
+     */
+    private void performAfterBeanDiscovery() {
+    }
+
+    /**
+     * the container must detect deployment problems by validating bean dependencies and specialization and abort
+     * initialization of the application if any deployment problems exist, as defined in Problems detected automatically
+     * by the container.
+     */
+    private void performDeploymentValidation() {
+    }
+
+    /**
+     * the container must fire an event of type AfterDeploymentValidation, as defined in AfterDeploymentValidation event,
+     * and abort initialization of the application if any observer registers a deployment problem.
+     */
+    private void performAfterDeploymentValidation() {
+    }
+
+    private void dispatchClasses(Set<AnnotatedBean<?>> annotatedBeans) {
+
+    }
+
+    private Set<AnnotatedBean<?>> filterDefiningAnnotationBeans(Set<Class<?>> classes) {
+        Set<AnnotatedBean<?>> annotatedBeans = new LinkedHashSet<>();
+        for (Class<?> type : classes) {
+            AnnotatedBean annotatedBean = new ReflectiveAnnotatedBean(type);
+            if (annotatedBean.hasDefiningAnnotation()) {
+                annotatedBeans.add(annotatedBean);
+            }
+        }
+        return annotatedBeans;
     }
 
     private Set<Class<?>> scanClasses() {
@@ -160,34 +240,11 @@ public class StandardContainer implements SeContainer {
         for (Map.Entry<Package, Boolean> packageEntry : packagesToDiscovery.entrySet()) {
             Package packageToDiscovery = packageEntry.getKey();
             boolean scanRecursively = Boolean.TRUE.equals(packageEntry.getValue());
-            scanClasses(classes, classLoader, packageToDiscovery, scanRecursively);
+            classes.addAll(classScanner.scan(classLoader, packageToDiscovery.getName(), scanRecursively, true));
         }
         return classes;
     }
 
-    private void scanClasses(Set<Class<?>> classes, ClassLoader classLoader,
-                             Package packageToDiscovery, boolean scanRecursively) {
-        String resourcePath = packageToDiscovery.getName().replace('.', '/');
-        URL packageResource = classLoader.getResource(resourcePath);
-        String protocol = packageResource.getProtocol();
-        switch (protocol) {
-            case "file":
-                scanClassesInDirectory(classes, packageResource.getPath(), scanRecursively);
-                break;
-            case "jar":
-                scanClassesInJar(classes, classLoader, packageResource, scanRecursively);
-                break;
-        }
-    }
-
-    private void scanClassesInDirectory(Set<Class<?>> classes, String directoryPath, boolean scanRecursively) {
-        File directory = new File(directoryPath);
-    }
-
-    private void scanClassesInJar(Set<Class<?>> classes, ClassLoader classLoader, URL packageResource,
-                                  boolean scanRecursively) {
-
-    }
 
     private void discoverTypes() {
     }
@@ -254,6 +311,9 @@ public class StandardContainer implements SeContainer {
     }
 
     public ClassLoader getClassLoader() {
+        if (classLoader == null) {
+            classLoader = ClassLoaderUtils.getClassLoader(getClass());
+        }
         return classLoader;
     }
 

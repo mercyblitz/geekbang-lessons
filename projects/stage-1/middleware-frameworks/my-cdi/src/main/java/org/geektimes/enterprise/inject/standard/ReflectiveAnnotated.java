@@ -58,7 +58,7 @@ public abstract class ReflectiveAnnotated<A extends AnnotatedElement> implements
     }
 
     @Override
-    public final Set<Annotation> getAnnotations() {
+    public Set<Annotation> getAnnotations() {
         return ofSet(annotatedElement.getAnnotations());
     }
 

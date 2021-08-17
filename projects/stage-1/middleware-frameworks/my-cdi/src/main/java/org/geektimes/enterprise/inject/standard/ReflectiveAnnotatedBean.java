@@ -22,8 +22,11 @@ import org.geektimes.enterprise.inject.util.Scopes;
 import org.geektimes.enterprise.inject.util.Stereotypes;
 
 import javax.decorator.Decorator;
+import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.spi.InjectionPoint;
 import javax.interceptor.Interceptor;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 import java.util.Optional;
 import java.util.Set;
 
@@ -37,7 +40,9 @@ import static org.geektimes.commons.lang.util.AnnotationUtils.*;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class ReflectiveAnnotatedBean implements AnnotatedBean {
+public class ReflectiveAnnotatedBean<X> implements AnnotatedBean<X> {
+
+    private final Class<X> beanClass;
 
     private final Set<Annotation> annotations;
 
@@ -55,7 +60,8 @@ public class ReflectiveAnnotatedBean implements AnnotatedBean {
 
     private final boolean annotatedDecorator;
 
-    public ReflectiveAnnotatedBean(Class<?> beanClass) {
+    public ReflectiveAnnotatedBean(Class<X> beanClass) {
+        this.beanClass = beanClass;
         this.annotations = ofSet(beanClass.getAnnotations());
         this.qualifiers = Qualifiers.getQualifiers(annotations);
         this.scope = filterAnnotation(annotations, Predicates.or(Scopes::isScope, Scopes::isNormalScope));
@@ -76,28 +82,43 @@ public class ReflectiveAnnotatedBean implements AnnotatedBean {
     }
 
     @Override
+    public Set<Type> getTypes() {
+        return null;
+    }
+
+    @Override
     public Set<Annotation> getQualifiers() {
         return qualifiers;
     }
 
     @Override
-    public Optional<Annotation> getScope() {
+    public Optional<Annotation> getScopeAnnotation() {
         return scope;
     }
 
     @Override
-    public Class<? extends Annotation> getScopeType() {
+    public Class<? extends Annotation> getScope() {
         return scopeType;
     }
 
     @Override
-    public Set<Annotation> getStereotypes() {
+    public String getName() {
+        return null;
+    }
+
+    @Override
+    public Set<Annotation> getStereotypeAnnotations() {
         return stereotypes;
     }
 
     @Override
-    public Set<Class<? extends Annotation>> getStereotypeTypes() {
+    public Set<Class<? extends Annotation>> getStereotypes() {
         return stereotypeTypes;
+    }
+
+    @Override
+    public boolean isAlternative() {
+        return false;
     }
 
     @Override
@@ -108,5 +129,25 @@ public class ReflectiveAnnotatedBean implements AnnotatedBean {
     @Override
     public boolean isAnnotatedDecorator() {
         return annotatedDecorator;
+    }
+
+    @Override
+    public Class getBeanClass() {
+        return beanClass;
+    }
+
+    @Override
+    public Set<InjectionPoint> getInjectionPoints() {
+        return null;
+    }
+
+    @Override
+    public X create(CreationalContext<X> creationalContext) {
+        return null;
+    }
+
+    @Override
+    public void destroy(X instance, CreationalContext<X> creationalContext) {
+
     }
 }

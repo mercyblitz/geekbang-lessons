@@ -39,10 +39,10 @@ public class ReflectiveAnnotatedBeanTest {
         AnnotatedBean instance = of(this.getClass());
         assertTrue(instance.getAnnotations().isEmpty());
         assertEquals(2, instance.getQualifiers().size());
-        assertFalse(instance.getScope().isPresent());
-        assertNull(instance.getScopeType());
+        assertFalse(instance.getScopeAnnotation().isPresent());
+        assertNull(instance.getScope());
+        assertTrue(instance.getStereotypeAnnotations().isEmpty());
         assertTrue(instance.getStereotypes().isEmpty());
-        assertTrue(instance.getStereotypeTypes().isEmpty());
         assertFalse(instance.isAnnotatedScope());
         assertFalse(instance.isAnnotatedNormalScope());
         assertFalse(instance.isAnnotatedApplicationScoped());
@@ -52,7 +52,7 @@ public class ReflectiveAnnotatedBeanTest {
         assertFalse(instance.isAnnotatedDependent());
         assertFalse(instance.isAnnotatedInterceptor());
         assertFalse(instance.isAnnotatedDecorator());
-        assertFalse(instance.isDefiningAnnotation());
+        assertFalse(instance.hasDefiningAnnotation());
     }
 
     @ApplicationScoped
@@ -66,10 +66,10 @@ public class ReflectiveAnnotatedBeanTest {
         AnnotatedBean instance = of(ApplicationScopedType.class);
         assertEquals(3, instance.getAnnotations().size());
         assertEquals(2, instance.getQualifiers().size());
-        assertTrue(instance.getScope().isPresent());
-        assertEquals(ApplicationScoped.class, instance.getScopeType());
+        assertTrue(instance.getScopeAnnotation().isPresent());
+        assertEquals(ApplicationScoped.class, instance.getScope());
+        assertTrue(instance.getStereotypeAnnotations().isEmpty());
         assertTrue(instance.getStereotypes().isEmpty());
-        assertTrue(instance.getStereotypeTypes().isEmpty());
         assertFalse(instance.isAnnotatedScope());
         assertTrue(instance.isAnnotatedNormalScope());
         assertTrue(instance.isAnnotatedApplicationScoped());
@@ -79,7 +79,7 @@ public class ReflectiveAnnotatedBeanTest {
         assertFalse(instance.isAnnotatedDependent());
         assertTrue(instance.isAnnotatedInterceptor());
         assertFalse(instance.isAnnotatedDecorator());
-        assertTrue(instance.isDefiningAnnotation());
+        assertTrue(instance.hasDefiningAnnotation());
     }
 
     @SessionScoped
@@ -91,11 +91,11 @@ public class ReflectiveAnnotatedBeanTest {
     public void testSessionScoped() {
         AnnotatedBean instance = of(SessionScopedType.class);
         assertEquals(2, instance.getAnnotations().size());
-        assertTrue(instance.getScope().isPresent());
-        assertEquals(SessionScoped.class, instance.getScopeType());
+        assertTrue(instance.getScopeAnnotation().isPresent());
+        assertEquals(SessionScoped.class, instance.getScope());
+        assertFalse(instance.getStereotypeAnnotations().isEmpty());
         assertFalse(instance.getStereotypes().isEmpty());
-        assertFalse(instance.getStereotypeTypes().isEmpty());
-        assertTrue(instance.getStereotypeTypes().contains(Decorator.class));
+        assertTrue(instance.getStereotypes().contains(Decorator.class));
         assertFalse(instance.isAnnotatedScope());
         assertTrue(instance.isAnnotatedNormalScope());
         assertFalse(instance.isAnnotatedApplicationScoped());
@@ -105,7 +105,7 @@ public class ReflectiveAnnotatedBeanTest {
         assertFalse(instance.isAnnotatedDependent());
         assertFalse(instance.isAnnotatedInterceptor());
         assertTrue(instance.isAnnotatedDecorator());
-        assertTrue(instance.isDefiningAnnotation());
+        assertTrue(instance.hasDefiningAnnotation());
     }
 
     @ConversationScoped
@@ -116,10 +116,10 @@ public class ReflectiveAnnotatedBeanTest {
     public void testConversationScoped() {
         AnnotatedBean instance = of(ConversationScopedType.class);
         assertEquals(1, instance.getAnnotations().size());
-        assertTrue(instance.getScope().isPresent());
-        assertEquals(ConversationScoped.class, instance.getScopeType());
+        assertTrue(instance.getScopeAnnotation().isPresent());
+        assertEquals(ConversationScoped.class, instance.getScope());
+        assertTrue(instance.getStereotypeAnnotations().isEmpty());
         assertTrue(instance.getStereotypes().isEmpty());
-        assertTrue(instance.getStereotypeTypes().isEmpty());
         assertFalse(instance.isAnnotatedScope());
         assertTrue(instance.isAnnotatedNormalScope());
         assertFalse(instance.isAnnotatedApplicationScoped());
@@ -129,7 +129,7 @@ public class ReflectiveAnnotatedBeanTest {
         assertFalse(instance.isAnnotatedDependent());
         assertFalse(instance.isAnnotatedInterceptor());
         assertFalse(instance.isAnnotatedDecorator());
-        assertTrue(instance.isDefiningAnnotation());
+        assertTrue(instance.hasDefiningAnnotation());
     }
 
     @RequestScoped
@@ -140,10 +140,10 @@ public class ReflectiveAnnotatedBeanTest {
     public void testRequestScoped() {
         AnnotatedBean instance = of(RequestScopedType.class);
         assertEquals(1, instance.getAnnotations().size());
-        assertTrue(instance.getScope().isPresent());
-        assertEquals(RequestScoped.class, instance.getScopeType());
+        assertTrue(instance.getScopeAnnotation().isPresent());
+        assertEquals(RequestScoped.class, instance.getScope());
+        assertTrue(instance.getStereotypeAnnotations().isEmpty());
         assertTrue(instance.getStereotypes().isEmpty());
-        assertTrue(instance.getStereotypeTypes().isEmpty());
         assertFalse(instance.isAnnotatedScope());
         assertTrue(instance.isAnnotatedNormalScope());
         assertFalse(instance.isAnnotatedApplicationScoped());
@@ -153,7 +153,7 @@ public class ReflectiveAnnotatedBeanTest {
         assertFalse(instance.isAnnotatedDependent());
         assertFalse(instance.isAnnotatedInterceptor());
         assertFalse(instance.isAnnotatedDecorator());
-        assertTrue(instance.isDefiningAnnotation());
+        assertTrue(instance.hasDefiningAnnotation());
     }
 
     @Dependent
@@ -164,10 +164,10 @@ public class ReflectiveAnnotatedBeanTest {
     public void testDependent() {
         AnnotatedBean instance = of(DependentType.class);
         assertEquals(1, instance.getAnnotations().size());
-        assertTrue(instance.getScope().isPresent());
-        assertEquals(Dependent.class, instance.getScopeType());
+        assertTrue(instance.getScopeAnnotation().isPresent());
+        assertEquals(Dependent.class, instance.getScope());
+        assertTrue(instance.getStereotypeAnnotations().isEmpty());
         assertTrue(instance.getStereotypes().isEmpty());
-        assertTrue(instance.getStereotypeTypes().isEmpty());
         assertTrue(instance.isAnnotatedScope());
         assertFalse(instance.isAnnotatedNormalScope());
         assertFalse(instance.isAnnotatedApplicationScoped());
@@ -177,7 +177,7 @@ public class ReflectiveAnnotatedBeanTest {
         assertTrue(instance.isAnnotatedDependent());
         assertFalse(instance.isAnnotatedInterceptor());
         assertFalse(instance.isAnnotatedDecorator());
-        assertTrue(instance.isDefiningAnnotation());
+        assertTrue(instance.hasDefiningAnnotation());
     }
 
 
