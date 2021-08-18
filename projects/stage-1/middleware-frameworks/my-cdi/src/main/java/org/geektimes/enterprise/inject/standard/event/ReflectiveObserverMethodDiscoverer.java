@@ -18,6 +18,7 @@ package org.geektimes.enterprise.inject.standard.event;
 
 import org.geektimes.enterprise.inject.standard.ReflectiveObserverMethod;
 
+import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.spi.ObserverMethod;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -35,16 +36,22 @@ import static org.geektimes.enterprise.inject.util.Events.validateObserverMethod
  */
 public class ReflectiveObserverMethodDiscoverer implements ObserverMethodDiscoverer {
 
+    private final Instance<Object> instance;
+
+    public ReflectiveObserverMethodDiscoverer(Instance<Object> instance) {
+        this.instance = instance;
+    }
+
     @Override
-    public List<ObserverMethod> getObserverMethods(Class<?> type) {
-        return unmodifiableList(of(type.getDeclaredMethods())
+    public <T> List<ObserverMethod<T>> getObserverMethods(T beanInstance, Class<? extends T> beanType) {
+        return (List) unmodifiableList(of(beanType.getDeclaredMethods())
                 .filter(this::isObserverMethod)
-                .map(this::createObserverMethod)
+                .map(method -> createObserverMethod(beanInstance, method))
                 .collect(Collectors.toList()));
     }
 
-    private ObserverMethod<?> createObserverMethod(Method method) {
-        return new ReflectiveObserverMethod(method);
+    private ObserverMethod<?> createObserverMethod(Object beanInstance, Method method) {
+        return new ReflectiveObserverMethod(beanInstance, method, instance);
     }
 
     /**

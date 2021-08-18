@@ -17,23 +17,19 @@
 package org.geektimes.enterprise.inject.standard.event;
 
 
-import org.geektimes.commons.function.Streams;
-
 import javax.enterprise.event.Event;
 import javax.enterprise.event.NotificationOptions;
+import javax.enterprise.inject.spi.EventContext;
+import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.inject.spi.ObserverMethod;
 import javax.enterprise.util.TypeLiteral;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
-import java.util.LinkedHashSet;
-import java.util.List;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
-import static java.util.Arrays.asList;
-import static java.util.Collections.emptySet;
 import static org.geektimes.commons.reflect.util.TypeUtils.getAllTypes;
 
 /**
@@ -44,23 +40,31 @@ import static org.geektimes.commons.reflect.util.TypeUtils.getAllTypes;
  */
 public class EventDispatcher implements Event<Object> {
 
-    /**
-     * Key is Event type
-     */
-    private final ConcurrentMap<Type, Set<ObserverMethod>> storage;
+    private final InjectionPoint injectionPoint;
 
-    public EventDispatcher() {
-        this(new ConcurrentHashMap<>());
+    private final ObserverMethodRepository repository;
+
+    EventDispatcher(ObserverMethodRepository repository) {
+        this(repository, null);
     }
 
-    EventDispatcher(ConcurrentMap<Type, Set<ObserverMethod>> storage) {
-        this.storage = storage;
+    EventDispatcher(ObserverMethodRepository repository,
+                    InjectionPoint injectionPoint) {
+        this.repository = repository;
+        this.injectionPoint = injectionPoint;
     }
 
     @Override
     public void fire(Object event) {
-        Set<ObserverMethod> observerMethods = resolveObserverMethods(event);
-        observerMethods.forEach(observerMethod -> observerMethod.notify(event));
+        Set<ObserverMethod> observerMethods = repository.resolveObserverMethods(event);
+        observerMethods.forEach(observerMethod -> {
+            EventContext eventContext = new DefaultEventContext(
+                    event,
+                    observerMethod.getObservedType(),
+                    observerMethod.getObservedQualifiers(),
+                    injectionPoint);
+            observerMethod.notify(eventContext);
+        });
     }
 
     @Override
@@ -89,33 +93,11 @@ public class EventDispatcher implements Event<Object> {
     }
 
     public <U> Event<U> select(Type eventType, Annotation... qualifiers) {
-        ConcurrentMap<Type, Set<ObserverMethod>> subRepository = new ConcurrentHashMap<>();
+        Map<Type, Set<ObserverMethod>> subRepository = new LinkedHashMap<>();
         getAllTypes(eventType).forEach(type -> {
-            subRepository.put(type, resolveObserverMethods(eventType, qualifiers));
+            subRepository.put(type, repository.resolveObserverMethods(eventType, qualifiers));
         });
-        return (Event<U>) new EventDispatcher(subRepository);
+        return (Event<U>) new EventDispatcher(new ObserverMethodRepository(subRepository), injectionPoint);
     }
 
-    public EventDispatcher addObserverMethod(ObserverMethod observerMethod) {
-        Type observerType = observerMethod.getObservedType();
-        Set<Type> eventTypes = getAllTypes(observerType);
-        eventTypes.forEach(eventType -> {
-            Set<ObserverMethod> observerMethods = storage.computeIfAbsent(eventType, k -> new LinkedHashSet<>());
-            observerMethods.add(observerMethod);
-        });
-        return this;
-    }
-
-    public <T> Set<ObserverMethod> resolveObserverMethods(T event, Annotation... qualifiers) {
-        return resolveObserverMethods(event.getClass(), qualifiers);
-    }
-
-    public <T> Set<ObserverMethod> resolveObserverMethods(Class<T> eventType, Annotation... qualifiers) {
-        List<Annotation> qualifiersList = asList(qualifiers);
-        Set<ObserverMethod> observerMethods = storage.getOrDefault(eventType, emptySet());
-        return Streams.filterSet(observerMethods, observerMethod -> {
-            Set<Annotation> observedQualifiers = observerMethod.getObservedQualifiers();
-            return observedQualifiers.containsAll(qualifiersList);
-        });
-    }
 }

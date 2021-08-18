@@ -42,13 +42,13 @@ public class ObserverMethodRepository {
     /**
      * Key is Event type
      */
-    private final Map<Type, Set<ObserverMethod<?>>> storage;
+    private final Map<Type, Set<ObserverMethod>> storage;
 
     public ObserverMethodRepository() {
         this(new ConcurrentHashMap<>());
     }
 
-    public ObserverMethodRepository(Map<Type, Set<ObserverMethod<?>>> storage) {
+    public ObserverMethodRepository(Map<Type, Set<ObserverMethod>> storage) {
         this.storage = storage;
     }
 
@@ -56,26 +56,22 @@ public class ObserverMethodRepository {
         Type observerType = observerMethod.getObservedType();
         Set<Type> eventTypes = getAllTypes(observerType);
         eventTypes.forEach(eventType -> {
-            Set<ObserverMethod<?>> observerMethods = storage.computeIfAbsent(eventType, k -> new LinkedHashSet<>());
+            Set<ObserverMethod> observerMethods = storage.computeIfAbsent(eventType, k -> new LinkedHashSet<>());
             observerMethods.add(observerMethod);
         });
         return this;
     }
 
-    public <T> Set<ObserverMethod<? super T>> resolveObserverMethods(T event, Annotation... qualifiers) {
-        return (Set) resolveObserverMethods(event.getClass(), qualifiers);
+    public <T> Set<ObserverMethod> resolveObserverMethods(T event, Annotation... qualifiers) {
+        return resolveObserverMethods(event.getClass(), qualifiers);
     }
 
-    public <T> Set<ObserverMethod<? super T>> resolveObserverMethods(Class<T> eventType, Annotation... qualifiers) {
+    public <T> Set<ObserverMethod> resolveObserverMethods(Class<T> eventType, Annotation... qualifiers) {
         List<Annotation> qualifiersList = asList(qualifiers);
-        Set<ObserverMethod<?>> observerMethods = storage.getOrDefault(eventType, emptySet());
-        return (Set) Streams.filterSet(observerMethods, observerMethod -> {
+        Set<ObserverMethod> observerMethods = storage.getOrDefault(eventType, emptySet());
+        return Streams.filterSet(observerMethods, observerMethod -> {
             Set<Annotation> observedQualifiers = observerMethod.getObservedQualifiers();
             return observedQualifiers.containsAll(qualifiersList);
         });
-    }
-
-    public Map<Type, Set<ObserverMethod<?>>> getStorage() {
-        return storage;
     }
 }

@@ -16,22 +16,27 @@
  */
 package org.geektimes.enterprise.inject.util;
 
-import com.sun.xml.internal.rngom.digested.DDataPattern;
+import org.geektimes.enterprise.inject.standard.event.ObserverMethodParameter;
 
 import javax.enterprise.event.Observes;
 import javax.enterprise.event.ObservesAsync;
 import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.DefinitionException;
+import javax.enterprise.inject.spi.EventMetadata;
 import javax.inject.Inject;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.String.format;
+import static java.util.Collections.emptyList;
 import static org.geektimes.commons.lang.util.AnnotationUtils.isAnnotationPresent;
+import static org.geektimes.enterprise.inject.standard.event.ObserverMethodParameter.*;
 
 /**
  * The utilities class for CDI Events
@@ -42,7 +47,7 @@ import static org.geektimes.commons.lang.util.AnnotationUtils.isAnnotationPresen
 public abstract class Events {
 
 
-    private static final Map<Method, Parameter> observedParametersCache = new ConcurrentHashMap<>();
+    private static final Map<Method, List<ObserverMethodParameter>> observerMethodParametersCache = new ConcurrentHashMap<>();
 
     /**
      * Check the specified {@link Parameter parameter} annotated {@link Observes}
@@ -55,6 +60,10 @@ public abstract class Events {
     public static boolean isObservedParameter(Parameter parameter) {
         return isAnnotationPresent(parameter, Observes.class)
                 || isAnnotationPresent(parameter, ObservesAsync.class);
+    }
+
+    public static boolean isEventMetadata(Parameter parameter) {
+        return parameter != null && EventMetadata.class.equals(parameter.getType());
     }
 
     public static boolean validateObserverMethod(Method method) {
@@ -92,38 +101,54 @@ public abstract class Events {
 
         Parameter[] parameters = method.getParameters();
 
-        Parameter observedParameter = null;
-        for (Parameter parameter : parameters) {
-            if (observedParameter != null) {
+        List<ObserverMethodParameter> observerMethodParameters = new ArrayList<>(parameters.length);
+
+        boolean hasObservedParameter = false;
+        for (int i = 0; i < parameters.length; i++) {
+
+            Parameter parameter = parameters[i];
+
+            if (hasObservedParameter) {
                 String message = format("An observer method must not have more than one parameter annotated @%s or @%s",
                         Observes.class.getName(), ObservesAsync.class.getName());
                 throw new DefinitionException(message);
-            }
-
-            if (isObservedParameter(parameter)) {
-                observedParameter = parameter;
-            }
-            if (parameter.isAnnotationPresent(Disposes.class)) {
+            } else if (parameter.isAnnotationPresent(Disposes.class)) {
                 String message = format("An observer method must not annotate @%s!", Disposes.class.getName());
                 throw new DefinitionException(message);
+            } else if (isObservedParameter(parameter)) {
+                hasObservedParameter = true;
+                observerMethodParameters.add(observedParameter(parameter, i));
+            } else if (isEventMetadata(parameter)) {
+                observerMethodParameters.add(eventMetadataParameter(parameter, i));
+            } else {
+                observerMethodParameters.add(injectedParameter(parameter, i));
             }
 
         }
 
-        if (observedParameter != null) {
-            observedParametersCache.put(method, observedParameter);
+        if (hasObservedParameter) {
+            observerMethodParametersCache.put(method, observerMethodParameters);
             return true;
         }
 
+        observerMethodParameters.clear();
         return false;
     }
 
-    public static Parameter getObservedParameter(Method method) {
-        return observedParametersCache.get(method);
+    public static List<ObserverMethodParameter> getObserverMethodParameters(Method method) {
+        return observerMethodParametersCache.getOrDefault(method, emptyList());
     }
 
-    public static boolean hasObservedParameter(Method method){
-        return observedParametersCache.containsKey(method);
+    public static boolean hasObservedParameter(Method method) {
+        return observerMethodParametersCache.containsKey(method);
     }
+
+    public static ObserverMethodParameter getObservedParameter(List<ObserverMethodParameter> observerMethodParameters) {
+        return observerMethodParameters.stream()
+                .filter(ObserverMethodParameter::isObserved)
+                .findFirst()
+                .orElse(null);
+    }
+
 
 }

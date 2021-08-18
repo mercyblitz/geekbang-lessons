@@ -16,25 +16,44 @@
  */
 package org.geektimes.enterprise.inject.standard.event;
 
-import javax.enterprise.inject.spi.ObserverMethod;
-import java.util.List;
+import javax.enterprise.inject.spi.EventMetadata;
+import javax.enterprise.inject.spi.InjectionPoint;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.Set;
 
 /**
- * The discoverer for {@link ObserverMethod}
+ * Default {@link EventMetadata}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public interface ObserverMethodDiscoverer {
+public class DefaultEventMetadata implements EventMetadata {
 
-    /**
-     * Get the all {@link ObserverMethod observer methods} from the specified bean type
-     *
-     * @param beanInstance the beanInstance that {@link ObserverMethod observer methods} are belongs to
-     *                     if beanInstance is <code>null</code>, the {@link ObserverMethod observer methods}
-     *                     should be static
-     * @param beanType     the specified bean type
-     * @return non-null read-only {@link List}
-     */
-    <T> List<ObserverMethod<T>> getObserverMethods(T beanInstance, Class<? extends T> beanType);
+    private final Type type;
+
+    private final Set<Annotation> qualifiers;
+
+    private final InjectionPoint injectionPoint;
+
+    public DefaultEventMetadata(Type type, Set<Annotation> qualifiers, InjectionPoint injectionPoint) {
+        this.type = type;
+        this.qualifiers = qualifiers;
+        this.injectionPoint = injectionPoint;
+    }
+
+    @Override
+    public Set<Annotation> getQualifiers() {
+        return qualifiers;
+    }
+
+    @Override
+    public InjectionPoint getInjectionPoint() {
+        return injectionPoint;
+    }
+
+    @Override
+    public Type getType() {
+        return type;
+    }
 }

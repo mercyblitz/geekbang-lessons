@@ -392,4 +392,26 @@ public abstract class TypeUtils extends BaseUtils {
 
         return unmodifiableSet(filterAll(allTypes, typeFilters));
     }
+
+    public static Set<ParameterizedType> findParameterizedTypes(Class<?> sourceClass) {
+        // Add Generic Interfaces
+        List<Type> genericTypes = new LinkedList<>(asList(sourceClass.getGenericInterfaces()));
+        // Add Generic Super Class
+        genericTypes.add(sourceClass.getGenericSuperclass());
+
+        Set<ParameterizedType> parameterizedTypes = genericTypes.stream()
+                .filter(type -> type instanceof ParameterizedType)// filter ParameterizedType
+                .map(ParameterizedType.class::cast)  // cast to ParameterizedType
+                .collect(Collectors.toSet());
+
+        if (parameterizedTypes.isEmpty()) { // If not found, try to search super types recursively
+            genericTypes.stream()
+                    .filter(type -> type instanceof Class)
+                    .map(Class.class::cast)
+                    .forEach(superClass -> parameterizedTypes.addAll(findParameterizedTypes(superClass)));
+        }
+
+        return unmodifiableSet(parameterizedTypes);                     // build as a Set
+
+    }
 }

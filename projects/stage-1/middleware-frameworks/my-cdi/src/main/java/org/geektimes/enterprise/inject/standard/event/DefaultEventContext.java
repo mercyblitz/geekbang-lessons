@@ -16,25 +16,41 @@
  */
 package org.geektimes.enterprise.inject.standard.event;
 
-import javax.enterprise.inject.spi.ObserverMethod;
-import java.util.List;
+import javax.enterprise.inject.spi.EventContext;
+import javax.enterprise.inject.spi.EventMetadata;
+import javax.enterprise.inject.spi.InjectionPoint;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.Set;
 
 /**
- * The discoverer for {@link ObserverMethod}
+ * Default {@link EventContext} implementation
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public interface ObserverMethodDiscoverer {
+public class DefaultEventContext<T> implements EventContext<T> {
 
-    /**
-     * Get the all {@link ObserverMethod observer methods} from the specified bean type
-     *
-     * @param beanInstance the beanInstance that {@link ObserverMethod observer methods} are belongs to
-     *                     if beanInstance is <code>null</code>, the {@link ObserverMethod observer methods}
-     *                     should be static
-     * @param beanType     the specified bean type
-     * @return non-null read-only {@link List}
-     */
-    <T> List<ObserverMethod<T>> getObserverMethods(T beanInstance, Class<? extends T> beanType);
+    private final T event;
+
+    private final EventMetadata eventMetadata;
+
+    public DefaultEventContext(T event, EventMetadata eventMetadata) {
+        this.event = event;
+        this.eventMetadata = eventMetadata;
+    }
+
+    public DefaultEventContext(T event, Type type, Set<Annotation> qualifiers, InjectionPoint injectionPoint) {
+        this(event, new DefaultEventMetadata(type, qualifiers, injectionPoint));
+    }
+
+    @Override
+    public T getEvent() {
+        return event;
+    }
+
+    @Override
+    public EventMetadata getMetadata() {
+        return eventMetadata;
+    }
 }

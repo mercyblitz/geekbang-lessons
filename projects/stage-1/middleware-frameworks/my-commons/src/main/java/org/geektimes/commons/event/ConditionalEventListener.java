@@ -14,27 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard.event;
-
-import javax.enterprise.inject.spi.ObserverMethod;
-import java.util.List;
+package org.geektimes.commons.event;
 
 /**
- * The discoverer for {@link ObserverMethod}
+ * An {@link EventListener} extending the the conditional feature that {@link #accept(Event) decides} some
+ * {@link Event event} is handled or not by current listener.
  *
- * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
+ * @see EventListener
  * @since 1.0.0
  */
-public interface ObserverMethodDiscoverer {
+public interface ConditionalEventListener<E extends Event> extends EventListener<E> {
 
     /**
-     * Get the all {@link ObserverMethod observer methods} from the specified bean type
+     * Accept the event is handled or not by current listener
      *
-     * @param beanInstance the beanInstance that {@link ObserverMethod observer methods} are belongs to
-     *                     if beanInstance is <code>null</code>, the {@link ObserverMethod observer methods}
-     *                     should be static
-     * @param beanType     the specified bean type
-     * @return non-null read-only {@link List}
+     * @param event {@link Event event}
+     * @return if handled, return <code>true</code>, or <code>false</code>
      */
-    <T> List<ObserverMethod<T>> getObserverMethods(T beanInstance, Class<? extends T> beanType);
+    boolean accept(E event);
 }

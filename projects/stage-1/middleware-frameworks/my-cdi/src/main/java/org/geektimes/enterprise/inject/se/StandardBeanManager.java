@@ -70,7 +70,7 @@ public class StandardBeanManager implements BeanManager {
         // TODO
         this.classLoader = standardContainer.getClassLoader();
         this.extensions = new ConcurrentHashMap<>();
-        this.observerMethodDiscoverer = new ReflectiveObserverMethodDiscoverer();
+        this.observerMethodDiscoverer = new ReflectiveObserverMethodDiscoverer(standardContainer);
         this.observerMethodsRepository = new ObserverMethodRepository();
     }
 
@@ -85,14 +85,24 @@ public class StandardBeanManager implements BeanManager {
     }
 
     StandardBeanManager discoverObserverMethods() {
-        extensions.keySet().forEach(extensionClass -> {
-            observerMethodDiscoverer.getObserverMethods(extensionClass).forEach(this::addObserverMethod);
-        });
+        extensions.forEach(this::addObserverMethods);
         return this;
     }
 
-    public void addObserverMethod(ObserverMethod observerMethod) {
+    public StandardBeanManager addObserverMethods(Object beanInstance) {
+        return addObserverMethods(beanInstance.getClass(), beanInstance);
+    }
+
+    private StandardBeanManager addObserverMethods(Class<?> beanClass, Object beanInstance) {
+        observerMethodDiscoverer.getObserverMethods(beanInstance, beanClass)
+                .forEach(this::addObserverMethod);
+
+        return this;
+    }
+
+    public StandardBeanManager addObserverMethod(ObserverMethod observerMethod) {
         observerMethodsRepository.addObserverMethod(observerMethod);
+        return this;
     }
 
     void fireBeforeBeanDiscoveryEvent() {
@@ -197,7 +207,7 @@ public class StandardBeanManager implements BeanManager {
 
     @Override
     public <T> Set<ObserverMethod<? super T>> resolveObserverMethods(T event, Annotation... qualifiers) {
-        return observerMethodsRepository.resolveObserverMethods(event, qualifiers);
+        return (Set) observerMethodsRepository.resolveObserverMethods(event, qualifiers);
     }
 
     @Override

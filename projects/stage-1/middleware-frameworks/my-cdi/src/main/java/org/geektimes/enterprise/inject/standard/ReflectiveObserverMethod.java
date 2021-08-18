@@ -16,21 +16,26 @@
  */
 package org.geektimes.enterprise.inject.standard;
 
+import org.geektimes.enterprise.inject.standard.event.ObserverMethodParameter;
 import org.geektimes.enterprise.inject.util.Qualifiers;
 
 import javax.enterprise.event.Observes;
 import javax.enterprise.event.ObservesAsync;
 import javax.enterprise.event.Reception;
 import javax.enterprise.event.TransactionPhase;
+import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.spi.EventContext;
 import javax.enterprise.inject.spi.ObserverMethod;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
 import java.lang.reflect.Type;
+import java.util.List;
 import java.util.Set;
 
+import static org.geektimes.commons.function.ThrowableAction.execute;
+import static org.geektimes.commons.reflect.util.MemberUtils.isStatic;
 import static org.geektimes.enterprise.inject.util.Events.getObservedParameter;
+import static org.geektimes.enterprise.inject.util.Events.getObserverMethodParameters;
 
 /**
  * {@link ObserverMethod} based on Java Reflection.
@@ -40,9 +45,15 @@ import static org.geektimes.enterprise.inject.util.Events.getObservedParameter;
  */
 public class ReflectiveObserverMethod<T> implements ObserverMethod<T> {
 
+    private final Object beanInstance;
+
     private final Method method;
 
-    private final Parameter observedParameter;
+    private final Instance<Object> instance;
+
+    private final List<ObserverMethodParameter> observerMethodParameters;
+
+    private final ObserverMethodParameter observedParameter;
 
     private final Reception reception;
 
@@ -50,9 +61,12 @@ public class ReflectiveObserverMethod<T> implements ObserverMethod<T> {
 
     private final boolean async;
 
-    public ReflectiveObserverMethod(Method method) {
+    public ReflectiveObserverMethod(Object beanInstance, Method method, Instance<Object> instance) {
+        this.beanInstance = beanInstance;
         this.method = method;
-        this.observedParameter = getObservedParameter(method);
+        this.instance = instance;
+        this.observerMethodParameters = getObserverMethodParameters(method);
+        this.observedParameter = getObservedParameter(observerMethodParameters);
         Observes observes = observedParameter.getAnnotation(Observes.class);
         if (observes != null) {
             async = false;
@@ -98,7 +112,19 @@ public class ReflectiveObserverMethod<T> implements ObserverMethod<T> {
 
     @Override
     public void notify(EventContext<T> eventContext) {
-        notify(eventContext.getEvent());
+        int size = observerMethodParameters.size();
+        Object[] arguments = new Object[size];
+        for (int i = 0; i < size; i++) {
+            ObserverMethodParameter parameter = observerMethodParameters.get(i);
+            arguments[i] = resolveArgument(parameter);
+        }
+        Object object = isStatic(method) ? null : beanInstance;
+        // invoke the observer method
+        execute(() -> method.invoke(object, arguments));
+    }
+
+    private Object resolveArgument(ObserverMethodParameter parameter) {
+        return null;
     }
 
     @Override
