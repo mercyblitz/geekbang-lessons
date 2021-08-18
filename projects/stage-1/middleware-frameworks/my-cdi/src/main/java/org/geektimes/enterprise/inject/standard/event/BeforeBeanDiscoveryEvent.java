@@ -16,6 +16,7 @@
  */
 package org.geektimes.enterprise.inject.standard.event;
 
+import org.geektimes.enterprise.inject.se.StandardBeanManager;
 import org.geektimes.enterprise.inject.se.StandardContainer;
 
 import javax.enterprise.inject.spi.AnnotatedType;
@@ -38,13 +39,13 @@ public class BeforeBeanDiscoveryEvent extends EventObject implements BeforeBeanD
      * @param source The instance of {@link StandardContainer}
      * @throws IllegalArgumentException if source is null.
      */
-    public BeforeBeanDiscoveryEvent(StandardContainer source) {
+    public BeforeBeanDiscoveryEvent(StandardBeanManager source) {
         super(source);
     }
 
     @Override
-    public StandardContainer getSource() {
-        return (StandardContainer) super.getSource();
+    public StandardBeanManager getSource() {
+        return (StandardBeanManager) super.getSource();
     }
 
     @Override

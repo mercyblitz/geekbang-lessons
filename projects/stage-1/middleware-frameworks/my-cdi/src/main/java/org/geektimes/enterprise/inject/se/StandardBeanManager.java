@@ -95,6 +95,10 @@ public class StandardBeanManager implements BeanManager {
         observerMethodsRepository.addObserverMethod(observerMethod);
     }
 
+    void fireBeforeBeanDiscoveryEvent() {
+
+    }
+
     @Override
     public Object getReference(Bean<?> bean, Type beanType, CreationalContext<?> ctx) {
         // TODO

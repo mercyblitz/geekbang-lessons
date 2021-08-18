@@ -159,6 +159,7 @@ public class StandardContainer implements SeContainer {
     private void performContainerLifecycleEvents() {
         standardBeanManager.discoverExtensions();
         standardBeanManager.discoverObserverMethods();
+        standardBeanManager.fireBeforeBeanDiscoveryEvent();
     }
 
     /**

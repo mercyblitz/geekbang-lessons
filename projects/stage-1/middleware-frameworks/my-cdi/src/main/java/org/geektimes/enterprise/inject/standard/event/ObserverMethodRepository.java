@@ -45,7 +45,11 @@ public class ObserverMethodRepository {
     private final Map<Type, Set<ObserverMethod<?>>> storage;
 
     public ObserverMethodRepository() {
-        this.storage = new ConcurrentHashMap<>();
+        this(new ConcurrentHashMap<>());
+    }
+
+    public ObserverMethodRepository(Map<Type, Set<ObserverMethod<?>>> storage) {
+        this.storage = storage;
     }
 
     public ObserverMethodRepository addObserverMethod(ObserverMethod observerMethod) {
@@ -69,5 +73,9 @@ public class ObserverMethodRepository {
             Set<Annotation> observedQualifiers = observerMethod.getObservedQualifiers();
             return observedQualifiers.containsAll(qualifiersList);
         });
+    }
+
+    public Map<Type, Set<ObserverMethod<?>>> getStorage() {
+        return storage;
     }
 }

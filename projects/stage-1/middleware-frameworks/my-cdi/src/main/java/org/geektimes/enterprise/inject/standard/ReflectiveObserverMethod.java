@@ -19,8 +19,10 @@ package org.geektimes.enterprise.inject.standard;
 import org.geektimes.enterprise.inject.util.Qualifiers;
 
 import javax.enterprise.event.Observes;
+import javax.enterprise.event.ObservesAsync;
 import javax.enterprise.event.Reception;
 import javax.enterprise.event.TransactionPhase;
+import javax.enterprise.inject.spi.EventContext;
 import javax.enterprise.inject.spi.ObserverMethod;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -42,12 +44,26 @@ public class ReflectiveObserverMethod<T> implements ObserverMethod<T> {
 
     private final Parameter observedParameter;
 
-    private final Observes observes;
+    private final Reception reception;
+
+    private final TransactionPhase transactionPhase;
+
+    private final boolean async;
 
     public ReflectiveObserverMethod(Method method) {
         this.method = method;
         this.observedParameter = getObservedParameter(method);
-        this.observes = observedParameter.getAnnotation(Observes.class);
+        Observes observes = observedParameter.getAnnotation(Observes.class);
+        if (observes != null) {
+            async = false;
+            this.reception = observes.notifyObserver();
+            this.transactionPhase = observes.during();
+        } else {
+            ObservesAsync observesAsync = observedParameter.getAnnotation(ObservesAsync.class);
+            async = true;
+            this.reception = observesAsync.notifyObserver();
+            this.transactionPhase = null;
+        }
     }
 
     @Override
@@ -67,11 +83,26 @@ public class ReflectiveObserverMethod<T> implements ObserverMethod<T> {
 
     @Override
     public Reception getReception() {
-        return observes.notifyObserver();
+        return reception;
     }
 
     @Override
     public TransactionPhase getTransactionPhase() {
-        return observes.during();
+        return transactionPhase;
+    }
+
+    @Override
+    public void notify(T event) {
+
+    }
+
+    @Override
+    public void notify(EventContext<T> eventContext) {
+        notify(eventContext.getEvent());
+    }
+
+    @Override
+    public boolean isAsync() {
+        return async;
     }
 }
