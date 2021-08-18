@@ -332,7 +332,12 @@ public abstract class TypeUtils extends BaseUtils {
             return emptySet();
         }
 
+        if (rawClass.isInterface()) {
+            return unmodifiableSet(filterAll(singleton(Object.class), typeFilters));
+        }
+
         Set<Type> allSuperTypes = new LinkedHashSet<>();
+
 
         Type superType = rawClass.getGenericSuperclass();
         while (superType != null) {

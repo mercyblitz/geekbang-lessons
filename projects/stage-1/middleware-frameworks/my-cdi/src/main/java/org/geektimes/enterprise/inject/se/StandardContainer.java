@@ -16,10 +16,7 @@
  */
 package org.geektimes.enterprise.inject.se;
 
-import org.geektimes.commons.lang.util.ClassLoaderUtils;
-import org.geektimes.commons.reflect.util.SimpleClassScanner;
-import org.geektimes.enterprise.inject.standard.AnnotatedBean;
-import org.geektimes.enterprise.inject.standard.ReflectiveAnnotatedBean;
+import org.geektimes.enterprise.inject.standard.StandardBeanManager;
 
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.se.SeContainer;
@@ -28,7 +25,6 @@ import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.util.TypeLiteral;
 import java.lang.annotation.Annotation;
 import java.util.*;
-import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 
@@ -42,213 +38,67 @@ public class StandardContainer implements SeContainer {
 
     private final Logger logger = Logger.getLogger(getClass().getName());
 
-    private final SimpleClassScanner classScanner;
-
-    private final Map<String, Object> properties;
-
-    private final Set<Class<?>> beanClasses;
-
-    private final Map<Package, Boolean> packagesToDiscovery;
-
-    private final Set<Class<?>> interceptorClasses;
-
-    private final Set<Class<?>> decoratorClasses;
-
-    private final Set<Class<?>> alternativeClasses;
-
-    private final Set<Class<? extends Annotation>> alternativeStereotypeClasses;
-
-    private ClassLoader classLoader;
-
-    private boolean enabledDiscovery;
-
     private boolean running;
 
     private final StandardBeanManager standardBeanManager;
 
     public StandardContainer() {
-        this.classScanner = SimpleClassScanner.INSTANCE;
-        this.classLoader = ClassLoaderUtils.getClassLoader(getClass());
-        this.properties = new HashMap<>();
-        this.enabledDiscovery = true;
-        this.beanClasses = new LinkedHashSet<>();
-        this.packagesToDiscovery = new LinkedHashMap<>();
-        this.interceptorClasses = new LinkedHashSet<>();
-        this.decoratorClasses = new LinkedHashSet<>();
-        this.alternativeClasses = new LinkedHashSet<>();
-        this.alternativeStereotypeClasses = new LinkedHashSet<>();
         this.running = false;
         // Create BeanManager
-        standardBeanManager = new StandardBeanManager(this);
+        standardBeanManager = new StandardBeanManager();
     }
 
 
     void addBeanClasses(Class<?>... classes) {
-        // TODO Validate the Bean Classes ?
-        iterateNonNull(classes, this.beanClasses::add);
+        standardBeanManager.beanClasses(classes);
     }
 
     void addPackages(boolean scanRecursively, Package... packages) {
-        iterateNonNull(packages, p -> packagesToDiscovery.put(p, scanRecursively));
+        standardBeanManager.packages(scanRecursively, packages);
     }
 
     void addExtensions(Extension... extensions) {
-        iterateNonNull(extensions, standardBeanManager::addExtension);
+        standardBeanManager.extensions(extensions);
     }
 
     void addInterceptors(Class<?>... interceptorClasses) {
-        iterateNonNull(interceptorClasses, this.interceptorClasses::add);
+        standardBeanManager.interceptorClasses(interceptorClasses);
     }
 
     void addDecorators(Class<?>... decoratorClasses) {
-        iterateNonNull(decoratorClasses, this.decoratorClasses::add);
+        standardBeanManager.decoratorClasses(decoratorClasses);
     }
 
     void addAlternatives(Class<?>... alternativeClasses) {
-        iterateNonNull(alternativeClasses, this.alternativeClasses::add);
+        standardBeanManager.alternativeClasses(alternativeClasses);
     }
 
     void addAlternativeStereotypes(Class<? extends Annotation>... alternativeStereotypeClasses) {
-        iterateNonNull(alternativeStereotypeClasses, this.alternativeStereotypeClasses::add);
+        standardBeanManager.alternativeStereotypeClasses(alternativeStereotypeClasses);
     }
 
     void setProperty(String key, Object value) {
-        this.properties.put(key, value);
+        standardBeanManager.property(key, value);
     }
 
     void setProperties(Map<String, Object> properties) {
-        this.properties.clear();
-        this.properties.putAll(properties);
+        standardBeanManager.properties(properties);
     }
 
     void disableDiscovery() {
-        enabledDiscovery = false;
+        standardBeanManager.disableDiscovery();
     }
 
     void setClassLoader(ClassLoader classLoader) {
-        this.classLoader = classLoader;
-    }
-
-    public static <T> void iterateNonNull(T[] values, Consumer<T> consumer) {
-        Objects.requireNonNull(values, "The argument must not be null!");
-        for (T value : values) {
-            Objects.requireNonNull(value, "Any element of the argument must not be null!");
-            consumer.accept(value);
-        }
+        standardBeanManager.classLoader(classLoader);
     }
 
     public void initialize() {
-        running = true;
-        // TODO
-        performContainerLifecycleEvents();
-        performBeforeBeanDiscovery();
-        performTypeDiscovery();
-        performAfterTypeDiscovery();
-        performBeanDiscovery();
-        performAfterBeanDiscovery();
-        performDeploymentValidation();
-        performAfterDeploymentValidation();
-
-    }
-
-    /**
-     * First, the container must search for service providers for the service javax.enterprise.inject.spi.Extension
-     * defined in Container lifecycle events, instantiate a single instance of each service provider, and search the
-     * service provider class for observer methods of initialization events.
-     */
-    private void performContainerLifecycleEvents() {
-        standardBeanManager.discoverExtensions();
-        standardBeanManager.discoverObserverMethods();
-        standardBeanManager.fireBeforeBeanDiscoveryEvent();
-    }
-
-    /**
-     * the container must fire an event of type BeforeBeanDiscovery, as defined in BeforeBeanDiscovery event.
-     */
-    private void performBeforeBeanDiscovery() {
-    }
-
-    /**
-     * the container must perform type discovery, as defined in Type discovery.
-     */
-    private void performTypeDiscovery() {
-        if (!enabledDiscovery) {
-            // TODO log
+        if (isRunning()) {
             return;
         }
-
-        Set<Class<?>> classes = scanClasses();
-        // filter Beans with definition annotations
-        Set<AnnotatedBean<?>> annotatedBeans = filterDefiningAnnotationBeans(classes);
-        // dispatch all kinds of classes, e.g Bean Classes , Interceptor Classes or others
-        dispatchClasses(annotatedBeans);
-    }
-
-    /**
-     * the container must fire an event of type AfterTypeDiscovery, as defined in AfterTypeDiscovery event.
-     */
-    private void performAfterTypeDiscovery() {
-    }
-
-    /**
-     * the container must perform bean discovery, as defined in Bean discovery.
-     */
-    private void performBeanDiscovery() {
-    }
-
-    /**
-     * the container must fire an event of type AfterBeanDiscovery, as defined in AfterBeanDiscovery event, and abort
-     * initialization of the application if any observer registers a definition error.
-     */
-    private void performAfterBeanDiscovery() {
-    }
-
-    /**
-     * the container must detect deployment problems by validating bean dependencies and specialization and abort
-     * initialization of the application if any deployment problems exist, as defined in Problems detected automatically
-     * by the container.
-     */
-    private void performDeploymentValidation() {
-    }
-
-    /**
-     * the container must fire an event of type AfterDeploymentValidation, as defined in AfterDeploymentValidation event,
-     * and abort initialization of the application if any observer registers a deployment problem.
-     */
-    private void performAfterDeploymentValidation() {
-    }
-
-    private void dispatchClasses(Set<AnnotatedBean<?>> annotatedBeans) {
-
-    }
-
-    private Set<AnnotatedBean<?>> filterDefiningAnnotationBeans(Set<Class<?>> classes) {
-        Set<AnnotatedBean<?>> annotatedBeans = new LinkedHashSet<>();
-        for (Class<?> type : classes) {
-            AnnotatedBean annotatedBean = new ReflectiveAnnotatedBean(type);
-            if (annotatedBean.hasDefiningAnnotation()) {
-                annotatedBeans.add(annotatedBean);
-            }
-        }
-        return annotatedBeans;
-    }
-
-    private Set<Class<?>> scanClasses() {
-        Set<Class<?>> classes = new LinkedHashSet<>();
-        ClassLoader classLoader = getClassLoader();
-        for (Map.Entry<Package, Boolean> packageEntry : packagesToDiscovery.entrySet()) {
-            Package packageToDiscovery = packageEntry.getKey();
-            boolean scanRecursively = Boolean.TRUE.equals(packageEntry.getValue());
-            classes.addAll(classScanner.scan(classLoader, packageToDiscovery.getName(), scanRecursively, true));
-        }
-        return classes;
-    }
-
-
-    private void discoverTypes() {
-    }
-
-    private void discoverBeans() {
+        standardBeanManager.initialize();
+        running = true;
     }
 
     @Override
@@ -271,81 +121,41 @@ public class StandardContainer implements SeContainer {
 
     @Override
     public Instance<Object> select(Annotation... qualifiers) {
-        return null;
+        return standardBeanManager.select(qualifiers);
     }
 
     @Override
     public <U> Instance<U> select(Class<U> subtype, Annotation... qualifiers) {
-        return null;
+        return standardBeanManager.select(subtype, qualifiers);
     }
 
     @Override
     public <U> Instance<U> select(TypeLiteral<U> subtype, Annotation... qualifiers) {
-        return null;
+        return standardBeanManager.select(subtype, qualifiers);
     }
 
     @Override
     public boolean isUnsatisfied() {
-        return false;
+        return standardBeanManager.isUnsatisfied();
     }
 
     @Override
     public boolean isAmbiguous() {
-        return false;
+        return standardBeanManager.isAmbiguous();
     }
 
     @Override
     public void destroy(Object instance) {
-
+        standardBeanManager.destroy(instance);
     }
 
     @Override
     public Iterator<Object> iterator() {
-        return null;
+        return standardBeanManager.iterator();
     }
 
     @Override
     public Object get() {
-        return null;
+        return standardBeanManager.get();
     }
-
-    public ClassLoader getClassLoader() {
-        if (classLoader == null) {
-            classLoader = ClassLoaderUtils.getClassLoader(getClass());
-        }
-        return classLoader;
-    }
-
-    public Map<String, Object> getProperties() {
-        return properties;
-    }
-
-    public boolean isEnabledDiscovery() {
-        return enabledDiscovery;
-    }
-
-    public Set<Class<?>> getBeanClasses() {
-        return beanClasses;
-    }
-
-    public Map<Package, Boolean> getPackagesToDiscovery() {
-        return packagesToDiscovery;
-    }
-
-    public Set<Class<?>> getInterceptorClasses() {
-        return interceptorClasses;
-    }
-
-    public Set<Class<?>> getDecoratorClasses() {
-        return decoratorClasses;
-    }
-
-    public Set<Class<?>> getAlternativeClasses() {
-        return alternativeClasses;
-    }
-
-    public Set<Class<? extends Annotation>> getAlternativeStereotypeClasses() {
-        return alternativeStereotypeClasses;
-    }
-
 }

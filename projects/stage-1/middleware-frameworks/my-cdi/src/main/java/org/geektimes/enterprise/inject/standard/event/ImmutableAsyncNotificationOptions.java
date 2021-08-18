@@ -14,32 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject;
+package org.geektimes.enterprise.inject.standard.event;
 
-import javax.enterprise.event.Observes;
-import javax.enterprise.event.ObservesAsync;
-import javax.enterprise.inject.Default;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.BeforeBeanDiscovery;
-import javax.enterprise.inject.spi.Extension;
-import javax.inject.Inject;
+import javax.enterprise.event.NotificationOptions;
+import java.util.concurrent.Executor;
+import java.util.concurrent.ForkJoinPool;
 
 /**
- * My {@link Extension}
+ * Immutable {@link NotificationOptions} under Async
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class MyExtension implements Extension {
+public class ImmutableAsyncNotificationOptions implements NotificationOptions {
 
-    @Inject
-    private BeanManager beanManager;
+    public static final NotificationOptions INSTANCE = new ImmutableAsyncNotificationOptions();
 
-    public void beforeBeanDiscovery(@Observes @Default BeforeBeanDiscovery beforeBeanDiscovery) {
-        System.out.println(beforeBeanDiscovery);
+    private ImmutableAsyncNotificationOptions() {
     }
 
-    public void onAnyEvent(@ObservesAsync Object event) {
-        System.out.println(event);
+    @Override
+    public Executor getExecutor() {
+        return ForkJoinPool.commonPool();
+    }
+
+    @Override
+    public Object get(String optionName) {
+        return null;
     }
 }

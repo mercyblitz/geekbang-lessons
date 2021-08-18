@@ -153,4 +153,16 @@ public class ReflectiveObserverMethod<T> implements ObserverMethod<T> {
     public boolean isAsync() {
         return async;
     }
+
+    @Override
+    public String toString() {
+        return "ReflectiveObserverMethod{" +
+                "instance=" + beanInstance +
+                ", method=" + method +
+                ", parameters=" + observerMethodParameters +
+                ", reception=" + reception +
+                ", transactionPhase=" + transactionPhase +
+                ", async=" + async +
+                '}';
+    }
 }

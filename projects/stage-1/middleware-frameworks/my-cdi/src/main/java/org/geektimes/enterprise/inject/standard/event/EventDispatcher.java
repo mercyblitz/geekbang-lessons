@@ -28,8 +28,11 @@ import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.logging.Logger;
 
+import static java.lang.String.format;
 import static org.geektimes.commons.reflect.util.TypeUtils.getAllTypes;
 
 /**
@@ -56,25 +59,35 @@ public class EventDispatcher implements Event<Object> {
 
     @Override
     public void fire(Object event) {
-        Set<ObserverMethod> observerMethods = repository.resolveObserverMethods(event);
-        observerMethods.forEach(observerMethod -> {
-            EventContext eventContext = new DefaultEventContext(
-                    event,
-                    observerMethod.getObservedType(),
-                    observerMethod.getObservedQualifiers(),
-                    injectionPoint);
-            observerMethod.notify(eventContext);
-        });
+        fire(event, false);
     }
 
     @Override
     public <U> CompletionStage<U> fireAsync(U event) {
-        return null;
+        return fireAsync(event, ImmutableAsyncNotificationOptions.INSTANCE);
     }
 
     @Override
     public <U> CompletionStage<U> fireAsync(U event, NotificationOptions options) {
-        return null;
+        return CompletableFuture.supplyAsync(() -> event, options.getExecutor())
+                .thenApplyAsync(e -> {
+                    fire(e, true);
+                    return e;
+                }); // TODO Exception Handler
+    }
+
+    protected void fire(Object event, boolean async) {
+        repository.resolveObserverMethods(event)
+                .stream()
+                .filter(m -> async == m.isAsync())
+                .forEach(observerMethod -> {
+                    EventContext eventContext = new DefaultEventContext(
+                            event,
+                            observerMethod.getObservedType(),
+                            observerMethod.getObservedQualifiers(),
+                            injectionPoint);
+                    observerMethod.notify(eventContext);
+                });
     }
 
     @Override
