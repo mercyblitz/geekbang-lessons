@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
+import static org.geektimes.commons.function.Streams.filterSet;
 import static org.geektimes.commons.reflect.util.TypeUtils.getAllTypes;
 
 /**
@@ -68,10 +69,16 @@ public class ObserverMethodRepository {
 
     public <T> Set<ObserverMethod> resolveObserverMethods(Class<T> eventType, Annotation... qualifiers) {
         List<Annotation> qualifiersList = asList(qualifiers);
-        Set<ObserverMethod> observerMethods = storage.getOrDefault(eventType, emptySet());
-        return Streams.filterSet(observerMethods, observerMethod -> {
-            Set<Annotation> observedQualifiers = observerMethod.getObservedQualifiers();
-            return observedQualifiers.containsAll(qualifiersList);
+        Set<ObserverMethod> allObserverMethods = new LinkedHashSet<>();
+        Set<Type> subEventTypes = getAllTypes(eventType);
+        subEventTypes.forEach(subEventType -> {
+            Set<ObserverMethod> observerMethods = storage.getOrDefault(subEventType, emptySet());
+            Set<ObserverMethod> matchedObserverMethods = filterSet(observerMethods, observerMethod -> {
+                Set<Annotation> observedQualifiers = observerMethod.getObservedQualifiers();
+                return observedQualifiers.containsAll(qualifiersList);
+            });
+            allObserverMethods.addAll(matchedObserverMethods);
         });
+        return allObserverMethods;
     }
 }

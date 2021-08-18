@@ -21,6 +21,8 @@ import org.junit.Test;
 import javax.enterprise.inject.se.SeContainer;
 import javax.enterprise.inject.se.SeContainerInitializer;
 
+import static javax.enterprise.inject.se.SeContainerInitializer.newInstance;
+
 /**
  * {@link StandardContainerInitializer} Test
  *
@@ -31,7 +33,7 @@ public class StandardContainerInitializerTest {
 
     @Test
     public void test() {
-        SeContainerInitializer initializer = new StandardContainerInitializer();
+        SeContainerInitializer initializer = newInstance();
         initializer.addPackages(true, getClass());
         SeContainer seContainer = initializer.initialize();
         seContainer.close();

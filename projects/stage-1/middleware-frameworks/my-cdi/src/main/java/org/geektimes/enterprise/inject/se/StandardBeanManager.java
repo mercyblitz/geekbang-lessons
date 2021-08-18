@@ -20,9 +20,7 @@ import org.geektimes.enterprise.inject.standard.ConstructorParameterInjectionPoi
 import org.geektimes.enterprise.inject.standard.FieldInjectionPoint;
 import org.geektimes.enterprise.inject.standard.MethodParameterInjectionPoint;
 import org.geektimes.enterprise.inject.standard.ReflectiveAnnotatedType;
-import org.geektimes.enterprise.inject.standard.event.ObserverMethodDiscoverer;
-import org.geektimes.enterprise.inject.standard.event.ObserverMethodRepository;
-import org.geektimes.enterprise.inject.standard.event.ReflectiveObserverMethodDiscoverer;
+import org.geektimes.enterprise.inject.standard.event.*;
 import org.geektimes.enterprise.inject.util.*;
 
 import javax.el.ELResolver;
@@ -66,47 +64,15 @@ public class StandardBeanManager implements BeanManager {
 
     private final ObserverMethodRepository observerMethodsRepository;
 
+    private final EventDispatcher eventDispatcher;
+
     public StandardBeanManager(StandardContainer standardContainer) {
         // TODO
         this.classLoader = standardContainer.getClassLoader();
         this.extensions = new ConcurrentHashMap<>();
         this.observerMethodDiscoverer = new ReflectiveObserverMethodDiscoverer(standardContainer);
         this.observerMethodsRepository = new ObserverMethodRepository();
-    }
-
-    public StandardBeanManager addExtension(Extension extension) {
-        extensions.put(extension.getClass(), extension);
-        return this;
-    }
-
-    StandardBeanManager discoverExtensions() {
-        load(Extension.class, classLoader).forEach(this::addExtension);
-        return this;
-    }
-
-    StandardBeanManager discoverObserverMethods() {
-        extensions.forEach(this::addObserverMethods);
-        return this;
-    }
-
-    public StandardBeanManager addObserverMethods(Object beanInstance) {
-        return addObserverMethods(beanInstance.getClass(), beanInstance);
-    }
-
-    private StandardBeanManager addObserverMethods(Class<?> beanClass, Object beanInstance) {
-        observerMethodDiscoverer.getObserverMethods(beanInstance, beanClass)
-                .forEach(this::addObserverMethod);
-
-        return this;
-    }
-
-    public StandardBeanManager addObserverMethod(ObserverMethod observerMethod) {
-        observerMethodsRepository.addObserverMethod(observerMethod);
-        return this;
-    }
-
-    void fireBeforeBeanDiscoveryEvent() {
-
+        this.eventDispatcher = new EventDispatcher(observerMethodsRepository);
     }
 
     @Override
@@ -383,13 +349,74 @@ public class StandardBeanManager implements BeanManager {
 
     @Override
     public Event<Object> getEvent() {
-        // TODO
-        return null;
+        return eventDispatcher;
     }
 
     @Override
     public Instance<Object> createInstance() {
         // TODO
         return null;
+    }
+
+    // Extended methods
+
+    public StandardBeanManager addExtension(Extension extension) {
+        extensions.put(extension.getClass(), extension);
+        return this;
+    }
+
+    StandardBeanManager discoverExtensions() {
+        load(Extension.class, classLoader).forEach(this::addExtension);
+        return this;
+    }
+
+    StandardBeanManager discoverObserverMethods() {
+        extensions.forEach(this::addObserverMethods);
+        return this;
+    }
+
+    private StandardBeanManager addObserverMethods(Object beanInstance) {
+        return addObserverMethods(beanInstance.getClass(), beanInstance);
+    }
+
+    private StandardBeanManager addObserverMethods(Class<?> beanClass, Object beanInstance) {
+        observerMethodDiscoverer.getObserverMethods(beanInstance, beanClass)
+                .forEach(this::addObserverMethod);
+
+        return this;
+    }
+
+    public StandardBeanManager addObserverMethod(ObserverMethod observerMethod) {
+        observerMethodsRepository.addObserverMethod(observerMethod);
+        return this;
+    }
+
+    void fireBeforeBeanDiscoveryEvent() {
+        eventDispatcher.fire(new BeforeBeanDiscoveryEvent(this));
+    }
+
+    public StandardBeanManager addQualifier(Class<? extends Annotation> qualifier) {
+        // TODO
+        return this;
+    }
+
+    public StandardBeanManager addStereotype(Class<? extends Annotation> stereotype, Annotation... stereotypeDef) {
+        // TODO
+        return this;
+    }
+
+    public StandardBeanManager addScope(Class<? extends Annotation> scopeType, boolean normal, boolean passivating) {
+        // TODO
+        return this;
+    }
+
+    public StandardBeanManager addInterceptorBinding(Class<? extends Annotation> bindingType, Annotation[] bindingTypeDef) {
+        // TODO
+        return this;
+    }
+
+    public StandardBeanManager addAnnotatedType(String id, AnnotatedType<?> type) {
+        // TODO
+        return this;
     }
 }

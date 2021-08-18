@@ -44,12 +44,12 @@ public class EventDispatcher implements Event<Object> {
 
     private final ObserverMethodRepository repository;
 
-    EventDispatcher(ObserverMethodRepository repository) {
+    public EventDispatcher(ObserverMethodRepository repository) {
         this(repository, null);
     }
 
-    EventDispatcher(ObserverMethodRepository repository,
-                    InjectionPoint injectionPoint) {
+    public EventDispatcher(ObserverMethodRepository repository,
+                           InjectionPoint injectionPoint) {
         this.repository = repository;
         this.injectionPoint = injectionPoint;
     }

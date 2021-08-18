@@ -17,13 +17,11 @@
 package org.geektimes.enterprise.inject.standard.event;
 
 import org.geektimes.enterprise.inject.se.StandardBeanManager;
-import org.geektimes.enterprise.inject.se.StandardContainer;
 
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.configurator.AnnotatedTypeConfigurator;
 import java.lang.annotation.Annotation;
-import java.util.EventObject;
 
 /**
  * {@link BeforeBeanDiscovery} Event implementation
@@ -31,75 +29,71 @@ import java.util.EventObject;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class BeforeBeanDiscoveryEvent extends EventObject implements BeforeBeanDiscovery {
+public class BeforeBeanDiscoveryEvent implements BeforeBeanDiscovery {
 
-    /**
-     * Constructs a prototypical Event.
-     *
-     * @param source The instance of {@link StandardContainer}
-     * @throws IllegalArgumentException if source is null.
-     */
-    public BeforeBeanDiscoveryEvent(StandardBeanManager source) {
-        super(source);
+    private final StandardBeanManager standardBeanManager;
+
+    public BeforeBeanDiscoveryEvent(StandardBeanManager standardBeanManager) {
+        this.standardBeanManager = standardBeanManager;
     }
 
-    @Override
-    public StandardBeanManager getSource() {
-        return (StandardBeanManager) super.getSource();
-    }
 
     @Override
     public void addQualifier(Class<? extends Annotation> qualifier) {
-
+        standardBeanManager.addQualifier(qualifier);
     }
 
     @Override
     public void addQualifier(AnnotatedType<? extends Annotation> qualifier) {
-
+        addQualifier(qualifier.getJavaClass());
     }
 
     @Override
     public void addScope(Class<? extends Annotation> scopeType, boolean normal, boolean passivating) {
-
+        standardBeanManager.addScope(scopeType, normal, passivating);
     }
 
     @Override
     public void addStereotype(Class<? extends Annotation> stereotype, Annotation... stereotypeDef) {
-
+        standardBeanManager.addStereotype(stereotype, stereotypeDef);
     }
 
     @Override
     public void addInterceptorBinding(AnnotatedType<? extends Annotation> bindingType) {
-
+        addInterceptorBinding(bindingType.getJavaClass());
     }
 
     @Override
     public void addInterceptorBinding(Class<? extends Annotation> bindingType, Annotation... bindingTypeDef) {
-
+        standardBeanManager.addInterceptorBinding(bindingType, bindingTypeDef);
     }
 
     @Override
+    @Deprecated
     public void addAnnotatedType(AnnotatedType<?> type) {
-
+        addAnnotatedType(type, type.getJavaClass().getName());
     }
 
     @Override
     public void addAnnotatedType(AnnotatedType<?> type, String id) {
-
+        standardBeanManager.addAnnotatedType(id, type);
     }
 
     @Override
     public <T> AnnotatedTypeConfigurator<T> addAnnotatedType(Class<T> type, String id) {
+        // TODO
         return null;
     }
 
     @Override
     public <T extends Annotation> AnnotatedTypeConfigurator<T> configureQualifier(Class<T> qualifier) {
+        // TODO
         return null;
     }
 
     @Override
     public <T extends Annotation> AnnotatedTypeConfigurator<T> configureInterceptorBinding(Class<T> bindingType) {
+        // TODO
         return null;
     }
 }

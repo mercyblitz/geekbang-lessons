@@ -17,6 +17,7 @@
 package org.geektimes.enterprise.inject;
 
 import javax.enterprise.event.Observes;
+import javax.enterprise.inject.Default;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.Extension;
@@ -33,7 +34,7 @@ public class MyExtension implements Extension {
     @Inject
     private BeanManager beanManager;
 
-    public void beforeBeanDiscovery(@Observes BeforeBeanDiscovery beforeBeanDiscovery) {
-
+    public void beforeBeanDiscovery(@Observes @Default BeforeBeanDiscovery beforeBeanDiscovery) {
+        System.out.println(beforeBeanDiscovery);
     }
 }

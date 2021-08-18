@@ -347,4 +347,5 @@ public class StandardContainer implements SeContainer {
     public Set<Class<? extends Annotation>> getAlternativeStereotypeClasses() {
         return alternativeStereotypeClasses;
     }
+
 }

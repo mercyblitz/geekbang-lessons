@@ -153,4 +153,13 @@ public class ObserverMethodParameter implements AnnotatedElement {
     public static ObserverMethodParameter injectedParameter(Parameter parameter, int index) {
         return new ObserverMethodParameter(parameter, index, INJECTED_PARAM_TYPE);
     }
+
+    @Override
+    public String toString() {
+        return "ObserverMethodParameter{" +
+                "parameter=" + parameter +
+                ", index=" + index +
+                ", type=" + type +
+                '}';
+    }
 }

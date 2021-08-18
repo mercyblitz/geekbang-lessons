@@ -24,6 +24,8 @@ import javax.enterprise.event.ObservesAsync;
 import javax.enterprise.event.Reception;
 import javax.enterprise.event.TransactionPhase;
 import javax.enterprise.inject.Instance;
+import javax.enterprise.inject.UnsatisfiedResolutionException;
+import javax.enterprise.inject.spi.DefinitionException;
 import javax.enterprise.inject.spi.EventContext;
 import javax.enterprise.inject.spi.ObserverMethod;
 import java.lang.annotation.Annotation;
@@ -32,10 +34,13 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Set;
 
+import static java.lang.String.format;
 import static org.geektimes.commons.function.ThrowableAction.execute;
+import static org.geektimes.commons.lang.util.ArrayUtils.asArray;
 import static org.geektimes.commons.reflect.util.MemberUtils.isStatic;
 import static org.geektimes.enterprise.inject.util.Events.getObservedParameter;
 import static org.geektimes.enterprise.inject.util.Events.getObserverMethodParameters;
+import static org.geektimes.enterprise.inject.util.Qualifiers.getQualifiers;
 
 /**
  * {@link ObserverMethod} based on Java Reflection.
@@ -92,7 +97,7 @@ public class ReflectiveObserverMethod<T> implements ObserverMethod<T> {
 
     @Override
     public Set<Annotation> getObservedQualifiers() {
-        return Qualifiers.getQualifiers(observedParameter);
+        return getQualifiers(observedParameter);
     }
 
     @Override
@@ -113,18 +118,35 @@ public class ReflectiveObserverMethod<T> implements ObserverMethod<T> {
     @Override
     public void notify(EventContext<T> eventContext) {
         int size = observerMethodParameters.size();
-        Object[] arguments = new Object[size];
+        Object[] parameterValues = new Object[size];
         for (int i = 0; i < size; i++) {
             ObserverMethodParameter parameter = observerMethodParameters.get(i);
-            arguments[i] = resolveArgument(parameter);
+            parameterValues[i] = resolveParameterValue(eventContext, parameter);
         }
         Object object = isStatic(method) ? null : beanInstance;
         // invoke the observer method
-        execute(() -> method.invoke(object, arguments));
+        execute(() -> method.invoke(object, parameterValues));
     }
 
-    private Object resolveArgument(ObserverMethodParameter parameter) {
-        return null;
+    private Object resolveParameterValue(EventContext<T> eventContext, ObserverMethodParameter parameter) {
+        if (parameter.isObserved()) {
+            return eventContext.getEvent();
+        } else if (parameter.isMetadata()) {
+            return eventContext.getMetadata();
+        } else if (parameter.isInjected()) {
+            Class<?> parameterType = parameter.getType();
+            Set<Annotation> qualifiers = getQualifiers(parameter);
+            Instance<?> targetInstance = instance.select(parameterType, asArray(qualifiers, Annotation.class));
+            if (targetInstance.isUnsatisfied()) {
+                String message = format("The injected instance can't be resolved from parameter[%s] with qualifiers[%s]",
+                        parameter.getParameter(), qualifiers);
+                throw new UnsatisfiedResolutionException(message);
+            }
+            return targetInstance.get();
+        }
+        String message = format("The observer method[%s] can't resolve the parameter[%s]",
+                method, parameter.getParameter());
+        throw new DefinitionException(message);
     }
 
     @Override
