@@ -157,7 +157,7 @@ public class StandardContainer implements SeContainer {
      * service provider class for observer methods of initialization events.
      */
     private void performContainerLifecycleEvents() {
-        standardBeanManager.loadExtensions();
+        standardBeanManager.discoverExtensions();
         standardBeanManager.discoverObserverMethods();
     }
 

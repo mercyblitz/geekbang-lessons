@@ -21,6 +21,7 @@ import org.geektimes.enterprise.inject.standard.FieldInjectionPoint;
 import org.geektimes.enterprise.inject.standard.MethodParameterInjectionPoint;
 import org.geektimes.enterprise.inject.standard.ReflectiveAnnotatedType;
 import org.geektimes.enterprise.inject.standard.event.ObserverMethodDiscoverer;
+import org.geektimes.enterprise.inject.standard.event.ObserverMethodRepository;
 import org.geektimes.enterprise.inject.standard.event.ReflectiveObserverMethodDiscoverer;
 import org.geektimes.enterprise.inject.util.*;
 
@@ -39,14 +40,12 @@ import javax.enterprise.inject.spi.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.ServiceLoader.load;
-import static org.geektimes.commons.reflect.util.TypeUtils.getAllTypes;
 import static org.geektimes.enterprise.inject.util.Injections.validateForbiddenAnnotation;
 import static org.geektimes.enterprise.inject.util.Parameters.isConstructorParameter;
 import static org.geektimes.enterprise.inject.util.Parameters.isMethodParameter;
@@ -64,43 +63,36 @@ public class StandardBeanManager implements BeanManager {
     private final Map<Class<? extends Extension>, Extension> extensions;
 
     private final ObserverMethodDiscoverer observerMethodDiscoverer;
-    /**
-     * Key is Event type
-     */
-    private final Map<Type, List<ObserverMethod>> observerMethodsRepository;
 
+    private final ObserverMethodRepository observerMethodsRepository;
 
     public StandardBeanManager(StandardContainer standardContainer) {
         // TODO
         this.classLoader = standardContainer.getClassLoader();
         this.extensions = new ConcurrentHashMap<>();
         this.observerMethodDiscoverer = new ReflectiveObserverMethodDiscoverer();
-        this.observerMethodsRepository = new ConcurrentHashMap<>();
+        this.observerMethodsRepository = new ObserverMethodRepository();
     }
 
-    void addExtension(Extension extension) {
+    public StandardBeanManager addExtension(Extension extension) {
         extensions.put(extension.getClass(), extension);
+        return this;
     }
 
-    void loadExtensions() {
-        for (Extension extension : load(Extension.class, classLoader)) {
-            extensions.put(extension.getClass(), extension);
-        }
+    StandardBeanManager discoverExtensions() {
+        load(Extension.class, classLoader).forEach(this::addExtension);
+        return this;
     }
 
-    void discoverObserverMethods() {
+    StandardBeanManager discoverObserverMethods() {
         extensions.keySet().forEach(extensionClass -> {
             observerMethodDiscoverer.getObserverMethods(extensionClass).forEach(this::addObserverMethod);
         });
+        return this;
     }
 
     public void addObserverMethod(ObserverMethod observerMethod) {
-        Type observerType = observerMethod.getObservedType();
-        Set<Type> eventTypes = getAllTypes(observerType);
-        eventTypes.forEach(eventType -> {
-            List<ObserverMethod> observerMethods = observerMethodsRepository.computeIfAbsent(eventType, k -> new LinkedList<>());
-            observerMethods.add(observerMethod);
-        });
+        observerMethodsRepository.addObserverMethod(observerMethod);
     }
 
     @Override
@@ -201,8 +193,7 @@ public class StandardBeanManager implements BeanManager {
 
     @Override
     public <T> Set<ObserverMethod<? super T>> resolveObserverMethods(T event, Annotation... qualifiers) {
-        // TODO
-        return null;
+        return observerMethodsRepository.resolveObserverMethods(event, qualifiers);
     }
 
     @Override
