@@ -14,10 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard;
+package org.geektimes.enterprise.inject.standard.beans;
 
 import org.geektimes.commons.lang.util.ClassLoaderUtils;
 import org.geektimes.commons.reflect.util.SimpleClassScanner;
+import org.geektimes.enterprise.inject.standard.*;
 import org.geektimes.enterprise.inject.standard.event.*;
 import org.geektimes.enterprise.inject.util.*;
 
@@ -72,7 +73,6 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     private final Set<Class<? extends Annotation>> alternativeStereotypeClasses;
 
     private final SimpleClassScanner classScanner;
-
 
     private final ObserverMethodDiscoverer observerMethodDiscoverer;
 
@@ -195,7 +195,9 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     @Override
     @Deprecated
     public void fireEvent(Object event, Annotation... qualifiers) {
-        // TODO
+        Event<Object> eventDispatcher = getEvent();
+        Event<Object> subEventDispatcher = eventDispatcher.select(qualifiers);
+        subEventDispatcher.fire(event);
     }
 
     @Override
@@ -607,13 +609,21 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     }
 
     public StandardBeanManager packages(boolean scanRecursively, Package... packagesToScan) {
-        iterateNonNull(packagesToScan, packageToScan -> addPackage(scanRecursively, packageToScan));
+        iterateNonNull(packagesToScan, packageToScan -> addPackage(packageToScan, scanRecursively));
         return this;
     }
 
-    public StandardBeanManager addPackage(boolean scanRecursively, Package packageToScan) {
+    public StandardBeanManager addPackage(Package packageToScan, boolean scanRecursively) {
         requireNonNull(packageToScan, "The 'packageToScan' argument must not be null!");
         this.packagesToScan.put(packageToScan, scanRecursively);
+        return this;
+    }
+
+    public StandardBeanManager excludePackage(Package packageToScan, boolean scanRecursively) {
+        requireNonNull(packageToScan, "The 'packageToScan' argument must not be null!");
+        if (this.packagesToScan.remove(packageToScan, scanRecursively)) {
+            this.packagesToScan.remove(packageToScan);
+        }
         return this;
     }
 

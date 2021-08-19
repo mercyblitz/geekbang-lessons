@@ -6,7 +6,7 @@
 //
 
 
-package org.geektimes.enterprise.beans.xml;
+package org.geektimes.enterprise.beans.xml.bind;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,8 +40,8 @@ import javax.xml.bind.annotation.XmlType;
 @XmlType(name = "", propOrder = {
     "clazz"
 })
-@XmlRootElement(name = "decorators")
-public class Decorators {
+@XmlRootElement(name = "interceptors")
+public class Interceptors {
 
     @XmlElement(name = "class")
     protected List<String> clazz;

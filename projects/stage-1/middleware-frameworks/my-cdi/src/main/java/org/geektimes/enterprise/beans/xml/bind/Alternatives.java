@@ -6,7 +6,7 @@
 //
 
 
-package org.geektimes.enterprise.beans.xml;
+package org.geektimes.enterprise.beans.xml.bind;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -6,7 +6,7 @@
 //
 
 
-package org.geektimes.enterprise.beans.xml;
+package org.geektimes.enterprise.beans.xml.bind;
 
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.annotation.XmlElementDecl;

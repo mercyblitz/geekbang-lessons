@@ -16,7 +16,7 @@
  */
 package org.geektimes.enterprise.inject.se;
 
-import org.geektimes.enterprise.inject.standard.StandardBeanManager;
+import org.geektimes.enterprise.inject.standard.beans.StandardBeanManager;
 
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.se.SeContainer;

@@ -17,7 +17,6 @@
 package org.geektimes.enterprise.inject.standard;
 
 import org.geektimes.enterprise.inject.standard.event.ObserverMethodParameter;
-import org.geektimes.enterprise.inject.util.Qualifiers;
 
 import javax.enterprise.event.Observes;
 import javax.enterprise.event.ObservesAsync;

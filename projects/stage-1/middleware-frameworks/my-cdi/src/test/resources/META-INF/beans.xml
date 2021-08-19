@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee http://xmlns.jcp.org/xml/ns/javaee/beans_2_0.xsd"
+       bean-discovery-mode="all" version="2.0">
+
+    <scan>
+        <exclude name="com.acme.rest.*"/>
+
+        <exclude name="com.acme.faces.**">
+            <if-class-not-available name="javax.faces.context.FacesContext"/>
+        </exclude>
+
+        <exclude name="com.acme.verbose.*">
+            <if-system-property name="verbosity" value="low"/>
+        </exclude>
+
+        <exclude name="com.acme.ejb.**">
+            <if-class-available name="javax.enterprise.inject.Model"/>
+            <if-system-property name="exclude-ejbs"/>
+        </exclude>
+    </scan>
+
+</beans>
