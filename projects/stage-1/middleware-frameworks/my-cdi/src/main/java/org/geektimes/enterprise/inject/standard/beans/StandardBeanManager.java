@@ -17,7 +17,14 @@
 package org.geektimes.enterprise.inject.standard.beans;
 
 import org.geektimes.commons.lang.util.ClassLoaderUtils;
+import org.geektimes.commons.reflect.util.ClassUtils;
+import org.geektimes.commons.reflect.util.PackageUtils;
 import org.geektimes.commons.reflect.util.SimpleClassScanner;
+import org.geektimes.commons.util.ServiceLoaders;
+import org.geektimes.enterprise.beans.xml.BeansReader;
+import org.geektimes.enterprise.beans.xml.bind.Alternatives;
+import org.geektimes.enterprise.beans.xml.bind.Beans;
+import org.geektimes.enterprise.beans.xml.bind.Scan;
 import org.geektimes.enterprise.inject.standard.*;
 import org.geektimes.enterprise.inject.standard.event.*;
 import org.geektimes.enterprise.inject.util.*;
@@ -40,10 +47,13 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.function.Consumer;
 
+import static java.lang.System.getProperty;
 import static java.util.Objects.requireNonNull;
 import static java.util.ServiceLoader.load;
+import static org.geektimes.commons.lang.util.StringUtils.endsWith;
 import static org.geektimes.enterprise.inject.util.Injections.validateForbiddenAnnotation;
 import static org.geektimes.enterprise.inject.util.Parameters.isConstructorParameter;
 import static org.geektimes.enterprise.inject.util.Parameters.isMethodParameter;
@@ -60,7 +70,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     private final Set<Class<?>> beanClasses;
 
-    private final Map<Package, Boolean> packagesToScan;
+    private final Map<String, Boolean> packagesToScan;
 
     private final Map<Class<? extends Extension>, Extension> extensions;
 
@@ -80,6 +90,8 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     private final EventDispatcher eventDispatcher;
 
+    private final BeansReader beansReader;
+
     private ClassLoader classLoader;
 
     private boolean enabledDiscovery;
@@ -88,7 +100,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         this.properties = new HashMap<>();
         this.enabledDiscovery = true;
         this.beanClasses = new LinkedHashSet<>();
-        this.packagesToScan = new LinkedHashMap<>();
+        this.packagesToScan = new ConcurrentSkipListMap<>();
         this.extensions = new ConcurrentHashMap<>();
         this.interceptorClasses = new LinkedHashSet<>();
         this.decoratorClasses = new LinkedHashSet<>();
@@ -98,6 +110,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         this.observerMethodDiscoverer = new ReflectiveObserverMethodDiscoverer(this);
         this.observerMethodsRepository = new ObserverMethodRepository();
         this.eventDispatcher = new EventDispatcher(observerMethodsRepository);
+        this.beansReader = ServiceLoaders.loadSpi(BeansReader.class);
         this.classLoader = ClassLoaderUtils.getClassLoader(getClass());
         this.enabledDiscovery = true;
     }
@@ -428,11 +441,15 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         return null;
     }
 
-    // Extended methods
 
+    // Extended methods
     public void initialize() {
+        performInitializationLifecycle();
         // TODO
-        performContainerLifecycleEvents();
+    }
+
+    private void performInitializationLifecycle() {
+        initializeExtensions();
         performBeforeBeanDiscovery();
         performTypeDiscovery();
         performAfterTypeDiscovery();
@@ -440,7 +457,6 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         performAfterBeanDiscovery();
         performDeploymentValidation();
         performAfterDeploymentValidation();
-
     }
 
     /**
@@ -448,16 +464,16 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
      * defined in Container lifecycle events, instantiate a single instance of each service provider, and search the
      * service provider class for observer methods of initialization events.
      */
-    private void performContainerLifecycleEvents() {
+    private void initializeExtensions() {
         discoverExtensions();
         discoverObserverMethods();
-        fireBeforeBeanDiscoveryEvent();
     }
 
     /**
      * the container must fire an event of type BeforeBeanDiscovery, as defined in BeforeBeanDiscovery event.
      */
     private void performBeforeBeanDiscovery() {
+        fireBeforeBeanDiscoveryEvent();
     }
 
     /**
@@ -469,11 +485,108 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
             return;
         }
 
+        List<Beans> beansList = beansReader.readAllBeans(classLoader);
+        beansList.forEach(beans -> {
+            Scan scan = beans.getScan();
+            excludeFilters(scan);
+            addInterceptors(beans.getInterceptors());
+            addDecorators(beans.getDecorators());
+            addAlternatives(beans.getAlternatives());
+        });
+
         Set<Class<?>> classes = scanClasses();
         // filter Beans with definition annotations
         Set<AnnotatedBean<?>> annotatedBeans = filterDefiningAnnotationBeans(classes);
         // dispatch all kinds of classes, e.g Bean Classes , Interceptor Classes or others
         dispatchClasses(annotatedBeans);
+    }
+
+    private void addInterceptors(org.geektimes.enterprise.beans.xml.bind.Interceptors interceptors) {
+        if (interceptors != null) {
+            interceptors.getClazz()
+                    .stream()
+                    .map(this::resolveClass)
+                    .forEach(this::addInterceptorClass);
+        }
+    }
+
+    private void addDecorators(org.geektimes.enterprise.beans.xml.bind.Decorators decorators) {
+        if (decorators != null) {
+            decorators.getClazz()
+                    .stream()
+                    .map(this::resolveClass)
+                    .forEach(this::addInterceptorClass);
+        }
+    }
+
+    private void addAlternatives(Alternatives alternatives) {
+//        alternatives.getClazzOrStereotype()
+//                .stream()
+//                .map(this::)
+
+        // TODO
+    }
+
+    private Class<?> resolveClass(String className) {
+        return ClassUtils.resolveClass(className, classLoader);
+    }
+
+    private void excludeFilters(Scan scan) {
+        scan.getExclude().forEach(exclude -> {
+            List<Object> conditions = exclude.getIfClassAvailableOrIfClassNotAvailableOrIfSystemProperty();
+            if (isConditional(conditions)) {
+                String name = exclude.getName();
+                if (endsWith(name, ".*")) {
+                    excludePackage(name, false);
+                } else if (endsWith(name, ".**")) {
+                    excludePackage(name, true);
+                } else { // the fully qualified name of the type
+                    removeBeanClass(name);
+                }
+            }
+        });
+    }
+
+
+    private boolean isConditional(List<Object> conditions) {
+        if (conditions.isEmpty()) {
+            return true;
+        }
+
+        boolean result = true;
+
+        for (Object condition : conditions) {
+
+            if (condition instanceof Scan.Exclude.IfSystemProperty) {
+                Scan.Exclude.IfSystemProperty ifSystemProperty = (Scan.Exclude.IfSystemProperty) condition;
+                String name = ifSystemProperty.getName();
+                String value = ifSystemProperty.getValue();
+                if (value == null) {
+                    result = getProperty(name) != null;
+                } else {
+                    result = Objects.equals(value, getProperty(name));
+                }
+            } else {
+                String className = null;
+                boolean available = true;
+                if (condition instanceof Scan.Exclude.IfClassAvailable) {
+                    className = ((Scan.Exclude.IfClassAvailable) condition).getName();
+                } else if (condition instanceof Scan.Exclude.IfClassNotAvailable) {
+                    className = ((Scan.Exclude.IfClassNotAvailable) condition).getName();
+                    available = false;
+                }
+                result = isClassAvailable(className, available);
+            }
+
+            if (!result) {
+                break;
+            }
+        }
+        return result;
+    }
+
+    private boolean isClassAvailable(String className, boolean available) {
+        return (resolveClass(className) != null) == available;
     }
 
     /**
@@ -527,10 +640,10 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     private Set<Class<?>> scanClasses() {
         Set<Class<?>> classes = new LinkedHashSet<>();
-        for (Map.Entry<Package, Boolean> packageEntry : packagesToScan.entrySet()) {
-            Package packageToDiscovery = packageEntry.getKey();
+        for (Map.Entry<String, Boolean> packageEntry : packagesToScan.entrySet()) {
+            String packageToDiscovery = packageEntry.getKey();
             boolean scanRecursively = Boolean.TRUE.equals(packageEntry.getValue());
-            classes.addAll(classScanner.scan(classLoader, packageToDiscovery.getName(), scanRecursively, true));
+            classes.addAll(classScanner.scan(classLoader, packageToDiscovery, scanRecursively, true));
         }
         return classes;
     }
@@ -603,8 +716,20 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     }
 
     public StandardBeanManager addBeanClass(Class<?> beanClass) {
-        requireNonNull(beanClass, "The 'packageToScan' argument must not be null!");
+        requireNonNull(beanClass, "The 'beanClass' argument must not be null!");
         this.beanClasses.add(beanClass);
+        return this;
+    }
+
+    private StandardBeanManager removeBeanClass(String beanClassName) {
+        requireNonNull(beanClassName, "The 'beanClassName' argument must not be null!");
+        return removeBeanClass(resolveClass(beanClassName));
+    }
+
+    private StandardBeanManager removeBeanClass(Class<?> beanClass) {
+        if (beanClass != null) {
+            this.beanClasses.remove(beanClass);
+        }
         return this;
     }
 
@@ -615,11 +740,16 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     public StandardBeanManager addPackage(Package packageToScan, boolean scanRecursively) {
         requireNonNull(packageToScan, "The 'packageToScan' argument must not be null!");
+        return addPackage(packageToScan.getName(), scanRecursively);
+    }
+
+    public StandardBeanManager addPackage(String packageToScan, boolean scanRecursively) {
+        requireNonNull(packageToScan, "The 'packageToScan' argument must not be null!");
         this.packagesToScan.put(packageToScan, scanRecursively);
         return this;
     }
 
-    public StandardBeanManager excludePackage(Package packageToScan, boolean scanRecursively) {
+    public StandardBeanManager excludePackage(String packageToScan, boolean scanRecursively) {
         requireNonNull(packageToScan, "The 'packageToScan' argument must not be null!");
         if (this.packagesToScan.remove(packageToScan, scanRecursively)) {
             this.packagesToScan.remove(packageToScan);
