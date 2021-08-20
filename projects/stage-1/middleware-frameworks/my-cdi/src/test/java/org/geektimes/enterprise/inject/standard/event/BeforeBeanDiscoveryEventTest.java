@@ -14,33 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject;
+package org.geektimes.enterprise.inject.standard.event;
 
-import javax.enterprise.event.Observes;
-import javax.enterprise.event.ObservesAsync;
+import org.geektimes.enterprise.inject.standard.beans.StandardBeanManager;
+import org.junit.Test;
+
 import javax.enterprise.inject.Default;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.BeforeBeanDiscovery;
-import javax.enterprise.inject.spi.Extension;
-import javax.inject.Inject;
 
 /**
- * My {@link Extension}
+ * {@link BeforeBeanDiscoveryEvent}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class MyExtension implements Extension {
+public class BeforeBeanDiscoveryEventTest {
 
-    @Inject
-    private BeanManager beanManager;
+    private BeforeBeanDiscoveryEvent event = new BeforeBeanDiscoveryEvent(new StandardBeanManager());
 
-    public void beforeBeanDiscovery(@Observes @Default BeforeBeanDiscovery beforeBeanDiscovery) {
-        System.out.println(beforeBeanDiscovery);
-        beforeBeanDiscovery.addQualifier(Default.class);
-    }
-
-    public void onAnyEvent(@ObservesAsync Object event) {
-        System.out.println(event);
+    @Test(expected = IllegalStateException.class)
+    public void test() {
+        event.addQualifier(Default.class);
     }
 }

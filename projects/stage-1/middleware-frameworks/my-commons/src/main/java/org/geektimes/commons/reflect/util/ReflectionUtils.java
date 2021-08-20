@@ -215,9 +215,12 @@ public abstract class ReflectionUtils {
      * @version 1.0.0
      * @since 1.0.0 2012-2-28 下午07:42:26
      */
-
     public static Class<?> getCallerClass() throws IllegalStateException {
-        return getCallerClass(sunReflectReflectionInvocationFrame);
+        return doGetCallerClass(sunReflectReflectionInvocationFrame);
+    }
+
+    public static Class<?> getCallerClass(int invocationLevel) throws IllegalStateException {
+        return doGetCallerClass(sunReflectReflectionInvocationFrame + invocationLevel);
     }
 
     /**
@@ -254,7 +257,7 @@ public abstract class ReflectionUtils {
      * @see
      * @since 1.0.0
      */
-    static Class<?> getCallerClass(int invocationFrame) {
+    static Class<?> doGetCallerClass(int invocationFrame) {
         if (supportedSunReflectReflection) {
             Class<?> callerClass = getCallerClassInSunJVM(invocationFrame + 1);
             if (callerClass != null)
