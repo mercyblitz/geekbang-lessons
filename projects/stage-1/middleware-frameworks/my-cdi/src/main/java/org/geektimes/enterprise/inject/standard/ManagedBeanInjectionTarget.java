@@ -34,16 +34,16 @@ public class ManagedBeanInjectionTarget<T> extends ManagedBeanProducer<T> implem
 
     @Override
     public void inject(T instance, CreationalContext<T> ctx) {
-
+        // TODO
     }
 
     @Override
     public void postConstruct(T instance) {
-
+        // TODO
     }
 
     @Override
     public void preDestroy(T instance) {
-
+        // TODO
     }
 }
