@@ -59,6 +59,7 @@ import static java.util.Collections.emptySet;
 import static java.util.Objects.requireNonNull;
 import static java.util.ServiceLoader.load;
 import static org.geektimes.commons.collection.util.CollectionUtils.ofSet;
+import static org.geektimes.commons.function.Streams.filterSet;
 import static org.geektimes.commons.lang.util.StringUtils.endsWith;
 import static org.geektimes.enterprise.inject.util.Decorators.isDecorator;
 import static org.geektimes.enterprise.inject.util.Injections.validateForbiddenAnnotation;
@@ -638,7 +639,6 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
                 if (handler != null) {
                     handler.accept(discoveredClass);
                 }
-            } else {
                 iterator.remove();
             }
         }
@@ -797,8 +797,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
             boolean scanRecursively = Boolean.TRUE.equals(packageEntry.getValue());
             classes.addAll(classScanner.scan(classLoader, packageToDiscovery, scanRecursively, true));
         }
-        filterAndHandleClasses(classes, type -> !type.isInterface() || !type.isEnum(), null);
-        return classes;
+        return filterSet(classes,type -> !type.isInterface() || !type.isEnum());
     }
 
     private StandardBeanManager discoverExtensions() {
