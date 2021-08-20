@@ -16,13 +16,12 @@
  */
 package org.geektimes.enterprise.inject;
 
+import org.geektimes.enterprise.inject.standard.ReflectiveAnnotatedType;
+
 import javax.enterprise.event.Observes;
 import javax.enterprise.event.ObservesAsync;
 import javax.enterprise.inject.Default;
-import javax.enterprise.inject.spi.BeanManager;
-import javax.enterprise.inject.spi.BeforeBeanDiscovery;
-import javax.enterprise.inject.spi.Extension;
-import javax.enterprise.inject.spi.ProcessAnnotatedType;
+import javax.enterprise.inject.spi.*;
 import javax.inject.Inject;
 
 /**
@@ -37,12 +36,16 @@ public class MyExtension implements Extension {
     private BeanManager beanManager;
 
     public void beforeBeanDiscovery(@Observes @Default BeforeBeanDiscovery beforeBeanDiscovery) {
-        System.out.println(beforeBeanDiscovery);
         beforeBeanDiscovery.addQualifier(Default.class);
+        beforeBeanDiscovery.addAnnotatedType(new ReflectiveAnnotatedType<>(BookShop.class), "book1");
     }
 
-    public void processAnnotatedType(@Observes ProcessAnnotatedType processAnnotatedType) {
+    public void processAnnotatedType(@Observes ProcessAnnotatedType<BookShop> processAnnotatedType) {
         System.out.println(processAnnotatedType);
+    }
+
+    public void processSyntheticAnnotatedType(@Observes ProcessSyntheticAnnotatedType<BookShop> processSyntheticAnnotatedType) {
+        System.out.println(processSyntheticAnnotatedType);
     }
 
     public void onAnyEvent(@ObservesAsync Object event) {

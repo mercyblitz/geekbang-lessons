@@ -49,6 +49,8 @@ import static org.geektimes.enterprise.inject.util.Qualifiers.getQualifiers;
  */
 public class ReflectiveObserverMethod<T> implements ObserverMethod<T> {
 
+    private static final ThreadLocal<Object> beanInstanceThreadLocal = new ThreadLocal<>();
+
     private final Object beanInstance;
 
     private final Method method;
@@ -123,8 +125,14 @@ public class ReflectiveObserverMethod<T> implements ObserverMethod<T> {
             parameterValues[i] = resolveParameterValue(eventContext, parameter);
         }
         Object object = isStatic(method) ? null : beanInstance;
+        // set the bean instance into ThreadLocal
+        setBeanInstance(beanInstance);
         // invoke the observer method
-        execute(() -> method.invoke(object, parameterValues));
+        try {
+            execute(() -> method.invoke(object, parameterValues));
+        } finally {
+            clearBeanInstance();
+        }
     }
 
     private Object resolveParameterValue(EventContext<T> eventContext, ObserverMethodParameter parameter) {
@@ -163,5 +171,22 @@ public class ReflectiveObserverMethod<T> implements ObserverMethod<T> {
                 ", transactionPhase=" + transactionPhase +
                 ", async=" + async +
                 '}';
+    }
+
+    /**
+     * Get the bean instance from observer method
+     *
+     * @return non-null
+     */
+    public static Object getBeanInstance() {
+        return beanInstanceThreadLocal.get();
+    }
+
+    private static void setBeanInstance(Object beanInstance) {
+        beanInstanceThreadLocal.set(beanInstance);
+    }
+
+    private static void clearBeanInstance() {
+        beanInstanceThreadLocal.remove();
     }
 }

@@ -16,12 +16,12 @@
  */
 package org.geektimes.enterprise.inject;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Dependent;
 
 /**
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since
  */
-@ApplicationScoped
+@Dependent
 public class BookShop extends Business implements Shop<Book> {
 }

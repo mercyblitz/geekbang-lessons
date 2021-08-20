@@ -16,7 +16,6 @@
  */
 package org.geektimes.enterprise.inject.standard.event;
 
-import org.geektimes.commons.reflect.util.ReflectionUtils;
 import org.geektimes.enterprise.inject.standard.beans.StandardBeanManager;
 
 import javax.enterprise.inject.spi.AnnotatedType;
@@ -26,6 +25,7 @@ import javax.enterprise.inject.spi.configurator.AnnotatedTypeConfigurator;
 import java.lang.annotation.Annotation;
 
 import static java.lang.String.format;
+import static org.geektimes.enterprise.inject.standard.ReflectiveObserverMethod.getBeanInstance;
 
 /**
  * {@link BeforeBeanDiscovery} Event implementation
@@ -43,81 +43,87 @@ public class BeforeBeanDiscoveryEvent implements BeforeBeanDiscovery {
 
     @Override
     public void addQualifier(Class<? extends Annotation> qualifier) {
-        assertCaller();
+        getCallerExtension();
         standardBeanManager.addQualifier(qualifier);
     }
 
     @Override
     public void addQualifier(AnnotatedType<? extends Annotation> qualifier) {
-        assertCaller();
+        getCallerExtension();
         addQualifier(qualifier.getJavaClass());
     }
 
     @Override
     public void addScope(Class<? extends Annotation> scopeType, boolean normal, boolean passivating) {
-        assertCaller();
+        getCallerExtension();
         standardBeanManager.addScope(scopeType, normal, passivating);
     }
 
     @Override
     public void addStereotype(Class<? extends Annotation> stereotype, Annotation... stereotypeDef) {
-        assertCaller();
+        getCallerExtension();
         standardBeanManager.addStereotype(stereotype, stereotypeDef);
     }
 
     @Override
     public void addInterceptorBinding(AnnotatedType<? extends Annotation> bindingType) {
-        assertCaller();
+        getCallerExtension();
         addInterceptorBinding(bindingType.getJavaClass());
     }
 
     @Override
     public void addInterceptorBinding(Class<? extends Annotation> bindingType, Annotation... bindingTypeDef) {
-        assertCaller();
+        getCallerExtension();
         standardBeanManager.addInterceptorBinding(bindingType, bindingTypeDef);
     }
 
     @Override
     @Deprecated
     public void addAnnotatedType(AnnotatedType<?> type) {
-        assertCaller();
+        getCallerExtension();
         addAnnotatedType(type, type.getJavaClass().getName());
     }
 
     @Override
     public void addAnnotatedType(AnnotatedType<?> type, String id) {
-        assertCaller();
-        standardBeanManager.addAnnotatedType(id, type);
+        Extension source = getCallerExtension();
+        standardBeanManager.addSyntheticAnnotatedType(id, type, source);
     }
 
     @Override
     public <T> AnnotatedTypeConfigurator<T> addAnnotatedType(Class<T> type, String id) {
-        assertCaller();
+        getCallerExtension();
         // TODO
         return null;
     }
 
     @Override
     public <T extends Annotation> AnnotatedTypeConfigurator<T> configureQualifier(Class<T> qualifier) {
-        assertCaller();
+        getCallerExtension();
         // TODO
         return null;
     }
 
     @Override
     public <T extends Annotation> AnnotatedTypeConfigurator<T> configureInterceptorBinding(Class<T> bindingType) {
-        assertCaller();
+        getCallerExtension();
         // TODO
         return null;
     }
 
-    private void assertCaller() {
-        Class<?> callerClass = ReflectionUtils.getCallerClass(2);
+    /**
+     * @return {@link Extension} instance
+     * @throws IllegalStateException If any method is called outside of the observer method invocation
+     */
+    private Extension getCallerExtension() throws IllegalStateException {
+        Object beanInstance = getBeanInstance();
+        Class<?> callerClass = beanInstance.getClass();
         if (callerClass == null || !Extension.class.isAssignableFrom(callerClass)) {
-            String message = format("The any %s method must not called outside of the observer method invocation in the" +
+            String message = format("Any %s method must not called outside of the observer method invocation in the" +
                             " %s implementation!",
                     BeforeBeanDiscovery.class.getName(), Extension.class.getName());
             throw new IllegalStateException(message);
         }
+        return (Extension) beanInstance;
     }
 }

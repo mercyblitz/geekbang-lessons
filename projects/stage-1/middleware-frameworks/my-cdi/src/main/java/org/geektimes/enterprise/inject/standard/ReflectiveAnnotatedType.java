@@ -109,4 +109,12 @@ public class ReflectiveAnnotatedType<X> extends ReflectiveAnnotated<Class> imple
     public Type getBaseType() {
         return getJavaClass();
     }
+
+    @Override
+    public String toString() {
+        return "ReflectiveAnnotatedType{ Class : "
+                + getJavaClass() + " , annotations : "
+                + getAnnotations()
+                + "}";
+    }
 }

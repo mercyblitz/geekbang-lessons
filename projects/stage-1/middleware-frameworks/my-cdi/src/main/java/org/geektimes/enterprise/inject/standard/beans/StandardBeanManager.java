@@ -127,6 +127,8 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
      */
     private final Map<Class<? extends Annotation>, Set<Annotation>> extendedInterceptorBindings;
 
+    private final Map<String, AnnotatedType> annotatedTypes;
+
     public StandardBeanManager() {
         this.properties = new HashMap<>();
         this.enabledDiscovery = true;
@@ -149,6 +151,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         this.extendedScopes = new LinkedHashSet<>();
         this.extendsNormalScopes = new LinkedHashMap<>();
         this.extendedInterceptorBindings = new LinkedHashMap<>();
+        this.annotatedTypes = new LinkedHashMap<>();
     }
 
     @Override
@@ -797,7 +800,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
             boolean scanRecursively = Boolean.TRUE.equals(packageEntry.getValue());
             classes.addAll(classScanner.scan(classLoader, packageToDiscovery, scanRecursively, true));
         }
-        return filterSet(classes,type -> !type.isInterface() || !type.isEnum());
+        return filterSet(classes, type -> !type.isInterface() || !type.isEnum());
     }
 
     private StandardBeanManager discoverExtensions() {
@@ -830,9 +833,12 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         eventDispatcher.fire(new BeforeBeanDiscoveryEvent(this));
     }
 
-    private void fireProcessAnnotatedTypeEvent(Class<?> type) {
-        AnnotatedType annotatedType = new ReflectiveAnnotatedType(type);
-        eventDispatcher.fire(new ProcessAnnotatedTypeEvent(this, annotatedType));
+    private void fireProcessAnnotatedTypeEvent(AnnotatedType<?> annotatedType) {
+        eventDispatcher.fire(new ProcessAnnotatedTypeEvent(annotatedType, this));
+    }
+
+    private void fireProcessSyntheticAnnotatedTypeEvent(AnnotatedType<?> type, Extension source) {
+        eventDispatcher.fire(new ProcessSyntheticAnnotatedTypeEvent(type, source, this));
     }
 
     public StandardBeanManager addQualifier(Class<? extends Annotation> qualifier) {
@@ -860,8 +866,29 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         return this;
     }
 
-    public StandardBeanManager addAnnotatedType(String id, AnnotatedType<?> type) {
-        // TODO
+    /**
+     * {@link AnnotatedType}s
+     * discovered by the container use the fully qualified class name of {@link AnnotatedType#getJavaClass()} to identify the
+     * type.
+     *
+     * @param type {@link AnnotatedType}
+     * @return
+     */
+    private StandardBeanManager addAnnotatedType(Class<?> type) {
+        AnnotatedType annotatedType = createAnnotatedType(type);
+        addAnnotatedType(type.getName(), annotatedType);
+        fireProcessAnnotatedTypeEvent(annotatedType);
+        return this;
+    }
+
+    private StandardBeanManager addAnnotatedType(String id, AnnotatedType<?> type) {
+        annotatedTypes.put(id, type);
+        return this;
+    }
+
+    public StandardBeanManager addSyntheticAnnotatedType(String id, AnnotatedType<?> type, Extension source) {
+        addAnnotatedType(id, type);
+        fireProcessSyntheticAnnotatedTypeEvent(type, source);
         return this;
     }
 
@@ -873,7 +900,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     public StandardBeanManager addBeanClass(Class<?> beanClass) {
         requireNonNull(beanClass, "The 'beanClass' argument must not be null!");
         this.beanClasses.add(beanClass);
-        fireProcessAnnotatedTypeEvent(beanClass);
+        addAnnotatedType(beanClass);
         return this;
     }
 
@@ -931,7 +958,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     public StandardBeanManager addInterceptorClass(Class<?> interceptorClass) {
         this.interceptorClasses.add(interceptorClass);
-        fireProcessAnnotatedTypeEvent(interceptorClass);
+        addAnnotatedType(interceptorClass);
         return this;
     }
 
@@ -943,7 +970,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     public StandardBeanManager addDecoratorClass(Class<?> decoratorClass) {
         requireNonNull(decoratorClass, "The 'decoratorClass' argument must not be null!");
         this.decoratorClasses.add(decoratorClass);
-        fireProcessAnnotatedTypeEvent(decoratorClass);
+        addAnnotatedType(decoratorClass);
         return this;
     }
 

@@ -16,8 +16,9 @@
  */
 package org.geektimes.enterprise.inject.standard.event;
 
+import org.geektimes.enterprise.inject.standard.beans.StandardBeanManager;
+
 import javax.enterprise.inject.spi.*;
-import javax.enterprise.inject.spi.configurator.AnnotatedTypeConfigurator;
 
 /**
  * The {@link ProcessSyntheticAnnotatedType }event is fired by the container
@@ -30,30 +31,26 @@ import javax.enterprise.inject.spi.configurator.AnnotatedTypeConfigurator;
  * @see AfterTypeDiscovery#addAnnotatedType(AnnotatedType, String)
  * @since 1.0.0
  */
-public class ProcessSyntheticAnnotatedTypeEvent implements ProcessSyntheticAnnotatedType {
+public class ProcessSyntheticAnnotatedTypeEvent extends ProcessAnnotatedTypeEvent implements ProcessSyntheticAnnotatedType {
+
+    private final Extension source;
+
+    public ProcessSyntheticAnnotatedTypeEvent(AnnotatedType annotatedType, Extension source,
+                                              StandardBeanManager standardBeanManager) {
+        super(annotatedType, standardBeanManager);
+        this.source = source;
+    }
 
     @Override
     public Extension getSource() {
-        return null;
+        return source;
     }
 
     @Override
-    public AnnotatedType getAnnotatedType() {
-        return null;
-    }
-
-    @Override
-    public void setAnnotatedType(AnnotatedType type) {
-
-    }
-
-    @Override
-    public AnnotatedTypeConfigurator configureAnnotatedType() {
-        return null;
-    }
-
-    @Override
-    public void veto() {
-
+    public String toString() {
+        return "ProcessSyntheticAnnotatedTypeEvent{" +
+                " annotatedType=" + getAnnotatedType() +
+                ", source=" + getSource() +
+                '}';
     }
 }

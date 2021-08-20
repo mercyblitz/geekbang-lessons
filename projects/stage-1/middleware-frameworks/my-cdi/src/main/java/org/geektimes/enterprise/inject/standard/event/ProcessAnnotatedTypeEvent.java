@@ -34,9 +34,9 @@ public class ProcessAnnotatedTypeEvent implements ProcessAnnotatedType {
 
     private AnnotatedType annotatedType;
 
-    public ProcessAnnotatedTypeEvent(StandardBeanManager standardBeanManager, AnnotatedType annotatedType) {
-        this.standardBeanManager = standardBeanManager;
+    public ProcessAnnotatedTypeEvent(AnnotatedType annotatedType, StandardBeanManager standardBeanManager) {
         this.annotatedType = annotatedType;
+        this.standardBeanManager = standardBeanManager;
     }
 
     @Override
@@ -57,5 +57,12 @@ public class ProcessAnnotatedTypeEvent implements ProcessAnnotatedType {
     @Override
     public void veto() {
 
+    }
+
+    @Override
+    public String toString() {
+        return "ProcessAnnotatedTypeEvent{" +
+                " annotatedType=" + getAnnotatedType() +
+                '}';
     }
 }
