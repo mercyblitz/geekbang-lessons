@@ -16,7 +16,8 @@
  */
 package org.geektimes.enterprise.inject.standard.event;
 
-import org.geektimes.commons.function.Streams;
+import org.geektimes.commons.reflect.util.ClassUtils;
+import org.geektimes.commons.reflect.util.TypeUtils;
 
 import javax.enterprise.inject.spi.ObserverMethod;
 import java.lang.annotation.Annotation;
@@ -73,10 +74,15 @@ public class ObserverMethodRepository {
         Set<Type> subEventTypes = getAllTypes(eventType);
         subEventTypes.forEach(subEventType -> {
             Set<ObserverMethod> observerMethods = storage.getOrDefault(subEventType, emptySet());
-            Set<ObserverMethod> matchedObserverMethods = filterSet(observerMethods, observerMethod -> {
-                Set<Annotation> observedQualifiers = observerMethod.getObservedQualifiers();
-                return observedQualifiers.containsAll(qualifiersList);
-            });
+            Set<ObserverMethod> matchedObserverMethods = filterSet(observerMethods,
+                    observerMethod -> {
+                        Class<?> observedClass = TypeUtils.asClass(observerMethod.getObservedType());
+                        if (ClassUtils.isAssignableFrom(observedClass, eventType)) {
+                            Set<Annotation> observedQualifiers = observerMethod.getObservedQualifiers();
+                            return observedQualifiers.containsAll(qualifiersList);
+                        }
+                        return false;
+                    });
             allObserverMethods.addAll(matchedObserverMethods);
         });
         return allObserverMethods;

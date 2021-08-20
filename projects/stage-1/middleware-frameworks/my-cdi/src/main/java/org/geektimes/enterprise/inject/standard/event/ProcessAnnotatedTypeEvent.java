@@ -16,10 +16,11 @@
  */
 package org.geektimes.enterprise.inject.standard.event;
 
+import org.geektimes.enterprise.inject.standard.beans.StandardBeanManager;
+
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.ProcessAnnotatedType;
 import javax.enterprise.inject.spi.configurator.AnnotatedTypeConfigurator;
-import java.util.EventObject;
 
 /**
  * {@link ProcessAnnotatedType} Event Object
@@ -27,12 +28,15 @@ import java.util.EventObject;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class ProcessAnnotatedTypeEvent extends EventObject implements ProcessAnnotatedType {
+public class ProcessAnnotatedTypeEvent implements ProcessAnnotatedType {
+
+    private final StandardBeanManager standardBeanManager;
 
     private AnnotatedType annotatedType;
 
-    public ProcessAnnotatedTypeEvent(AnnotatedType annotatedType) {
-        super(annotatedType);
+    public ProcessAnnotatedTypeEvent(StandardBeanManager standardBeanManager, AnnotatedType annotatedType) {
+        this.standardBeanManager = standardBeanManager;
+        this.annotatedType = annotatedType;
     }
 
     @Override

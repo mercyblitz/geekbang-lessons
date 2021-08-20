@@ -16,6 +16,7 @@
  */
 package org.geektimes.enterprise.inject.se;
 
+import org.geektimes.enterprise.inject.BookShop;
 import org.junit.Test;
 
 import javax.enterprise.inject.se.SeContainer;
@@ -34,7 +35,8 @@ public class StandardContainerInitializerTest {
     @Test
     public void test() {
         SeContainerInitializer initializer = newInstance();
-        initializer.addPackages(true, getClass());
+        initializer.addPackages(true, getClass())
+                .addPackages(true, BookShop.class);
         SeContainer seContainer = initializer.initialize();
         seContainer.close();
     }

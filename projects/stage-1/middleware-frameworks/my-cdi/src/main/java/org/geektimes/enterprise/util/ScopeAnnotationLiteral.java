@@ -14,14 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject;
+package org.geektimes.enterprise.util;
 
-import javax.enterprise.inject.Default;
+import javax.enterprise.util.AnnotationLiteral;
+import javax.inject.Scope;
 
 /**
+ * {@link AnnotationLiteral} for {@link Scope @Scope}
+ *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
- * @since
+ * @since 1.0.0
  */
-@Default
-public class BookShop extends Business implements Shop<Book> {
+public class ScopeAnnotationLiteral extends AnnotationLiteral<Scope> implements Scope {
 }

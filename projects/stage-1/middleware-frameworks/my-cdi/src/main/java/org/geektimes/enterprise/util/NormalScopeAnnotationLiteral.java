@@ -14,14 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject;
+package org.geektimes.enterprise.util;
 
-import javax.enterprise.inject.Default;
+import javax.enterprise.context.NormalScope;
+import javax.enterprise.util.AnnotationLiteral;
 
 /**
+ * {@link AnnotationLiteral} for {@link NormalScope @NormalScope}
+ *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
- * @since
+ * @since 1.0.0
  */
-@Default
-public class BookShop extends Business implements Shop<Book> {
+public class NormalScopeAnnotationLiteral extends AnnotationLiteral<NormalScope> implements NormalScope {
+
+    private final boolean passivating;
+
+    public NormalScopeAnnotationLiteral(boolean passivating) {
+        this.passivating = passivating;
+    }
+
+    @Override
+    public boolean passivating() {
+        return passivating;
+    }
 }

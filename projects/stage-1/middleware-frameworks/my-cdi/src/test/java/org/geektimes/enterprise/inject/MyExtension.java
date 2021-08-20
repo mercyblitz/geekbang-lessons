@@ -22,6 +22,7 @@ import javax.enterprise.inject.Default;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.Extension;
+import javax.enterprise.inject.spi.ProcessAnnotatedType;
 import javax.inject.Inject;
 
 /**
@@ -38,6 +39,10 @@ public class MyExtension implements Extension {
     public void beforeBeanDiscovery(@Observes @Default BeforeBeanDiscovery beforeBeanDiscovery) {
         System.out.println(beforeBeanDiscovery);
         beforeBeanDiscovery.addQualifier(Default.class);
+    }
+
+    public void processAnnotatedType(@Observes ProcessAnnotatedType processAnnotatedType) {
+        System.out.println(processAnnotatedType);
     }
 
     public void onAnyEvent(@ObservesAsync Object event) {
