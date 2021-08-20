@@ -42,6 +42,7 @@ public class MyExtension implements Extension {
 
     public void processAnnotatedType(@Observes ProcessAnnotatedType<BookShop> processAnnotatedType) {
         System.out.println(processAnnotatedType);
+        processAnnotatedType.veto();
     }
 
     public void processSyntheticAnnotatedType(@Observes ProcessSyntheticAnnotatedType<BookShop> processSyntheticAnnotatedType) {

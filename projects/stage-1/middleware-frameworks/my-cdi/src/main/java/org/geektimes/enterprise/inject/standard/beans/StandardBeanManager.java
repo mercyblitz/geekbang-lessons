@@ -891,6 +891,17 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         return this;
     }
 
+    public StandardBeanManager removeAnnotatedType(AnnotatedType<?> annotatedType) {
+        Set<String> keysToRemove = new LinkedHashSet<>();
+        for (Map.Entry<String, AnnotatedType> entry : annotatedTypes.entrySet()) {
+            if (Objects.equals(entry.getValue().getJavaClass(), annotatedType.getJavaClass())) {
+                keysToRemove.add(entry.getKey());
+            }
+        }
+        keysToRemove.forEach(annotatedTypes::remove);
+        return this;
+    }
+
     private StandardBeanManager addAnnotatedType(String id, AnnotatedType<?> type) {
         annotatedTypes.put(id, type);
         return this;

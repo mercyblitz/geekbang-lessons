@@ -56,7 +56,7 @@ public class ProcessAnnotatedTypeEvent implements ProcessAnnotatedType {
 
     @Override
     public void veto() {
-
+        standardBeanManager.removeAnnotatedType(getAnnotatedType());
     }
 
     @Override
