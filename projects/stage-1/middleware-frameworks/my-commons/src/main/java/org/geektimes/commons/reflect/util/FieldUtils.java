@@ -17,8 +17,15 @@
 package org.geektimes.commons.reflect.util;
 
 import java.lang.reflect.Field;
+import java.util.LinkedHashSet;
 import java.util.Objects;
+import java.util.Set;
+import java.util.function.Predicate;
 
+import static java.util.Arrays.asList;
+import static org.geektimes.commons.collection.util.CollectionUtils.ofSet;
+import static org.geektimes.commons.function.Predicates.and;
+import static org.geektimes.commons.function.Streams.filterSet;
 import static org.geektimes.commons.function.ThrowableSupplier.execute;
 import static org.geektimes.commons.reflect.util.ClassUtils.getAllInheritedTypes;
 
@@ -28,6 +35,22 @@ import static org.geektimes.commons.reflect.util.ClassUtils.getAllInheritedTypes
  * @since 1.0.0
  */
 public abstract class FieldUtils {
+
+    public static Set<Field> getAllFields(Class<?> declaredClass, Predicate<Field>... fieldFilters) {
+        Set<Field> allFields = new LinkedHashSet<>(asList(declaredClass.getFields()));
+        for (Class superType : getAllInheritedTypes(declaredClass)) {
+            allFields.addAll(asList(superType.getFields()));
+        }
+        return filterSet(allFields, and(fieldFilters));
+    }
+
+    public static Set<Field> getAllDeclaredFields(Class<?> declaredClass, Predicate<Field>... fieldFilters) {
+        Set<Field> allDeclaredFields = new LinkedHashSet<>(asList(declaredClass.getDeclaredFields()));
+        for (Class superType : getAllInheritedTypes(declaredClass)) {
+            allDeclaredFields.addAll(asList(superType.getDeclaredFields()));
+        }
+        return filterSet(allDeclaredFields, and(fieldFilters));
+    }
 
     /**
      * Like the {@link Class#getDeclaredField(String)} method without throwing any {@link Exception}

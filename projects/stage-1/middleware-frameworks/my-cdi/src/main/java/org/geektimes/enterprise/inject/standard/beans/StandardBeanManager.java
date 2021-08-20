@@ -24,10 +24,7 @@ import org.geektimes.enterprise.beans.xml.BeansReader;
 import org.geektimes.enterprise.beans.xml.bind.Alternatives;
 import org.geektimes.enterprise.beans.xml.bind.Beans;
 import org.geektimes.enterprise.beans.xml.bind.Scan;
-import org.geektimes.enterprise.inject.standard.ConstructorParameterInjectionPoint;
-import org.geektimes.enterprise.inject.standard.FieldInjectionPoint;
-import org.geektimes.enterprise.inject.standard.MethodParameterInjectionPoint;
-import org.geektimes.enterprise.inject.standard.ReflectiveAnnotatedType;
+import org.geektimes.enterprise.inject.standard.*;
 import org.geektimes.enterprise.inject.standard.event.*;
 import org.geektimes.enterprise.inject.util.*;
 
@@ -62,6 +59,8 @@ import static java.util.ServiceLoader.load;
 import static org.geektimes.commons.collection.util.CollectionUtils.ofSet;
 import static org.geektimes.commons.function.Streams.filterSet;
 import static org.geektimes.commons.lang.util.StringUtils.endsWith;
+import static org.geektimes.enterprise.inject.util.Beans.isAnnotatedVetoed;
+import static org.geektimes.enterprise.inject.util.Beans.isManagedBean;
 import static org.geektimes.enterprise.inject.util.Decorators.isDecorator;
 import static org.geektimes.enterprise.inject.util.Injections.validateForbiddenAnnotation;
 import static org.geektimes.enterprise.inject.util.Interceptors.isInterceptor;
@@ -130,6 +129,8 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     private final Map<String, AnnotatedType> annotatedTypes;
 
+    private final List<ManagedBean> managedBeans;
+
     public StandardBeanManager() {
         this.properties = new HashMap<>();
         this.enabledDiscovery = true;
@@ -153,6 +154,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         this.extendsNormalScopes = new LinkedHashMap<>();
         this.extendedInterceptorBindings = new LinkedHashMap<>();
         this.annotatedTypes = new LinkedHashMap<>();
+        this.managedBeans = new LinkedList<>();
     }
 
     @Override
@@ -768,6 +770,37 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
      */
     private void performBeanDiscovery() {
         // TODO
+        List<AnnotatedType> annotatedTypes = new ArrayList<>(this.annotatedTypes.values());
+        discoverManagedBeans(annotatedTypes);
+        discoverInterceptorBeans(annotatedTypes);
+        discoverDecoratorBeans(annotatedTypes);
+    }
+
+    private void discoverManagedBeans(List<AnnotatedType> annotatedTypes) {
+        Iterator<AnnotatedType> iterator = annotatedTypes.iterator();
+        while (iterator.hasNext()) {
+            AnnotatedType annotatedType = iterator.next();
+            Class<?> beanClass = annotatedType.getJavaClass();
+            if (beanClasses.contains(beanClass) && isManagedBean(beanClass)) {
+                addManagedBean(annotatedType, beanClass);
+                iterator.remove();
+            }
+        }
+    }
+
+    private void addManagedBean(AnnotatedType annotatedType, Class<?> beanClass) {
+        ManagedBean managedBean = new ManagedBean(beanClass);
+        fireProcessInjectionPointEvents(managedBean);
+        fireProcessInjectionTarget(annotatedType, managedBean);
+        this.managedBeans.add(managedBean);
+    }
+
+    private void discoverInterceptorBeans(List<AnnotatedType> annotatedTypes) {
+        // TODO
+    }
+
+    private void discoverDecoratorBeans(List<AnnotatedType> annotatedTypes) {
+        // TODO
     }
 
     /**
@@ -835,20 +868,42 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         return this;
     }
 
+    // Event Methods
+
     private void fireBeforeBeanDiscoveryEvent() {
-        eventDispatcher.fire(new BeforeBeanDiscoveryEvent(this));
+        fireEvent(new BeforeBeanDiscoveryEvent(this));
     }
 
     private void fireProcessAnnotatedTypeEvent(AnnotatedType<?> annotatedType) {
-        eventDispatcher.fire(new ProcessAnnotatedTypeEvent(annotatedType, this));
+        if (!isAnnotatedVetoed(annotatedType.getJavaClass())) {
+            fireEvent(new ProcessAnnotatedTypeEvent(annotatedType, this));
+        }
     }
 
     private void fireProcessSyntheticAnnotatedTypeEvent(AnnotatedType<?> type, Extension source) {
-        eventDispatcher.fire(new ProcessSyntheticAnnotatedTypeEvent(type, source, this));
+        fireEvent(new ProcessSyntheticAnnotatedTypeEvent(type, source, this));
     }
 
     private void fireAfterTypeDiscoveryEvent() {
-        eventDispatcher.fire(new AfterTypeDiscoveryEvent(this));
+        fireEvent(new AfterTypeDiscoveryEvent(this));
+    }
+
+    private void fireProcessInjectionPointEvents(ManagedBean managedBean) {
+        Set<InjectionPoint> injectionPoints = managedBean.getInjectionPoints();
+        injectionPoints.forEach(this::fireProcessInjectionPointEvent);
+    }
+
+    private void fireProcessInjectionPointEvent(InjectionPoint injectionPoint) {
+        fireEvent(new ProcessInjectionPointEvent(injectionPoint, this));
+    }
+
+    private void fireProcessInjectionTarget(AnnotatedType annotatedType, ManagedBean managedBean) {
+        InjectionTarget injectionTarget = null;
+        fireEvent(new ProcessInjectionTargetEvent<>(annotatedType, injectionTarget, this));
+    }
+
+    private void fireEvent(Object event) {
+        eventDispatcher.fire(event);
     }
 
     public StandardBeanManager addQualifier(Class<? extends Annotation> qualifier) {

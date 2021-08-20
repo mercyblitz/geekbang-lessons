@@ -36,6 +36,10 @@ public abstract class MemberUtils {
         return member != null && Modifier.isStatic(member.getModifiers());
     }
 
+    public static boolean isNonStatic(Member member) {
+        return member != null && !Modifier.isStatic(member.getModifiers());
+    }
+
     /**
      * check the specified {@link Member member} is private or not ?
      *

@@ -24,7 +24,8 @@ import javax.enterprise.inject.spi.configurator.AnnotatedTypeConfigurator;
 import java.util.List;
 
 /**
- * {@link AfterTypeDiscovery} Event implementation
+ * {@link AfterTypeDiscovery} Event is fired by container when it has fully completed the type discovery
+ * process and before it begins the bean discovery process.
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0

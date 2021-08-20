@@ -20,6 +20,9 @@ import org.geektimes.enterprise.inject.BookShop;
 import org.geektimes.enterprise.inject.Business;
 import org.junit.Test;
 
+import javax.decorator.Decorator;
+import javax.enterprise.inject.spi.DefinitionException;
+import javax.interceptor.Interceptor;
 import java.lang.reflect.Type;
 import java.util.Set;
 
@@ -49,4 +52,33 @@ public class BeansTest {
     public void testValidateManagedBean() {
         validateManagedBeanType(BookShop.class);
     }
+
+    @Test(expected = DefinitionException.class)
+    public void testValidateManagedBeanA() {
+        validateManagedBeanType(A.class);
+    }
+
+    @Test(expected = DefinitionException.class)
+    public void testValidateManagedBeanB() {
+        validateManagedBeanType(B.class);
+    }
+
+    @Test(expected = DefinitionException.class)
+    public void testValidateManagedBeanC() {
+        validateManagedBeanType(C.class);
+    }
+
+    @Decorator
+    @Interceptor
+    static class A {
+    }
+
+    static class B {
+        public String name;
+    }
+
+    static class C<T> {
+
+    }
+
 }

@@ -21,17 +21,18 @@ import org.geektimes.enterprise.inject.standard.beans.StandardBeanManager;
 import javax.enterprise.inject.spi.*;
 
 /**
- * The {@link ProcessSyntheticAnnotatedType }event is fired by the container
+ * The {@link ProcessSyntheticAnnotatedType} event is fired by the container
  * If an extension calls {@link BeforeBeanDiscovery#addAnnotatedType(AnnotatedType, String)}
  * or {@link AfterTypeDiscovery#addAnnotatedType(AnnotatedType, String)},
  * the type passed must be added to the set of discovered types.
  *
+ * @param <X> The class being annotated
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @see BeforeBeanDiscovery#addAnnotatedType(AnnotatedType, String)
  * @see AfterTypeDiscovery#addAnnotatedType(AnnotatedType, String)
  * @since 1.0.0
  */
-public class ProcessSyntheticAnnotatedTypeEvent extends ProcessAnnotatedTypeEvent implements ProcessSyntheticAnnotatedType {
+public class ProcessSyntheticAnnotatedTypeEvent<X> extends ProcessAnnotatedTypeEvent<X> implements ProcessSyntheticAnnotatedType<X> {
 
     private final Extension source;
 

@@ -25,7 +25,7 @@ import javax.enterprise.inject.spi.configurator.AnnotatedTypeConfigurator;
 import java.lang.annotation.Annotation;
 
 /**
- * {@link BeforeBeanDiscovery} Event implementation
+ * {@link BeforeBeanDiscovery} Event is fired by container before it begins the type discovery process.
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0

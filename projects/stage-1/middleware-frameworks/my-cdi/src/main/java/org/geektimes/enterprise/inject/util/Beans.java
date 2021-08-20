@@ -19,14 +19,17 @@ package org.geektimes.enterprise.inject.util;
 import org.geektimes.commons.lang.util.AnnotationUtils;
 import org.geektimes.commons.lang.util.ArrayUtils;
 import org.geektimes.commons.reflect.util.ClassUtils;
+import org.geektimes.commons.reflect.util.MemberUtils;
 
 import javax.decorator.Decorator;
+import javax.enterprise.context.Dependent;
 import javax.enterprise.inject.Specializes;
 import javax.enterprise.inject.Typed;
 import javax.enterprise.inject.Vetoed;
 import javax.enterprise.inject.spi.DefinitionException;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.interceptor.Interceptor;
 import java.lang.reflect.*;
 import java.util.Comparator;
 import java.util.Map;
@@ -40,8 +43,12 @@ import static java.lang.String.format;
 import static java.util.stream.Stream.of;
 import static org.geektimes.commons.collection.util.CollectionUtils.ofSet;
 import static org.geektimes.commons.lang.util.AnnotationUtils.findAnnotation;
-import static org.geektimes.commons.reflect.util.ClassUtils.isAssignableFrom;
+import static org.geektimes.commons.lang.util.AnnotationUtils.isAnnotationPresent;
+import static org.geektimes.commons.reflect.util.ClassUtils.*;
+import static org.geektimes.commons.reflect.util.FieldUtils.getAllFields;
 import static org.geektimes.commons.reflect.util.TypeUtils.*;
+import static org.geektimes.enterprise.inject.util.Decorators.isDecorator;
+import static org.geektimes.enterprise.inject.util.Interceptors.isInterceptor;
 import static org.geektimes.enterprise.inject.util.Qualifiers.findQualifier;
 
 /**
@@ -171,24 +178,74 @@ public abstract class Beans {
      * <p>
      * the class declares a constructor annotated @Inject.
      *
-     * @param beanClass the type of bean
+     * @param beanClass the class of bean
+     * @return
+     */
+    public static boolean isManagedBean(Class<?> beanClass) {
+        if (!isTopLevelClass(beanClass)) {
+            return false;
+        }
+        if (!isConcreteClass(beanClass)) {
+            return false;
+        }
+        if (!isDecorator(beanClass)) {
+            return false;
+        }
+        if (!isExtensionClass(beanClass)) {
+            return false;
+        }
+        if (!isAnnotatedVetoed(beanClass)) {
+            return false;
+        }
+        if (!hasManagedBeanConstructor(beanClass)) {
+            return false;
+        }
+        return true;
+    }
+
+    private static boolean hasManagedBeanConstructor(Class<?> beanClass) {
+        boolean hasManagedBeanConstructor = false;
+        for (Constructor constructor : beanClass.getConstructors()) {
+            if (constructor.getParameterCount() == 0 || constructor.isAnnotationPresent(Inject.class)) {
+                hasManagedBeanConstructor = true;
+                break;
+            }
+        }
+        return hasManagedBeanConstructor;
+    }
+
+    /**
+     * If the bean class of a managed bean is annotated with both @Interceptor and @Decorator, the container
+     * automatically detects the problem and treats it as a definition error.
+     * <p>
+     * If a managed bean has a non-static public field, it must have scope @Dependent. If a managed bean with a
+     * non-static public field declares any scope other than @Dependent, the container automatically detects the problem
+     * and treats it as a definition error.
+     * <p>
+     * If the managed bean class is a generic type, it must have scope @Dependent. If a managed bean with a
+     * parameterized bean class declares any scope other than @Dependent, the container automatically detects the
+     * problem and treats it as a definition error.
+     *
+     * @param managedBeanClass the class of managed bean
      * @throws DefinitionException if the bean class does not meet above conditions
      */
-    public static void validateManagedBeanType(Class<?> beanClass) throws DefinitionException {
-        // It is not an inner class.
-        validate(beanClass, ClassUtils::isTopLevelClass, "The Bean Class must not be an inner class!");
-        // It is a non-abstract class, or is annotated @Decorator.
-        validate(beanClass, ClassUtils::isConcreteClass, "The Bean Class must be a concrete class!");
-        Predicate<Class<?>> validator = type -> !isAnnotatedDecorator(type);
-        validate(beanClass, validator, "The Bean Class must not annotated @Decorator!");
-        // It does not implement javax.enterprise.inject.spi.Extension
-        validator = type -> !isExtensionClass(type);
-        validate(beanClass, validator, "The Bean Class must not not implement javax.enterprise.inject.spi.Extension!");
-        // It is not annotated @Vetoed or in a package annotated @Vetoed.
-        validator = type -> !isAnnotatedVetoed(type) && !isAnnotatedVetoed(type.getPackage());
-        validate(beanClass, validator, "The Bean Class must not annotated @Vetoed or in a package annotated @Vetoed!");
-        // It has an appropriate constructor
-        findAppropriateConstructor(beanClass);
+    public static void validateManagedBeanType(Class<?> managedBeanClass) throws DefinitionException {
+        if (isInterceptor(managedBeanClass) && isDecorator(managedBeanClass)) {
+            throwDefinitionException("The managed bean [class : %s] must not annotate with both %s and %s",
+                    managedBeanClass.getName(), Interceptor.class.getName(), Decorator.class.getName());
+        }
+
+        Set<Field> nonStaticPublicFields = getAllFields(managedBeanClass, MemberUtils::isNonStatic);
+        if (!nonStaticPublicFields.isEmpty() && !isAnnotatedDependent(managedBeanClass)) {
+            throwDefinitionException("The managed bean [class : %s] has a non-static public field, it must have scope @%s!",
+                    managedBeanClass.getName(), Dependent.class.getName());
+        }
+
+        if (isGenericClass(managedBeanClass) && !isAnnotatedDependent(managedBeanClass)) {
+            throwDefinitionException("The managed bean [class : %s] is a generic type, it must have scope @%s!",
+                    managedBeanClass.getName(),
+                    Dependent.class.getName());
+        }
     }
 
     /**
@@ -212,18 +269,22 @@ public abstract class Beans {
                 .filter(c -> c.getParameterCount() == 0 || c.isAnnotationPresent(Inject.class))
                 .findFirst()
                 .orElseThrow(() -> new DefinitionException(
-                        format("The beanClass[%s] does not have a constructor with no parameters, " +
+                        format("The bean class[%s] does not have a constructor with no parameters, " +
                                         "or the class declares a constructor annotated @Inject",
                                 beanClass.getName())))
         );
     }
 
-    public static boolean isAnnotatedDecorator(Class<?> type) {
-        return AnnotationUtils.isAnnotationPresent(type, Decorator.class);
+    public static boolean isAnnotatedVetoed(Class<?> type) {
+        return isAnnotatedVetoed((AnnotatedElement) type) || isAnnotatedVetoed(type.getPackage());
     }
 
     public static boolean isAnnotatedVetoed(AnnotatedElement annotatedElement) {
-        return AnnotationUtils.isAnnotationPresent(annotatedElement, Vetoed.class);
+        return isAnnotationPresent(annotatedElement, Vetoed.class);
+    }
+
+    public static boolean isAnnotatedDependent(AnnotatedElement annotatedElement) {
+        return isAnnotationPresent(annotatedElement, Dependent.class);
     }
 
     public static boolean isExtensionClass(Class<?> type) {
@@ -234,6 +295,11 @@ public abstract class Beans {
         if (!validator.test(target)) {
             throw new DefinitionException(errorMessage);
         }
+    }
+
+    static void throwDefinitionException(String messagePattern, Object... args) {
+        String message = format(messagePattern, args);
+        throw new DefinitionException(message);
     }
 
 }

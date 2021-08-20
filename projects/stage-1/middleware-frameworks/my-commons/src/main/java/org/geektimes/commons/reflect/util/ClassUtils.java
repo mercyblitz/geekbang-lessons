@@ -595,11 +595,11 @@ public abstract class ClassUtils {
      * Is generic class or not?
      *
      * @param type the target type
-     * @return if the target type is not null or <code>void</code> or Void.class, return <code>true</code>, or false
+     * @return <code>true</code> if the target type is generic class, <code>false</code> otherwise.
      * @since 1.0.0
      */
     public static boolean isGenericClass(Class<?> type) {
-        return type != null && !void.class.equals(type) && !Void.class.equals(type);
+        return type != null && type.getTypeParameters().length > 0;
     }
 
     public static <T> T unwrap(Class<T> type) {

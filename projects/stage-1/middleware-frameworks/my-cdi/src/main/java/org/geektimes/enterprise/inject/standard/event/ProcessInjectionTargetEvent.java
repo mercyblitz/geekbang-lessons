@@ -19,25 +19,28 @@ package org.geektimes.enterprise.inject.standard.event;
 import org.geektimes.enterprise.inject.standard.beans.StandardBeanManager;
 
 import javax.enterprise.inject.spi.AnnotatedType;
-import javax.enterprise.inject.spi.ProcessAnnotatedType;
-import javax.enterprise.inject.spi.configurator.AnnotatedTypeConfigurator;
+import javax.enterprise.inject.spi.InjectionTarget;
+import javax.enterprise.inject.spi.ProcessInjectionTarget;
 
 /**
- * {@link ProcessAnnotatedType} Event Object for every Java class, interface (excluding annotation type, a special kind
- * of interface type) or enum discovered as defined in Type discovery.
+ * {@link ProcessInjectionTarget} Event is fired by container for every bean, interceptor or decorator
+ * in Bean discovery.
  *
  * @param <X> The class being annotated
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class ProcessAnnotatedTypeEvent<X> implements ProcessAnnotatedType<X> {
-
-    private final StandardBeanManager standardBeanManager;
+public class ProcessInjectionTargetEvent<X> implements ProcessInjectionTarget<X> {
 
     private AnnotatedType<X> annotatedType;
 
-    public ProcessAnnotatedTypeEvent(AnnotatedType<X> annotatedType, StandardBeanManager standardBeanManager) {
+    private InjectionTarget<X> injectionTarget;
+
+    private final StandardBeanManager standardBeanManager;
+
+    public ProcessInjectionTargetEvent(AnnotatedType<X> annotatedType, InjectionTarget<X> injectionTarget, StandardBeanManager standardBeanManager) {
         this.annotatedType = annotatedType;
+        this.injectionTarget = injectionTarget;
         this.standardBeanManager = standardBeanManager;
     }
 
@@ -47,24 +50,17 @@ public class ProcessAnnotatedTypeEvent<X> implements ProcessAnnotatedType<X> {
     }
 
     @Override
-    public void setAnnotatedType(AnnotatedType<X> type) {
-        this.annotatedType = type;
+    public InjectionTarget<X> getInjectionTarget() {
+        return injectionTarget;
     }
 
     @Override
-    public AnnotatedTypeConfigurator configureAnnotatedType() {
-        return null;
+    public void setInjectionTarget(InjectionTarget<X> injectionTarget) {
+        this.injectionTarget = injectionTarget;
     }
 
     @Override
-    public void veto() {
-        standardBeanManager.removeAnnotatedType(getAnnotatedType());
-    }
-
-    @Override
-    public String toString() {
-        return "ProcessAnnotatedTypeEvent{" +
-                " annotatedType=" + getAnnotatedType() +
-                '}';
+    public void addDefinitionError(Throwable t) {
+        // TODO
     }
 }
