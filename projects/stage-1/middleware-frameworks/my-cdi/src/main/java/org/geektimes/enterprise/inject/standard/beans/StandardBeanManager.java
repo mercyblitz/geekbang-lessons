@@ -56,6 +56,7 @@ import java.util.function.Predicate;
 
 import static java.lang.System.getProperty;
 import static java.util.Collections.emptySet;
+import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.requireNonNull;
 import static java.util.ServiceLoader.load;
 import static org.geektimes.commons.collection.util.CollectionUtils.ofSet;
@@ -759,12 +760,14 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
      * the container must fire an event of type AfterTypeDiscovery, as defined in AfterTypeDiscovery event.
      */
     private void performAfterTypeDiscovery() {
+        fireAfterTypeDiscoveryEvent();
     }
 
     /**
      * the container must perform bean discovery, as defined in Bean discovery.
      */
     private void performBeanDiscovery() {
+        // TODO
     }
 
     /**
@@ -772,6 +775,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
      * initialization of the application if any observer registers a definition error.
      */
     private void performAfterBeanDiscovery() {
+        // TODO
     }
 
     /**
@@ -780,6 +784,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
      * by the container.
      */
     private void performDeploymentValidation() {
+        // TODO
     }
 
     /**
@@ -787,6 +792,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
      * and abort initialization of the application if any observer registers a deployment problem.
      */
     private void performAfterDeploymentValidation() {
+        // TODO
     }
 
     /**
@@ -839,6 +845,10 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     private void fireProcessSyntheticAnnotatedTypeEvent(AnnotatedType<?> type, Extension source) {
         eventDispatcher.fire(new ProcessSyntheticAnnotatedTypeEvent(type, source, this));
+    }
+
+    private void fireAfterTypeDiscoveryEvent() {
+        eventDispatcher.fire(new AfterTypeDiscoveryEvent(this));
     }
 
     public StandardBeanManager addQualifier(Class<? extends Annotation> qualifier) {
@@ -1022,5 +1032,17 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         for (T value : values) {
             consumer.accept(value);
         }
+    }
+
+    public List<Class<?>> getAlternatives() {
+        return unmodifiableList(new ArrayList<>(alternativeClasses));
+    }
+
+    public List<Class<?>> getInterceptors() {
+        return unmodifiableList(new ArrayList<>(interceptorClasses));
+    }
+
+    public List<Class<?>> getDecorators() {
+        return unmodifiableList(new ArrayList<>(decoratorClasses));
     }
 }

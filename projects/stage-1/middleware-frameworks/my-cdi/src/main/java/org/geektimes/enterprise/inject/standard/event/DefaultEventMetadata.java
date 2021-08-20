@@ -56,4 +56,13 @@ public class DefaultEventMetadata implements EventMetadata {
     public Type getType() {
         return type;
     }
+
+    @Override
+    public String toString() {
+        return "DefaultEventMetadata{" +
+                "type=" + type +
+                ", qualifiers=" + qualifiers +
+                ", injectionPoint=" + injectionPoint +
+                '}';
+    }
 }

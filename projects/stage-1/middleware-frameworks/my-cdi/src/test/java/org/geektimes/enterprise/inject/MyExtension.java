@@ -48,7 +48,14 @@ public class MyExtension implements Extension {
         System.out.println(processSyntheticAnnotatedType);
     }
 
+    public void afterTypeDiscovery(@Observes AfterTypeDiscovery afterTypeDiscovery, EventMetadata eventMetadata) {
+        System.out.println(afterTypeDiscovery);
+        System.out.println(eventMetadata);
+    }
+
+
     public void onAnyEvent(@ObservesAsync Object event) {
         System.out.println(event);
     }
+
 }

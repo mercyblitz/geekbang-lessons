@@ -24,20 +24,18 @@ import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.inject.spi.configurator.AnnotatedTypeConfigurator;
 import java.lang.annotation.Annotation;
 
-import static java.lang.String.format;
-import static org.geektimes.enterprise.inject.standard.ReflectiveObserverMethod.getBeanInstance;
-
 /**
  * {@link BeforeBeanDiscovery} Event implementation
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class BeforeBeanDiscoveryEvent implements BeforeBeanDiscovery {
+public class BeforeBeanDiscoveryEvent extends ContainerEvent implements BeforeBeanDiscovery {
 
     private final StandardBeanManager standardBeanManager;
 
     public BeforeBeanDiscoveryEvent(StandardBeanManager standardBeanManager) {
+        super(standardBeanManager);
         this.standardBeanManager = standardBeanManager;
     }
 
@@ -111,19 +109,5 @@ public class BeforeBeanDiscoveryEvent implements BeforeBeanDiscovery {
         return null;
     }
 
-    /**
-     * @return {@link Extension} instance
-     * @throws IllegalStateException If any method is called outside of the observer method invocation
-     */
-    private Extension getCallerExtension() throws IllegalStateException {
-        Object beanInstance = getBeanInstance();
-        Class<?> callerClass = beanInstance.getClass();
-        if (callerClass == null || !Extension.class.isAssignableFrom(callerClass)) {
-            String message = format("Any %s method must not called outside of the observer method invocation in the" +
-                            " %s implementation!",
-                    BeforeBeanDiscovery.class.getName(), Extension.class.getName());
-            throw new IllegalStateException(message);
-        }
-        return (Extension) beanInstance;
-    }
+
 }

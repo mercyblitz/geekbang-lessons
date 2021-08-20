@@ -103,12 +103,12 @@ public abstract class Events {
 
         List<ObserverMethodParameter> observerMethodParameters = new ArrayList<>(parameters.length);
 
-        boolean hasObservedParameter = false;
+        int observedParameterCount = 0;
         for (int i = 0; i < parameters.length; i++) {
 
             Parameter parameter = parameters[i];
 
-            if (hasObservedParameter) {
+            if (observedParameterCount > 1) {
                 String message = format("An observer method must not have more than one parameter annotated @%s or @%s",
                         Observes.class.getName(), ObservesAsync.class.getName());
                 throw new DefinitionException(message);
@@ -116,7 +116,7 @@ public abstract class Events {
                 String message = format("An observer method must not annotate @%s!", Disposes.class.getName());
                 throw new DefinitionException(message);
             } else if (isObservedParameter(parameter)) {
-                hasObservedParameter = true;
+                observedParameterCount++;
                 observerMethodParameters.add(observedParameter(parameter, i));
             } else if (isEventMetadata(parameter)) {
                 observerMethodParameters.add(eventMetadataParameter(parameter, i));
@@ -126,7 +126,7 @@ public abstract class Events {
 
         }
 
-        if (hasObservedParameter) {
+        if (observedParameterCount == 1) {
             observerMethodParametersCache.put(method, observerMethodParameters);
             return true;
         }
