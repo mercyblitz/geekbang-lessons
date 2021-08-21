@@ -36,6 +36,8 @@ import static java.util.Collections.unmodifiableList;
 public abstract class ReflectiveAnnotatedCallable<E extends Executable, X> extends
         ReflectiveAnnotatedMember<E, E, X> implements AnnotatedCallable<X> {
 
+    private List<AnnotatedParameter<X>> annotatedParameters;
+
     public ReflectiveAnnotatedCallable(E executable) {
         super(executable, executable);
     }
@@ -46,6 +48,11 @@ public abstract class ReflectiveAnnotatedCallable<E extends Executable, X> exten
 
     @Override
     public final List<AnnotatedParameter<X>> getParameters() {
+
+        if (annotatedParameters != null) {
+            return annotatedParameters;
+        }
+
         Executable executable = getAnnotatedElement();
         int size = executable.getParameterCount();
 
@@ -61,6 +68,10 @@ public abstract class ReflectiveAnnotatedCallable<E extends Executable, X> exten
             annotatedParameters.add(new ReflectiveAnnotatedParameter<>(parameter, i, this));
         }
 
-        return unmodifiableList(annotatedParameters);
+        annotatedParameters = unmodifiableList(annotatedParameters);
+
+        this.annotatedParameters = annotatedParameters;
+
+        return annotatedParameters;
     }
 }

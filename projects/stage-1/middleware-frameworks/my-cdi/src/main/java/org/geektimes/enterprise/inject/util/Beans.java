@@ -188,13 +188,13 @@ public abstract class Beans {
         if (!isConcreteClass(beanClass)) {
             return false;
         }
-        if (!isDecorator(beanClass)) {
+        if (isDecorator(beanClass)) {
             return false;
         }
-        if (!isExtensionClass(beanClass)) {
+        if (isExtensionClass(beanClass)) {
             return false;
         }
-        if (!isAnnotatedVetoed(beanClass)) {
+        if (isAnnotatedVetoed(beanClass)) {
             return false;
         }
         if (!hasManagedBeanConstructor(beanClass)) {

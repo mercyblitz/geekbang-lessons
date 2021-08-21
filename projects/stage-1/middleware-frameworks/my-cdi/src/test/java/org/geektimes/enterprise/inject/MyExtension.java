@@ -42,7 +42,9 @@ public class MyExtension implements Extension {
 
     public void processAnnotatedType(@Observes ProcessAnnotatedType<BookShop> processAnnotatedType) {
         System.out.println(processAnnotatedType);
-        processAnnotatedType.veto();
+        if (processAnnotatedType.getAnnotatedType().getJavaClass().isMemberClass()) {
+            processAnnotatedType.veto();
+        }
     }
 
     public void processSyntheticAnnotatedType(@Observes ProcessSyntheticAnnotatedType<BookShop> processSyntheticAnnotatedType) {
@@ -52,6 +54,14 @@ public class MyExtension implements Extension {
     public void afterTypeDiscovery(@Observes AfterTypeDiscovery afterTypeDiscovery, EventMetadata eventMetadata) {
         System.out.println(afterTypeDiscovery);
         System.out.println(eventMetadata);
+    }
+
+    public void processInjectionPoint(@Observes ProcessInjectionPoint processInjectionPoint) {
+        System.out.println(processInjectionPoint);
+    }
+
+    public void processInjectionTarget(@Observes ProcessInjectionTarget processInjectionTarget) {
+        System.out.println(processInjectionTarget);
     }
 
 

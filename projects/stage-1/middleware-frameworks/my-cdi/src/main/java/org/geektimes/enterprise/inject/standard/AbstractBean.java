@@ -17,6 +17,7 @@
 package org.geektimes.enterprise.inject.standard;
 
 import org.geektimes.commons.lang.util.AnnotationUtils;
+import org.geektimes.commons.reflect.util.ReflectionUtils;
 import org.geektimes.enterprise.inject.util.Qualifiers;
 
 import javax.enterprise.inject.Alternative;
@@ -131,4 +132,8 @@ public abstract class AbstractBean<A extends AnnotatedElement, T> implements Bea
     // Abstract methods
     protected abstract String getBeanName(A annotatedElement);
 
+    @Override
+    public String toString() {
+        return ReflectionUtils.toString(this);
+    }
 }

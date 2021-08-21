@@ -16,6 +16,7 @@
  */
 package org.geektimes.enterprise.inject.standard;
 
+import org.geektimes.commons.reflect.util.ReflectionUtils;
 import org.geektimes.enterprise.inject.util.Qualifiers;
 
 import javax.decorator.Delegate;
@@ -23,6 +24,9 @@ import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.AnnotatedMember;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.InjectionPoint;
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Member;
 import java.lang.reflect.Modifier;
@@ -87,5 +91,10 @@ public abstract class AbstractInjectionPoint<A extends Annotated, AM extends Ann
     @Override
     public final boolean isTransient() {
         return Modifier.isTransient(getMember().getModifiers());
+    }
+
+    @Override
+    public String toString() {
+        return ReflectionUtils.toString(this);
     }
 }

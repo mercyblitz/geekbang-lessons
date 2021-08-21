@@ -789,10 +789,10 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     }
 
     private void addManagedBean(AnnotatedType annotatedType, Class<?> beanClass) {
-        ManagedBean managedBean = new ManagedBean(beanClass);
+        ManagedBean managedBean = new ManagedBean(this, beanClass);
+        this.managedBeans.add(managedBean);
         fireProcessInjectionPointEvents(managedBean);
         fireProcessInjectionTarget(annotatedType, managedBean);
-        this.managedBeans.add(managedBean);
     }
 
     private void discoverInterceptorBeans(List<AnnotatedType> annotatedTypes) {
@@ -898,8 +898,8 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     }
 
     private void fireProcessInjectionTarget(AnnotatedType annotatedType, ManagedBean managedBean) {
-        InjectionTarget injectionTarget = null;
-        fireEvent(new ProcessInjectionTargetEvent<>(annotatedType, injectionTarget, this));
+        InjectionTarget injectionTarget = new ManagedBeanInjectionTarget(managedBean);
+        fireEvent(new ProcessInjectionTargetEvent<>(annotatedType, new ManagedBeanInjectionTarget(managedBean), this));
     }
 
     private void fireEvent(Object event) {

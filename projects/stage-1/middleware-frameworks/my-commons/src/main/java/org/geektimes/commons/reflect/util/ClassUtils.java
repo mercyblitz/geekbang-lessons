@@ -42,8 +42,12 @@ import java.util.function.Predicate;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
+import static java.lang.reflect.Modifier.isAbstract;
+import static java.lang.reflect.Modifier.isInterface;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableSet;
+import static org.geektimes.commons.collection.util.CollectionUtils.newLinkedHashSet;
 import static org.geektimes.commons.collection.util.CollectionUtils.ofSet;
 import static org.geektimes.commons.function.Streams.filterAll;
 import static org.geektimes.commons.function.ThrowableFunction.execute;
@@ -155,9 +159,8 @@ public abstract class ClassUtils {
 
         Set<Class<?>> primitiveTypeNames = new HashSet<>(32);
         primitiveTypeNames.addAll(PRIMITIVE_WRAPPER_TYPE_MAP.values());
-        primitiveTypeNames.addAll(Arrays
-                .asList(boolean[].class, byte[].class, char[].class, double[].class,
-                        float[].class, int[].class, long[].class, short[].class));
+        primitiveTypeNames.addAll(asList(boolean[].class, byte[].class, char[].class, double[].class,
+                float[].class, int[].class, long[].class, short[].class));
         for (Class<?> primitiveTypeName : primitiveTypeNames) {
             PRIMITIVE_TYPE_NAME_MAP.put(primitiveTypeName.getName(), primitiveTypeName);
         }
@@ -407,6 +410,50 @@ public abstract class ClassUtils {
     }
 
     /**
+     * Get all classes from the specified type with filters
+     *
+     * @param type         the specified type
+     * @param classFilters class filters
+     * @return non-null read-only {@link Set}
+     */
+    public static Set<Class<?>> getAllClasses(Class<?> type, Predicate<Class<?>>... classFilters) {
+        return getAllClasses(type, true, classFilters);
+    }
+
+    /**
+     * Get all classes(may include self type) from the specified type with filters
+     *
+     * @param type         the specified type
+     * @param includedSelf included self type or not
+     * @param classFilters class filters
+     * @return non-null read-only {@link Set}
+     */
+    public static Set<Class<?>> getAllClasses(Class<?> type, boolean includedSelf, Predicate<Class<?>>... classFilters) {
+        if (type == null || type.isPrimitive()) {
+            return emptySet();
+        }
+
+        List<Class<?>> allClasses = new LinkedList<>();
+
+        Class<?> superClass = type.getSuperclass();
+        while (superClass != null) {
+            // add current super class
+            allClasses.add(superClass);
+            superClass = superClass.getSuperclass();
+        }
+
+        // FIFO -> FILO
+        Collections.reverse(allClasses);
+
+        if (includedSelf) {
+            allClasses.add(type);
+        }
+
+        // Keep the same order from List
+        return ofSet(filterAll(allClasses, classFilters));
+    }
+
+    /**
      * Get all super classes from the specified type
      *
      * @param type         the specified type
@@ -415,17 +462,7 @@ public abstract class ClassUtils {
      * @since 1.0.0
      */
     public static Set<Class<?>> getAllSuperClasses(Class<?> type, Predicate<Class<?>>... classFilters) {
-
-        Set<Class<?>> allSuperClasses = new LinkedHashSet<>();
-
-        Class<?> superClass = type.getSuperclass();
-        while (superClass != null) {
-            // add current super class
-            allSuperClasses.add(superClass);
-            superClass = superClass.getSuperclass();
-        }
-
-        return unmodifiableSet(filterAll(allSuperClasses, classFilters));
+        return getAllClasses(type, false, classFilters);
     }
 
     /**
@@ -441,7 +478,7 @@ public abstract class ClassUtils {
             return emptySet();
         }
 
-        Set<Class<?>> allInterfaces = new LinkedHashSet<>();
+        List<Class<?>> allInterfaces = new LinkedList<>();
         Set<Class<?>> resolved = new LinkedHashSet<>();
         Queue<Class<?>> waitResolve = new LinkedList<>();
 
@@ -470,7 +507,10 @@ public abstract class ClassUtils {
             clazz = waitResolve.poll();
         }
 
-        return filterAll(allInterfaces, interfaceFilters);
+        // FIFO -> FILO
+        Collections.reverse(allInterfaces);
+
+        return ofSet(filterAll(allInterfaces, interfaceFilters));
     }
 
     /**
@@ -622,21 +662,65 @@ public abstract class ClassUtils {
             return true;
         }
 
+        if (isGeneralClass(type, Boolean.FALSE)) {
+            concreteClassCache.put(type, Boolean.TRUE);
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * Is the specified type a abstract class or not?
+     * <p>
+     *
+     * @param type the type
+     * @return true if type is a abstract class, false otherwise.
+     */
+    public static boolean isAbstractClass(Class<?> type) {
+        return isGeneralClass(type, Boolean.TRUE);
+    }
+
+    /**
+     * Is the specified type a general class or not?
+     * <p>
+     *
+     * @param type the type
+     * @return true if type is a general class, false otherwise.
+     */
+    public static boolean isGeneralClass(Class<?> type) {
+        return isGeneralClass(type, null);
+    }
+
+    /**
+     * Is the specified type a general class or not?
+     * <p>
+     * If <code>isAbstract</code> == <code>null</code>,  it will not check <code>type</code> is abstract or not.
+     *
+     * @param type       the type
+     * @param isAbstract optional abstract flag
+     * @return true if type is a general (abstract) class, false otherwise.
+     */
+    protected static boolean isGeneralClass(Class<?> type, Boolean isAbstract) {
+
+        if (type == null) {
+            return false;
+        }
+
         int mod = type.getModifiers();
-        if (Modifier.isInterface(mod)
-                || Modifier.isAbstract(mod)
+
+        if (isInterface(mod)
                 || isAnnotation(mod)
                 || isEnum(mod)
-                || isSynthetic(mod)) {
+                || isSynthetic(mod)
+                || type.isPrimitive()
+                || type.isArray()) {
             return false;
         }
 
-        // native methods
-        if (type.isPrimitive() || type.isArray()) {
-            return false;
+        if (isAbstract != null) {
+            return isAbstract(mod) == isAbstract.booleanValue();
         }
-
-        concreteClassCache.put(type, Boolean.TRUE);
 
         return true;
     }
@@ -842,7 +926,6 @@ public abstract class ClassUtils {
      *
      * @return Read-only
      */
-
     public static Map<String, Set<String>> getClassPathToClassNamesMap() {
         return classPathToClassNamesMap;
     }

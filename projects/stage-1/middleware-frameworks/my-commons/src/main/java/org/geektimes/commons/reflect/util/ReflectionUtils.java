@@ -1,11 +1,20 @@
 package org.geektimes.commons.reflect.util;
 
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+
+import static java.lang.String.valueOf;
+import static org.geektimes.commons.reflect.util.ClassUtils.isSimpleType;
+import static org.geektimes.commons.reflect.util.MethodUtils.invokeMethod;
+
 
 /**
  * Reflection Utility class
@@ -353,6 +362,27 @@ public abstract class ReflectionUtils {
         } else {
             return object;
         }
+    }
+
+    public static String toString(Object instance) {
+        Class<?> type = instance.getClass();
+        StringBuilder stringBuilder = new StringBuilder(type.getSimpleName());
+        stringBuilder.append("{");
+        try {
+            BeanInfo beanInfo = Introspector.getBeanInfo(type, Object.class);
+            for (PropertyDescriptor propertyDescriptor : beanInfo.getPropertyDescriptors()) {
+                Method readMethod = propertyDescriptor.getReadMethod();
+                Class<?> returnType = readMethod.getReturnType();
+                stringBuilder.append(propertyDescriptor.getName())
+                        .append(" = ")
+                        .append(isSimpleType(returnType) ? readMethod.invoke(instance) : returnType.getName())
+                        .append(" , ");
+            }
+        } catch (Throwable e) {
+            throw new RuntimeException(e);
+        }
+        stringBuilder.append("}");
+        return stringBuilder.toString();
     }
 
 }
