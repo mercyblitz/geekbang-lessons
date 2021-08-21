@@ -56,6 +56,7 @@ import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.requireNonNull;
 import static java.util.ServiceLoader.load;
+import static org.geektimes.commons.collection.util.CollectionUtils.addIfAbsent;
 import static org.geektimes.commons.collection.util.CollectionUtils.ofSet;
 import static org.geektimes.commons.function.Streams.filterSet;
 import static org.geektimes.commons.lang.util.StringUtils.endsWith;
@@ -83,11 +84,11 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     private final Map<Class<? extends Extension>, Extension> extensions;
 
-    private final Set<Class<?>> interceptorClasses;
+    private final List<Class<?>> interceptorClasses;
 
-    private final Set<Class<?>> decoratorClasses;
+    private final List<Class<?>> decoratorClasses;
 
-    private final Set<Class<?>> alternativeClasses;
+    private final List<Class<?>> alternativeClasses;
 
     private final Set<Class<? extends Annotation>> alternativeStereotypeClasses;
 
@@ -137,9 +138,9 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         this.beanClasses = new LinkedHashSet<>();
         this.packagesToScan = new TreeMap<>();
         this.extensions = new LinkedHashMap<>();
-        this.interceptorClasses = new LinkedHashSet<>();
-        this.decoratorClasses = new LinkedHashSet<>();
-        this.alternativeClasses = new LinkedHashSet<>();
+        this.interceptorClasses = new LinkedList<>();
+        this.decoratorClasses = new LinkedList<>();
+        this.alternativeClasses = new LinkedList<>();
         this.alternativeStereotypeClasses = new LinkedHashSet<>();
         this.classScanner = SimpleClassScanner.INSTANCE;
         this.observerMethodDiscoverer = new ReflectiveObserverMethodDiscoverer(this);
@@ -769,14 +770,13 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
      * the container must perform bean discovery, as defined in Bean discovery.
      */
     private void performBeanDiscovery() {
-        // TODO
         List<AnnotatedType> annotatedTypes = new ArrayList<>(this.annotatedTypes.values());
-        discoverManagedBeans(annotatedTypes);
-        discoverInterceptorBeans(annotatedTypes);
-        discoverDecoratorBeans(annotatedTypes);
+        determineManagedBeans(annotatedTypes);
+        determineInterceptorBeans(annotatedTypes);
+        determineDecoratorBeans(annotatedTypes);
     }
 
-    private void discoverManagedBeans(List<AnnotatedType> annotatedTypes) {
+    private void determineManagedBeans(List<AnnotatedType> annotatedTypes) {
         Iterator<AnnotatedType> iterator = annotatedTypes.iterator();
         while (iterator.hasNext()) {
             AnnotatedType annotatedType = iterator.next();
@@ -795,11 +795,11 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         fireProcessInjectionTarget(annotatedType, managedBean);
     }
 
-    private void discoverInterceptorBeans(List<AnnotatedType> annotatedTypes) {
+    private void determineInterceptorBeans(List<AnnotatedType> annotatedTypes) {
         // TODO
     }
 
-    private void discoverDecoratorBeans(List<AnnotatedType> annotatedTypes) {
+    private void determineDecoratorBeans(List<AnnotatedType> annotatedTypes) {
         // TODO
     }
 
@@ -1033,7 +1033,8 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     }
 
     public StandardBeanManager addInterceptorClass(Class<?> interceptorClass) {
-        this.interceptorClasses.add(interceptorClass);
+        requireNonNull(interceptorClass, "The 'interceptorClass' argument must not be null!");
+        addIfAbsent(this.interceptorClasses, interceptorClass);
         addAnnotatedType(interceptorClass);
         return this;
     }
@@ -1045,7 +1046,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     public StandardBeanManager addDecoratorClass(Class<?> decoratorClass) {
         requireNonNull(decoratorClass, "The 'decoratorClass' argument must not be null!");
-        this.decoratorClasses.add(decoratorClass);
+        addIfAbsent(this.decoratorClasses, decoratorClass);
         addAnnotatedType(decoratorClass);
         return this;
     }
@@ -1057,7 +1058,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     public StandardBeanManager addAlternativeClass(Class<?> alternativeClass) {
         requireNonNull(alternativeClass, "The 'alternativeClass' argument must not be null!");
-        this.alternativeClasses.add(alternativeClass);
+        addIfAbsent(this.alternativeClasses, alternativeClass);
         return this;
     }
 

@@ -220,6 +220,17 @@ public abstract class CollectionUtils extends BaseUtils {
         return effectedCount;
     }
 
+    public static <T> boolean addIfAbsent(Collection<T> collection, T valueToAdd) {
+        if (collection == null || valueToAdd == null) {
+            return false;
+        }
+        boolean added = false;
+        if (!collection.contains(valueToAdd)) {
+            added = collection.add(valueToAdd);
+        }
+        return added;
+    }
+
     /**
      * Take the first element from the specified collection
      *
