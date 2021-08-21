@@ -40,6 +40,21 @@
             <artifactId>activemq-all</artifactId>
         </dependency>
 
+        <!-- Testing -->
+
+        <!-- JUnit -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <!-- WebFlux -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webflux</artifactId>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
 </project>
