@@ -45,6 +45,14 @@ public class AfterTypeDiscoveryEvent extends ContainerEvent implements AfterType
         return standardBeanManager.getAlternatives();
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * the ability to override the interceptor order using the portable extension SPI,
+     * defined in AfterTypeDiscovery event.
+     *
+     * @return non-null mutable {@link List}
+     */
     @Override
     public List<Class<?>> getInterceptors() {
         getCallerExtension();

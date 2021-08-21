@@ -19,6 +19,7 @@ package org.geektimes.enterprise.inject.standard.beans;
 import org.geektimes.commons.lang.util.ClassLoaderUtils;
 import org.geektimes.commons.reflect.util.ClassUtils;
 import org.geektimes.commons.reflect.util.SimpleClassScanner;
+import org.geektimes.commons.util.PriorityComparator;
 import org.geektimes.commons.util.ServiceLoaders;
 import org.geektimes.enterprise.beans.xml.BeansReader;
 import org.geektimes.enterprise.beans.xml.bind.Alternatives;
@@ -51,13 +52,13 @@ import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
+import static java.lang.String.format;
 import static java.lang.System.getProperty;
 import static java.util.Collections.emptySet;
-import static java.util.Collections.unmodifiableList;
+import static java.util.Collections.sort;
 import static java.util.Objects.requireNonNull;
 import static java.util.ServiceLoader.load;
-import static org.geektimes.commons.collection.util.CollectionUtils.addIfAbsent;
-import static org.geektimes.commons.collection.util.CollectionUtils.ofSet;
+import static org.geektimes.commons.collection.util.CollectionUtils.*;
 import static org.geektimes.commons.function.Streams.filterSet;
 import static org.geektimes.commons.lang.util.StringUtils.endsWith;
 import static org.geektimes.enterprise.inject.util.Beans.isAnnotatedVetoed;
@@ -651,21 +652,60 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         }
     }
 
+    /**
+     * Each child <class> element must specify the name of an interceptor class.
+     * If there is no class with the specified name, or if the class with the specified name is not an interceptor class,
+     * the container automatically detects the problem and treats it as a deployment problem.
+     * <p>
+     * If the same class is listed twice under the <interceptors> element, the container automatically detects
+     * the problem and treats it as a deployment problem.
+     * <p>
+     * Interceptors enabled using @Priority are called before interceptors enabled using beans.xml.
+     *
+     * @param interceptors
+     */
     private void addInterceptors(org.geektimes.enterprise.beans.xml.bind.Interceptors interceptors) {
         if (interceptors != null) {
-            interceptors.getClazz()
-                    .stream()
-                    .map(this::loadClass)
+            List<String> classNames = interceptors.getClazz();
+            loadAnnotatedClasses(classNames, javax.interceptor.Interceptor.class)
                     .forEach(this::addInterceptorClass);
         }
     }
 
+    private List<Class<?>> loadAnnotatedClasses(List<String> classNames,
+                                                Class<? extends Annotation> annotationType) {
+        List<Class<?>> classes = new ArrayList<>(classNames.size());
+        for (String className : classNames) {
+            Class<?> type = loadClass(className);
+            if (!type.isAnnotationPresent(annotationType)) {
+                String message = format("The class[%s] does not annotate @%s", type.getName(), annotationType.getName());
+                throw new DeploymentException(message);
+            }
+            if (classes.contains(type)) {
+                String message = format("The duplicated definition @%s class[%s]!",
+                        annotationType.getName(), type.getName());
+                throw new DeploymentException(message);
+            }
+            classes.add(type);
+        }
+        return classes;
+    }
+
+    /**
+     * Each child <class> element must specify the name of a decorator bean class.
+     * If there is no class with the specified name, or if the class with the specified name is not
+     * a decorator bean class, the container automatically detects the problem and treats it as a deployment problem.
+     * <p>
+     * If the same class is listed twice under the <decorators> element, the container automatically detects the problem
+     * and treats it as a deployment problem.
+     *
+     * @param decorators
+     */
     private void addDecorators(org.geektimes.enterprise.beans.xml.bind.Decorators decorators) {
         if (decorators != null) {
-            decorators.getClazz()
-                    .stream()
-                    .map(this::loadClass)
-                    .forEach(this::addInterceptorClass);
+            List<String> classNames = decorators.getClazz();
+            loadAnnotatedClasses(classNames, javax.decorator.Decorator.class)
+                    .forEach(this::addDecoratorClass);
         }
     }
 
@@ -690,8 +730,8 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         try {
             return ClassUtils.forName(className, classLoader);
         } catch (ClassNotFoundException e) {
-            // wrap to RuntimeException
-            throw new IllegalArgumentException(className);
+            String message = format("The class[name : %s] can't be found!", className);
+            throw new DeploymentException(message, e);
         }
     }
 
@@ -1032,9 +1072,16 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         return this;
     }
 
-    public StandardBeanManager addInterceptorClass(Class<?> interceptorClass) {
+    /**
+     * @param interceptorClass
+     * @return
+     * @throws DeploymentException If <code>interceptorClass</code> is not an interceptor class.
+     */
+    public StandardBeanManager addInterceptorClass(Class<?> interceptorClass) throws DeploymentException {
         requireNonNull(interceptorClass, "The 'interceptorClass' argument must not be null!");
-        addIfAbsent(this.interceptorClasses, interceptorClass);
+        this.interceptorClasses.add(interceptorClass);
+        // Interceptors enabled using @Priority are called before interceptors enabled using beans.xml.
+        sort(this.interceptorClasses, PriorityComparator.INSTANCE);
         addAnnotatedType(interceptorClass);
         return this;
     }
@@ -1046,7 +1093,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     public StandardBeanManager addDecoratorClass(Class<?> decoratorClass) {
         requireNonNull(decoratorClass, "The 'decoratorClass' argument must not be null!");
-        addIfAbsent(this.decoratorClasses, decoratorClass);
+        this.decoratorClasses.add(decoratorClass);
         addAnnotatedType(decoratorClass);
         return this;
     }
@@ -1058,7 +1105,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     public StandardBeanManager addAlternativeClass(Class<?> alternativeClass) {
         requireNonNull(alternativeClass, "The 'alternativeClass' argument must not be null!");
-        addIfAbsent(this.alternativeClasses, alternativeClass);
+        this.alternativeClasses.add(alternativeClass);
         return this;
     }
 
@@ -1102,14 +1149,14 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     }
 
     public List<Class<?>> getAlternatives() {
-        return unmodifiableList(new ArrayList<>(alternativeClasses));
+        return alternativeClasses;
     }
 
     public List<Class<?>> getInterceptors() {
-        return unmodifiableList(new ArrayList<>(interceptorClasses));
+        return interceptorClasses;
     }
 
     public List<Class<?>> getDecorators() {
-        return unmodifiableList(new ArrayList<>(decoratorClasses));
+        return decoratorClasses;
     }
 }

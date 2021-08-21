@@ -250,4 +250,16 @@ public abstract class CollectionUtils extends BaseUtils {
             return values.iterator().next();
         }
     }
+
+    public static <T> T findDuplicatedElement(Collection<T> values) {
+        Set<T> elements = new LinkedHashSet<>();
+        T duplicatedElement = null;
+        for (T value : values) {
+            if (!elements.add(value)) {
+                duplicatedElement = value;
+                break;
+            }
+        }
+        return duplicatedElement;
+    }
 }
