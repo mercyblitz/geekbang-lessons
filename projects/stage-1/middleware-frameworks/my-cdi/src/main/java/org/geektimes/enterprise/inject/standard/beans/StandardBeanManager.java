@@ -419,16 +419,16 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         return new ReflectiveAnnotatedType(type);
     }
 
+    @Deprecated
     @Override
     public <T> InjectionTarget<T> createInjectionTarget(AnnotatedType<T> type) {
-        // TODO
         return null;
     }
 
     @Override
     public <T> InjectionTargetFactory<T> getInjectionTargetFactory(AnnotatedType<T> annotatedType) {
-        // TODO
-        return null;
+        // FIXME how to use <code>annotatedType</code>
+        return new ManagedBeanInjectionTargetFactory<>();
     }
 
     @Override
@@ -445,8 +445,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     @Override
     public <T> BeanAttributes<T> createBeanAttributes(AnnotatedType<T> type) {
-        // TODO
-        return null;
+        return new ManagedBean(this, type.getJavaClass());
     }
 
     @Override
@@ -463,7 +462,8 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     }
 
     @Override
-    public <T, X> Bean<T> createBean(BeanAttributes<T> attributes, Class<X> beanClass, ProducerFactory<X> producerFactory) {
+    public <T, X> Bean<T> createBean(BeanAttributes<T> attributes, Class<X> beanClass,
+                                     ProducerFactory<X> producerFactory) {
         // TODO
         return null;
     }
@@ -672,25 +672,6 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         }
     }
 
-    private List<Class<?>> loadAnnotatedClasses(List<String> classNames,
-                                                Class<? extends Annotation> annotationType) {
-        List<Class<?>> classes = new ArrayList<>(classNames.size());
-        for (String className : classNames) {
-            Class<?> type = loadClass(className);
-            if (!type.isAnnotationPresent(annotationType)) {
-                String message = format("The class[%s] does not annotate @%s", type.getName(), annotationType.getName());
-                throw new DeploymentException(message);
-            }
-            if (classes.contains(type)) {
-                String message = format("The duplicated definition @%s class[%s]!",
-                        annotationType.getName(), type.getName());
-                throw new DeploymentException(message);
-            }
-            classes.add(type);
-        }
-        return classes;
-    }
-
     /**
      * Each child <class> element must specify the name of a decorator bean class.
      * If there is no class with the specified name, or if the class with the specified name is not
@@ -715,6 +696,25 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 //                .map(this::)
 
         // TODO
+    }
+
+    private List<Class<?>> loadAnnotatedClasses(List<String> classNames,
+                                                Class<? extends Annotation> annotationType) {
+        List<Class<?>> classes = new ArrayList<>(classNames.size());
+        for (String className : classNames) {
+            Class<?> type = loadClass(className);
+            if (!type.isAnnotationPresent(annotationType)) {
+                String message = format("The class[%s] does not annotate @%s", type.getName(), annotationType.getName());
+                throw new DeploymentException(message);
+            }
+            if (classes.contains(type)) {
+                String message = format("The duplicated definition @%s class[%s]!",
+                        annotationType.getName(), type.getName());
+                throw new DeploymentException(message);
+            }
+            classes.add(type);
+        }
+        return classes;
     }
 
     private Class<?> resolveClass(String className) {
@@ -812,6 +812,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     private void performBeanDiscovery() {
         List<AnnotatedType> annotatedTypes = new ArrayList<>(this.annotatedTypes.values());
         determineManagedBeans(annotatedTypes);
+        determineEnabledBeans(annotatedTypes);
         determineInterceptorBeans(annotatedTypes);
         determineDecoratorBeans(annotatedTypes);
     }
@@ -828,11 +829,16 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         }
     }
 
+    private void determineEnabledBeans(List<AnnotatedType> annotatedTypes) {
+    }
+
     private void addManagedBean(AnnotatedType annotatedType, Class<?> beanClass) {
         ManagedBean managedBean = new ManagedBean(this, beanClass);
         this.managedBeans.add(managedBean);
         fireProcessInjectionPointEvents(managedBean);
         fireProcessInjectionTarget(annotatedType, managedBean);
+        fireProcessBeanAttributesEvent(annotatedType, managedBean);
+        fireProcessBeanEvent(annotatedType, managedBean);
     }
 
     private void determineInterceptorBeans(List<AnnotatedType> annotatedTypes) {
@@ -938,8 +944,26 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     }
 
     private void fireProcessInjectionTarget(AnnotatedType annotatedType, ManagedBean managedBean) {
-        InjectionTarget injectionTarget = new ManagedBeanInjectionTarget(managedBean);
-        fireEvent(new ProcessInjectionTargetEvent<>(annotatedType, new ManagedBeanInjectionTarget(managedBean), this));
+        InjectionTargetFactory injectionTargetFactory = getInjectionTargetFactory(annotatedType);
+        InjectionTarget injectionTarget = injectionTargetFactory.createInjectionTarget(managedBean);
+        fireEvent(new ProcessInjectionTargetEvent<>(annotatedType, injectionTarget, this));
+    }
+
+    private void fireProcessBeanAttributesEvent(AnnotatedType<?> type, ManagedBean bean) {
+        fireEvent(new ProcessBeanAttributesEvent(type, bean, this));
+    }
+
+    /**
+     * if the class is an enabled bean, interceptor or decorator and if ProcessBeanAttributes.veto() wasn’t called
+     * in previous step, fire an event which is a subtype of ProcessBean, as defined in ProcessBean event.
+     *
+     * @param type {@link AnnotatedType}
+     * @param bean {@link ManagedBean}
+     */
+    private void fireProcessBeanEvent(AnnotatedType<?> type, ManagedBean bean) {
+        if (managedBeans.contains(bean)) {
+            fireEvent(new ProcessBeanEvent<>(type, bean, this));
+        }
     }
 
     private void fireEvent(Object event) {
@@ -1158,5 +1182,9 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     public List<Class<?>> getDecorators() {
         return decoratorClasses;
+    }
+
+    public void addBeanDiscoveryDefinitionError(Throwable t) {
+        // TODO
     }
 }

@@ -61,6 +61,6 @@ public class ProcessInjectionTargetEvent<X> implements ProcessInjectionTarget<X>
 
     @Override
     public void addDefinitionError(Throwable t) {
-        // TODO
+        standardBeanManager.addBeanDiscoveryDefinitionError(t);
     }
 }

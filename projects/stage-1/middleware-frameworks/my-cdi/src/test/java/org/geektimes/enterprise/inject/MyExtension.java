@@ -17,6 +17,8 @@
 package org.geektimes.enterprise.inject;
 
 import org.geektimes.enterprise.inject.standard.ReflectiveAnnotatedType;
+import org.geektimes.enterprise.inject.standard.event.ProcessBeanAttributesEvent;
+import org.geektimes.enterprise.inject.standard.event.ProcessBeanEvent;
 
 import javax.enterprise.event.Observes;
 import javax.enterprise.event.ObservesAsync;
@@ -62,6 +64,14 @@ public class MyExtension implements Extension {
 
     public void processInjectionTarget(@Observes ProcessInjectionTarget processInjectionTarget) {
         System.out.println(processInjectionTarget);
+    }
+
+    public void processBeanAttributes(@Observes ProcessBeanAttributes processBeanAttributes) {
+        System.out.println(processBeanAttributes);
+    }
+
+    public void processBeanEvent(@Observes ProcessBean processBean) {
+        System.out.println(processBean);
     }
 
 

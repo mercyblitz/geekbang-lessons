@@ -24,6 +24,7 @@ import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Type;
 import java.util.Objects;
 import java.util.Set;
+import java.util.StringJoiner;
 
 import static org.geektimes.commons.collection.util.CollectionUtils.ofSet;
 import static org.geektimes.commons.reflect.util.TypeUtils.asClass;
@@ -89,6 +90,11 @@ public abstract class ReflectiveAnnotated<A extends AnnotatedElement> implements
 
     @Override
     public String toString() {
-        return ReflectionUtils.toString(this);
+        return new StringJoiner(", ", ReflectiveAnnotated.class.getSimpleName() + "[", "]")
+                .add("annotatedElement=" + getAnnotatedElement())
+                .add("baseType=" + getBaseType())
+                .add("types=" + getTypeClosure())
+                .add("annotations=" + getAnnotations())
+                .toString();
     }
 }

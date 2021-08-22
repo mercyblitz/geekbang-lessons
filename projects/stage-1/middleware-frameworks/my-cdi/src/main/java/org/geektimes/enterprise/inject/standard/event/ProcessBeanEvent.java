@@ -18,48 +18,53 @@ package org.geektimes.enterprise.inject.standard.event;
 
 import org.geektimes.enterprise.inject.standard.beans.StandardBeanManager;
 
-import javax.enterprise.inject.spi.InjectionPoint;
-import javax.enterprise.inject.spi.ProcessInjectionPoint;
-import javax.enterprise.inject.spi.configurator.InjectionPointConfigurator;
+import javax.enterprise.inject.spi.Annotated;
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.ProcessBean;
+import java.util.StringJoiner;
 
 /**
- * {@link ProcessInjectionPoint} Event is fired by container for every injection point of every bean, interceptor
- * or decorator.
+ * The {@link ProcessBean} Event
  *
- * @param <X> the declared type of the injection point.
- * @param <T> the bean class of the bean that declares the injection point
+ * @param <X> The class of the bean
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class ProcessInjectionPointEvent<T, X> implements ProcessInjectionPoint<T, X> {
+public class ProcessBeanEvent<X> implements ProcessBean<X> {
 
-    private InjectionPoint injectionPoint;
+    private final Annotated annotated;
+
+    private final Bean<X> bean;
 
     private final StandardBeanManager standardBeanManager;
 
-    public ProcessInjectionPointEvent(InjectionPoint injectionPoint, StandardBeanManager standardBeanManager) {
-        this.injectionPoint = injectionPoint;
+    public ProcessBeanEvent(Annotated annotated, Bean<X> bean, StandardBeanManager standardBeanManager) {
+        this.annotated = annotated;
+        this.bean = bean;
         this.standardBeanManager = standardBeanManager;
     }
 
+
     @Override
-    public InjectionPoint getInjectionPoint() {
-        return injectionPoint;
+    public Annotated getAnnotated() {
+        return annotated;
     }
 
     @Override
-    public void setInjectionPoint(InjectionPoint injectionPoint) {
-        this.injectionPoint = injectionPoint;
-    }
-
-    @Override
-    public InjectionPointConfigurator configureInjectionPoint() {
-        // TODO
-        return null;
+    public Bean<X> getBean() {
+        return bean;
     }
 
     @Override
     public void addDefinitionError(Throwable t) {
         standardBeanManager.addBeanDiscoveryDefinitionError(t);
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", ProcessBeanEvent.class.getSimpleName() + "[", "]")
+                .add("annotated=" + annotated)
+                .add("bean=" + bean)
+                .toString();
     }
 }
