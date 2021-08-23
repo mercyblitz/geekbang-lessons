@@ -17,21 +17,14 @@
 package org.geektimes.enterprise.inject.standard.beans;
 
 import org.geektimes.commons.lang.util.ClassLoaderUtils;
-import org.geektimes.commons.reflect.util.ClassUtils;
-import org.geektimes.commons.reflect.util.SimpleClassScanner;
-import org.geektimes.commons.util.PriorityComparator;
-import org.geektimes.commons.util.ServiceLoaders;
-import org.geektimes.enterprise.beans.xml.BeansReader;
-import org.geektimes.enterprise.beans.xml.bind.Alternatives;
-import org.geektimes.enterprise.beans.xml.bind.Beans;
-import org.geektimes.enterprise.beans.xml.bind.Scan;
+
+import org.geektimes.enterprise.beans.BeanArchivesManager;
 import org.geektimes.enterprise.inject.standard.*;
 import org.geektimes.enterprise.inject.standard.event.*;
-import org.geektimes.enterprise.inject.util.*;
+import org.geektimes.enterprise.inject.util.Annotations;
 
 import javax.el.ELResolver;
 import javax.el.ExpressionFactory;
-import javax.enterprise.context.*;
 import javax.enterprise.context.spi.Context;
 import javax.enterprise.context.spi.Contextual;
 import javax.enterprise.context.spi.CreationalContext;
@@ -41,31 +34,20 @@ import javax.enterprise.event.ObservesAsync;
 import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
-import javax.enterprise.inject.Stereotype;
 import javax.enterprise.inject.spi.*;
 import javax.enterprise.util.TypeLiteral;
-import javax.interceptor.InterceptorBinding;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.Consumer;
-import java.util.function.Predicate;
 
-import static java.lang.String.format;
-import static java.lang.System.getProperty;
 import static java.util.Collections.emptySet;
-import static java.util.Collections.sort;
 import static java.util.Objects.requireNonNull;
 import static java.util.ServiceLoader.load;
-import static org.geektimes.commons.collection.util.CollectionUtils.*;
-import static org.geektimes.commons.function.Streams.filterSet;
-import static org.geektimes.commons.lang.util.StringUtils.endsWith;
 import static org.geektimes.enterprise.inject.util.Beans.isAnnotatedVetoed;
 import static org.geektimes.enterprise.inject.util.Beans.isManagedBean;
-import static org.geektimes.enterprise.inject.util.Decorators.isDecorator;
 import static org.geektimes.enterprise.inject.util.Injections.validateForbiddenAnnotation;
-import static org.geektimes.enterprise.inject.util.Interceptors.isInterceptor;
 import static org.geektimes.enterprise.inject.util.Parameters.isConstructorParameter;
 import static org.geektimes.enterprise.inject.util.Parameters.isMethodParameter;
 
@@ -77,23 +59,25 @@ import static org.geektimes.enterprise.inject.util.Parameters.isMethodParameter;
  */
 public class StandardBeanManager implements BeanManager, Instance<Object> {
 
+
+    /**
+     * An archive which doesn’t contain a beans.xml file can’t be discovered as an implicit bean archive unless:
+     *
+     * <ul>
+     *     <li>the application is launched with system property <code>"javax.enterprise.inject.scan.implicit"</code>
+     *     set to <code>true</code>
+     *     </li>
+     *     <li>the container was initialized with a map containing an entry parameter with
+     *      <code>"javax.enterprise.inject.scan.implicit"</code> as key and Boolean.TRUE as value.</li>
+     * </ul>
+     */
+    public static final String SCAN_IMPLICIT_PROPERTY_NAME = "javax.enterprise.inject.scan.implicit";
+
     private final Map<String, Object> properties;
-
-    private final Set<Class<?>> beanClasses;
-
-    private final Map<String, Boolean> packagesToScan;
 
     private final Map<Class<? extends Extension>, Extension> extensions;
 
-    private final List<Class<?>> interceptorClasses;
-
-    private final List<Class<?>> decoratorClasses;
-
-    private final List<Class<?>> alternativeClasses;
-
-    private final Set<Class<? extends Annotation>> alternativeStereotypeClasses;
-
-    private final SimpleClassScanner classScanner;
+    private final BeanArchivesManager beanArchivesManager;
 
     private final ObserverMethodDiscoverer observerMethodDiscoverer;
 
@@ -101,60 +85,24 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     private final EventDispatcher eventDispatcher;
 
-    private final BeansReader beansReader;
-
     private ClassLoader classLoader;
 
     private boolean enabledDiscovery;
-
-    /**
-     * Qualifiers from extensions
-     */
-    private final Set<Class<? extends Annotation>> extendedQualifiers;
-
-    /**
-     * The key is annotation type, the value is meta-annotations
-     */
-    private final Map<Class<? extends Annotation>, Set<Annotation>> extendedStereotypes;
-
-    private final Set<Class<? extends Annotation>> extendedScopes;
-
-    /**
-     * The key is annotation type, the value is passivating or not
-     */
-    private final Map<Class<? extends Annotation>, Boolean> extendsNormalScopes;
-
-    /**
-     * The key is annotation type of {@link InterceptorBinding}, the value is meta-annotations
-     */
-    private final Map<Class<? extends Annotation>, Set<Annotation>> extendedInterceptorBindings;
 
     private final Map<String, AnnotatedType> annotatedTypes;
 
     private final List<ManagedBean> managedBeans;
 
     public StandardBeanManager() {
+        this.classLoader = ClassLoaderUtils.getClassLoader(getClass());
         this.properties = new HashMap<>();
         this.enabledDiscovery = true;
-        this.beanClasses = new LinkedHashSet<>();
-        this.packagesToScan = new TreeMap<>();
         this.extensions = new LinkedHashMap<>();
-        this.interceptorClasses = new LinkedList<>();
-        this.decoratorClasses = new LinkedList<>();
-        this.alternativeClasses = new LinkedList<>();
-        this.alternativeStereotypeClasses = new LinkedHashSet<>();
-        this.classScanner = SimpleClassScanner.INSTANCE;
         this.observerMethodDiscoverer = new ReflectiveObserverMethodDiscoverer(this);
         this.observerMethodsRepository = new ObserverMethodRepository();
         this.eventDispatcher = new EventDispatcher(observerMethodsRepository);
-        this.beansReader = ServiceLoaders.loadSpi(BeansReader.class);
-        this.classLoader = ClassLoaderUtils.getClassLoader(getClass());
+        this.beanArchivesManager = new BeanArchivesManager(classLoader);
         this.enabledDiscovery = true;
-        this.extendedQualifiers = new LinkedHashSet<>();
-        this.extendedStereotypes = new LinkedHashMap<>();
-        this.extendedScopes = new LinkedHashSet<>();
-        this.extendsNormalScopes = new LinkedHashMap<>();
-        this.extendedInterceptorBindings = new LinkedHashMap<>();
         this.annotatedTypes = new LinkedHashMap<>();
         this.managedBeans = new LinkedList<>();
     }
@@ -276,104 +224,47 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     @Override
     public boolean isScope(Class<? extends Annotation> annotationType) {
-        return Scopes.isScope(annotationType) ||
-                // Extensions
-                extendedScopes.contains(annotationType);
+        return beanArchivesManager.isScope(annotationType);
     }
 
     @Override
     public boolean isNormalScope(Class<? extends Annotation> annotationType) {
-        return Scopes.isNormalScope(annotationType) ||
-                // Extensions
-                extendsNormalScopes.containsKey(annotationType);
+        return beanArchivesManager.isNormalScope(annotationType);
     }
 
     @Override
     public boolean isPassivatingScope(Class<? extends Annotation> annotationType) {
-        return Scopes.isPassivatingScope(annotationType) ||
-                // Extensions
-                extendsNormalScopes.getOrDefault(annotationType, Boolean.FALSE);
+        return beanArchivesManager.isPassivatingScope(annotationType);
     }
 
     @Override
     public boolean isQualifier(Class<? extends Annotation> annotationType) {
-        return Qualifiers.isQualifier(annotationType) ||
-                // Extensions
-                extendedQualifiers.contains(annotationType);
+        return beanArchivesManager.isQualifier(annotationType);
     }
 
     @Override
     public boolean isInterceptorBinding(Class<? extends Annotation> annotationType) {
-        return Interceptors.isInterceptorBinding(annotationType) ||
-                // Extensions
-                extendedInterceptorBindings.containsKey(annotationType);
+        return beanArchivesManager.isInterceptorBinding(annotationType);
     }
 
     @Override
     public boolean isStereotype(Class<? extends Annotation> annotationType) {
-        return Stereotypes.isStereotype(annotationType) ||
-                // Extensions
-                extendedStereotypes.containsKey(annotationType);
+        return beanArchivesManager.isStereotype(annotationType);
     }
 
-    public boolean isBeanClass(Class<?> type) {
-        return isDefiningAnnotationType(type, false, false);
-    }
-
-    /**
-     * is defining annotation type or not.
-     * <p>
-     * A bean class may have a bean defining annotation, allowing it to be placed anywhere in an application,
-     * as defined in Bean archives. A bean class with a bean defining annotation is said to be an implicit bean.
-     * The set of bean defining annotations contains:
-     * <ul>
-     *     <li>{@link ApplicationScoped @ApplicationScoped}, {@link SessionScoped @SessionScoped},
-     *         {@link ConversationScoped @ConversationScoped} and {@link RequestScoped @RequestScoped} annotations
-     *     </li>
-     *     <li>all other normal scope types</li>
-     *     <li>{@link javax.interceptor.Interceptor @Interceptor} and {@link javax.decorator.Decorator @Decorator} annotations</li>
-     *     <li>all stereotype annotations (i.e. annotations annotated with {@link Stereotype @Stereotype})</li>
-     *     <li>the {@link Dependent @Dependent} scope annotation</li>
-     * </ul>
-     *
-     * @param type
-     * @param includedInterceptor
-     * @param includedDecorator
-     * @return
-     */
-    public boolean isDefiningAnnotationType(Class<?> type, boolean includedInterceptor, boolean includedDecorator) {
-
-        if (includedInterceptor && isInterceptor(type)) {
-            return true;
-        }
-        if (includedDecorator && isDecorator(type)) {
-            return true;
-        }
-
-        boolean hasDefiningAnnotation = false;
-
-        Annotation[] annotations = type.getAnnotations();
-        for (Annotation annotation : annotations) {
-            Class<? extends Annotation> annotationType = annotation.annotationType();
-            if (isScope(annotationType) ||
-                    isNormalScope(annotationType) ||
-                    isStereotype(annotationType)) {
-                hasDefiningAnnotation = true;
-                break;
-            }
-        }
-
-        return hasDefiningAnnotation;
-    }
 
     @Override
     public Set<Annotation> getInterceptorBindingDefinition(Class<? extends Annotation> bindingType) {
-        return extendedInterceptorBindings.getOrDefault(bindingType, emptySet());
+        // TODO
+        // return extendedInterceptorBindings.getOrDefault(bindingType, emptySet());
+        return null;
     }
 
     @Override
     public Set<Annotation> getStereotypeDefinition(Class<? extends Annotation> stereotype) {
-        return extendedStereotypes.getOrDefault(stereotype, emptySet());
+        // TODO
+        // return extendedStereotypes.getOrDefault(stereotype, emptySet());
+        return null;
     }
 
     @Override
@@ -597,207 +488,9 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
             return;
         }
 
-        List<Beans> beansList = beansReader.readAllBeans(classLoader);
-        Set<Class<?>> excludedClasses = new LinkedHashSet<>();
-
-        beansList.forEach(beans -> {
-            Scan scan = beans.getScan();
-            excludedClasses.addAll(excludeFilters(scan));
-            addInterceptors(beans.getInterceptors());
-            addDecorators(beans.getDecorators());
-            addAlternatives(beans.getAlternatives());
-        });
-
-        Set<Class<?>> discoveredClasses = discoverTypesInImplicitBeanArchives();
-        // remove the excluded classes
-        discoveredClasses.removeAll(excludedClasses);
-        addInterceptorClasses(discoveredClasses);
-        addDecoratorClasses(discoveredClasses);
-        // add types that annotated definition annotations(excluded Interceptors and Decorators)
-        addBeanClasses(discoveredClasses);
+        beanArchivesManager.discoverTypes();
     }
 
-
-    private void addInterceptorClasses(Set<Class<?>> classes) {
-        filterAndHandleClasses(classes,
-                Interceptors::isInterceptor,
-                this::addInterceptorClass);
-    }
-
-    private void addDecoratorClasses(Set<Class<?>> classes) {
-        filterAndHandleClasses(classes,
-                Decorators::isDecorator,
-                this::addDecoratorClass);
-    }
-
-
-    private void addBeanClasses(Set<Class<?>> classes) {
-        filterAndHandleClasses(classes,
-                this::isBeanClass,
-                this::addBeanClass);
-    }
-
-    private void filterAndHandleClasses(Set<Class<?>> classes,
-                                        Predicate<Class<?>> filter,
-                                        Consumer<Class<?>> handler) {
-        Iterator<Class<?>> iterator = classes.iterator();
-        while (iterator.hasNext()) {
-            Class<?> discoveredClass = iterator.next();
-            if (filter.test(discoveredClass)) {
-                if (handler != null) {
-                    handler.accept(discoveredClass);
-                }
-                iterator.remove();
-            }
-        }
-    }
-
-    /**
-     * Each child <class> element must specify the name of an interceptor class.
-     * If there is no class with the specified name, or if the class with the specified name is not an interceptor class,
-     * the container automatically detects the problem and treats it as a deployment problem.
-     * <p>
-     * If the same class is listed twice under the <interceptors> element, the container automatically detects
-     * the problem and treats it as a deployment problem.
-     * <p>
-     * Interceptors enabled using @Priority are called before interceptors enabled using beans.xml.
-     *
-     * @param interceptors
-     */
-    private void addInterceptors(org.geektimes.enterprise.beans.xml.bind.Interceptors interceptors) {
-        if (interceptors != null) {
-            List<String> classNames = interceptors.getClazz();
-            loadAnnotatedClasses(classNames, javax.interceptor.Interceptor.class)
-                    .forEach(this::addInterceptorClass);
-        }
-    }
-
-    /**
-     * Each child <class> element must specify the name of a decorator bean class.
-     * If there is no class with the specified name, or if the class with the specified name is not
-     * a decorator bean class, the container automatically detects the problem and treats it as a deployment problem.
-     * <p>
-     * If the same class is listed twice under the <decorators> element, the container automatically detects the problem
-     * and treats it as a deployment problem.
-     *
-     * @param decorators
-     */
-    private void addDecorators(org.geektimes.enterprise.beans.xml.bind.Decorators decorators) {
-        if (decorators != null) {
-            List<String> classNames = decorators.getClazz();
-            loadAnnotatedClasses(classNames, javax.decorator.Decorator.class)
-                    .forEach(this::addDecoratorClass);
-        }
-    }
-
-    private void addAlternatives(Alternatives alternatives) {
-//        alternatives.getClazzOrStereotype()
-//                .stream()
-//                .map(this::)
-
-        // TODO
-    }
-
-    private List<Class<?>> loadAnnotatedClasses(List<String> classNames,
-                                                Class<? extends Annotation> annotationType) {
-        List<Class<?>> classes = new ArrayList<>(classNames.size());
-        for (String className : classNames) {
-            Class<?> type = loadClass(className);
-            if (!type.isAnnotationPresent(annotationType)) {
-                String message = format("The class[%s] does not annotate @%s", type.getName(), annotationType.getName());
-                throw new DeploymentException(message);
-            }
-            if (classes.contains(type)) {
-                String message = format("The duplicated definition @%s class[%s]!",
-                        annotationType.getName(), type.getName());
-                throw new DeploymentException(message);
-            }
-            classes.add(type);
-        }
-        return classes;
-    }
-
-    private Class<?> resolveClass(String className) {
-        return ClassUtils.resolveClass(className, classLoader);
-    }
-
-    /**
-     * @param className
-     * @return
-     * @throws IllegalArgumentException if {@link Class} is not found by its name.
-     */
-    private Class<?> loadClass(String className) throws IllegalArgumentException {
-        try {
-            return ClassUtils.forName(className, classLoader);
-        } catch (ClassNotFoundException e) {
-            String message = format("The class[name : %s] can't be found!", className);
-            throw new DeploymentException(message, e);
-        }
-    }
-
-
-    private Set<Class<?>> excludeFilters(Scan scan) {
-        Set<Class<?>> excludedClasses = new LinkedHashSet<>();
-        scan.getExclude().forEach(exclude -> {
-            List<Object> conditions = exclude.getIfClassAvailableOrIfClassNotAvailableOrIfSystemProperty();
-            if (isConditional(conditions)) {
-                String name = exclude.getName();
-                if (endsWith(name, ".*")) {
-                    excludePackage(name, false);
-                } else if (endsWith(name, ".**")) {
-                    excludePackage(name, true);
-                } else { // the fully qualified name of the type
-                    Class<?> excludedClass = resolveClass(name);
-                    removeBeanClass(excludedClass);
-                    excludedClasses.add(excludedClass);
-                }
-            }
-        });
-        // those classes may be used to remove in the type discovery.
-        return excludedClasses;
-    }
-
-
-    private boolean isConditional(List<Object> conditions) {
-        if (conditions.isEmpty()) {
-            return true;
-        }
-
-        boolean result = true;
-
-        for (Object condition : conditions) {
-
-            if (condition instanceof Scan.Exclude.IfSystemProperty) {
-                Scan.Exclude.IfSystemProperty ifSystemProperty = (Scan.Exclude.IfSystemProperty) condition;
-                String name = ifSystemProperty.getName();
-                String value = ifSystemProperty.getValue();
-                if (value == null) {
-                    result = getProperty(name) != null;
-                } else {
-                    result = Objects.equals(value, getProperty(name));
-                }
-            } else {
-                String className = null;
-                boolean available = true;
-                if (condition instanceof Scan.Exclude.IfClassAvailable) {
-                    className = ((Scan.Exclude.IfClassAvailable) condition).getName();
-                } else if (condition instanceof Scan.Exclude.IfClassNotAvailable) {
-                    className = ((Scan.Exclude.IfClassNotAvailable) condition).getName();
-                    available = false;
-                }
-                result = isClassAvailable(className, available);
-            }
-
-            if (!result) {
-                break;
-            }
-        }
-        return result;
-    }
-
-    private boolean isClassAvailable(String className, boolean available) {
-        return (resolveClass(className) != null) == available;
-    }
 
     /**
      * the container must fire an event of type AfterTypeDiscovery, as defined in AfterTypeDiscovery event.
@@ -812,7 +505,6 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     private void performBeanDiscovery() {
         List<AnnotatedType> annotatedTypes = new ArrayList<>(this.annotatedTypes.values());
         determineManagedBeans(annotatedTypes);
-        determineEnabledBeans(annotatedTypes);
         determineInterceptorBeans(annotatedTypes);
         determineDecoratorBeans(annotatedTypes);
     }
@@ -822,14 +514,11 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         while (iterator.hasNext()) {
             AnnotatedType annotatedType = iterator.next();
             Class<?> beanClass = annotatedType.getJavaClass();
-            if (beanClasses.contains(beanClass) && isManagedBean(beanClass)) {
+            if (isManagedBean(beanClass)) {
                 addManagedBean(annotatedType, beanClass);
                 iterator.remove();
             }
         }
-    }
-
-    private void determineEnabledBeans(List<AnnotatedType> annotatedTypes) {
     }
 
     private void addManagedBean(AnnotatedType annotatedType, Class<?> beanClass) {
@@ -872,20 +561,6 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
      */
     private void performAfterDeploymentValidation() {
         // TODO
-    }
-
-    /**
-     * @return Every Java class, interface (excluding annotation type, a special kind of interface type) or enum
-     * * discovered as defined in Type discovery.
-     */
-    private Set<Class<?>> discoverTypesInImplicitBeanArchives() {
-        Set<Class<?>> classes = new LinkedHashSet<>();
-        for (Map.Entry<String, Boolean> packageEntry : packagesToScan.entrySet()) {
-            String packageToDiscovery = packageEntry.getKey();
-            boolean scanRecursively = Boolean.TRUE.equals(packageEntry.getValue());
-            classes.addAll(classScanner.scan(classLoader, packageToDiscovery, scanRecursively, true));
-        }
-        return filterSet(classes, type -> !type.isInterface() || !type.isEnum());
     }
 
     private StandardBeanManager discoverExtensions() {
@@ -971,27 +646,22 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     }
 
     public StandardBeanManager addQualifier(Class<? extends Annotation> qualifier) {
-        requireNonNull(qualifier, "The 'qualifier' argument must not be null!");
-        this.extendedQualifiers.add(qualifier);
+        this.beanArchivesManager.addQualifier(qualifier);
         return this;
     }
 
     public StandardBeanManager addStereotype(Class<? extends Annotation> stereotype, Annotation... stereotypeDef) {
-        extendedStereotypes.put(stereotype, ofSet(stereotypeDef));
+        this.beanArchivesManager.addStereotype(stereotype, stereotypeDef);
         return this;
     }
 
     public StandardBeanManager addScope(Class<? extends Annotation> scopeType, boolean normal, boolean passivating) {
-        if (normal) {
-            extendsNormalScopes.put(scopeType, passivating);
-        } else {
-            extendedScopes.add(scopeType);
-        }
+        this.beanArchivesManager.addScope(scopeType, normal, passivating);
         return this;
     }
 
-    public StandardBeanManager addInterceptorBinding(Class<? extends Annotation> bindingType, Annotation[] bindingTypeDef) {
-        extendedInterceptorBindings.put(bindingType, ofSet(bindingTypeDef));
+    public StandardBeanManager addInterceptorBinding(Class<? extends Annotation> bindingType, Annotation... bindingTypeDef) {
+        this.beanArchivesManager.addInterceptorBinding(bindingType, bindingTypeDef);
         return this;
     }
 
@@ -1033,50 +703,12 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     }
 
     public StandardBeanManager beanClasses(Class<?>... beanClasses) {
-        iterateNonNull(beanClasses, this::addBeanClass);
-        return this;
-    }
-
-    public StandardBeanManager addBeanClass(Class<?> beanClass) {
-        requireNonNull(beanClass, "The 'beanClass' argument must not be null!");
-        this.beanClasses.add(beanClass);
-        addAnnotatedType(beanClass);
-        return this;
-    }
-
-    private StandardBeanManager removeBeanClass(String beanClassName) {
-        requireNonNull(beanClassName, "The 'beanClassName' argument must not be null!");
-        return removeBeanClass(resolveClass(beanClassName));
-    }
-
-    private StandardBeanManager removeBeanClass(Class<?> beanClass) {
-        if (beanClass != null) {
-            this.beanClasses.remove(beanClass);
-        }
+        iterateNonNull(beanClasses, beanArchivesManager::addBeanClass);
         return this;
     }
 
     public StandardBeanManager packages(boolean scanRecursively, Package... packagesToScan) {
-        iterateNonNull(packagesToScan, packageToScan -> addPackage(packageToScan, scanRecursively));
-        return this;
-    }
-
-    public StandardBeanManager addPackage(Package packageToScan, boolean scanRecursively) {
-        requireNonNull(packageToScan, "The 'packageToScan' argument must not be null!");
-        return addPackage(packageToScan.getName(), scanRecursively);
-    }
-
-    public StandardBeanManager addPackage(String packageToScan, boolean scanRecursively) {
-        requireNonNull(packageToScan, "The 'packageToScan' argument must not be null!");
-        this.packagesToScan.put(packageToScan, scanRecursively);
-        return this;
-    }
-
-    public StandardBeanManager excludePackage(String packageToScan, boolean scanRecursively) {
-        requireNonNull(packageToScan, "The 'packageToScan' argument must not be null!");
-        if (this.packagesToScan.remove(packageToScan, scanRecursively)) {
-            this.packagesToScan.remove(packageToScan);
-        }
+        iterateNonNull(packagesToScan, packageToScan -> beanArchivesManager.addPackage(packageToScan, scanRecursively));
         return this;
     }
 
@@ -1092,55 +724,22 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     }
 
     public StandardBeanManager interceptorClasses(Class<?>... interceptorClasses) {
-        iterateNonNull(interceptorClasses, this::addInterceptorClass);
-        return this;
-    }
-
-    /**
-     * @param interceptorClass
-     * @return
-     * @throws DeploymentException If <code>interceptorClass</code> is not an interceptor class.
-     */
-    public StandardBeanManager addInterceptorClass(Class<?> interceptorClass) throws DeploymentException {
-        requireNonNull(interceptorClass, "The 'interceptorClass' argument must not be null!");
-        this.interceptorClasses.add(interceptorClass);
-        // Interceptors enabled using @Priority are called before interceptors enabled using beans.xml.
-        sort(this.interceptorClasses, PriorityComparator.INSTANCE);
-        addAnnotatedType(interceptorClass);
+        iterateNonNull(interceptorClasses, beanArchivesManager::addInterceptorClass);
         return this;
     }
 
     public StandardBeanManager decoratorClasses(Class<?>... decoratorClasses) {
-        iterateNonNull(decoratorClasses, this::addDecoratorClass);
-        return this;
-    }
-
-    public StandardBeanManager addDecoratorClass(Class<?> decoratorClass) {
-        requireNonNull(decoratorClass, "The 'decoratorClass' argument must not be null!");
-        this.decoratorClasses.add(decoratorClass);
-        addAnnotatedType(decoratorClass);
+        iterateNonNull(decoratorClasses, beanArchivesManager::addDecoratorClass);
         return this;
     }
 
     public StandardBeanManager alternativeClasses(Class<?>... alternativeClasses) {
-        iterateNonNull(alternativeClasses, this::addAlternativeClass);
-        return this;
-    }
-
-    public StandardBeanManager addAlternativeClass(Class<?> alternativeClass) {
-        requireNonNull(alternativeClass, "The 'alternativeClass' argument must not be null!");
-        this.alternativeClasses.add(alternativeClass);
+        iterateNonNull(alternativeClasses, beanArchivesManager::addAlternativeClass);
         return this;
     }
 
     public StandardBeanManager alternativeStereotypeClasses(Class<? extends Annotation>... alternativeStereotypeClasses) {
-        iterateNonNull(alternativeStereotypeClasses, this::addAlternativeStereotypeClass);
-        return this;
-    }
-
-    public StandardBeanManager addAlternativeStereotypeClass(Class<? extends Annotation> alternativeStereotypeClass) {
-        requireNonNull(alternativeStereotypeClass, "The 'alternativeStereotypeClass' argument must not be null!");
-        this.alternativeStereotypeClasses.add(alternativeStereotypeClass);
+        iterateNonNull(alternativeStereotypeClasses, beanArchivesManager::addAlternativeStereotypeClass);
         return this;
     }
 
@@ -1173,15 +772,15 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     }
 
     public List<Class<?>> getAlternatives() {
-        return alternativeClasses;
+        return beanArchivesManager.getAlternatives();
     }
 
     public List<Class<?>> getInterceptors() {
-        return interceptorClasses;
+        return beanArchivesManager.getAlternatives();
     }
 
     public List<Class<?>> getDecorators() {
-        return decoratorClasses;
+        return beanArchivesManager.getAlternatives();
     }
 
     public void addBeanDiscoveryDefinitionError(Throwable t) {

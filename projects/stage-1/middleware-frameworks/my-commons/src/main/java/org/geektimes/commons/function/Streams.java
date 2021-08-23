@@ -16,8 +16,9 @@
  */
 package org.geektimes.commons.function;
 
-import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -25,7 +26,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
+import static java.lang.String.format;
+import static java.util.Collections.unmodifiableList;
+import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.toList;
+import static org.geektimes.commons.collection.util.CollectionUtils.*;
 import static org.geektimes.commons.function.Predicates.and;
 import static org.geektimes.commons.function.Predicates.or;
 
@@ -44,18 +49,46 @@ public interface Streams {
         return stream(values).filter(predicate);
     }
 
-    static <T, S extends Iterable<T>> List<T> filterList(S values, Predicate<T> predicate) {
-        return filterStream(values, predicate).collect(toList());
+    static <E, L extends List<E>> List<E> filter(L values, Predicate<E> predicate) {
+        final L result;
+        if (predicate == null) {
+            result = values;
+        } else {
+            result = (L) filterStream(values, predicate).collect(toList());
+        }
+        return unmodifiableList(result);
     }
 
-    static <T, S extends Iterable<T>> Set<T> filterSet(S values, Predicate<T> predicate) {
-        // new Set with insertion order
-        return filterStream(values, predicate).collect(LinkedHashSet::new, Set::add, Set::addAll);
+    static <E, S extends Set<E>> Set<E> filter(S values, Predicate<E> predicate) {
+        final S result;
+        if (predicate == null) {
+            result = values;
+        } else {
+            result = (S) filterStream(values, predicate).collect(Collectors.toSet());
+        }
+        return unmodifiableSet(result);
+    }
+
+    static <E, Q extends Queue<E>> Queue<E> filter(Q values, Predicate<E> predicate) {
+        final Q result;
+        if (predicate == null) {
+            result = values;
+        } else {
+            result = (Q) filterStream(values, predicate).collect(LinkedList::new, List::add, List::addAll);
+        }
+        return unmodifiableQueue(result);
     }
 
     static <T, S extends Iterable<T>> S filter(S values, Predicate<T> predicate) {
-        final boolean isSet = Set.class.isAssignableFrom(values.getClass());
-        return (S) (isSet ? filterSet(values, predicate) : filterList(values, predicate));
+        if (isSet(values)) {
+            return (S) filter((Set) values, predicate);
+        } else if (isList(values)) {
+            return (S) filter((List) values, predicate);
+        } else if (isQueue(values)) {
+            return (S) filter((Queue) values, predicate);
+        }
+        String message = format("The 'values' type can't be supported!", values.getClass().getName());
+        throw new UnsupportedOperationException(message);
     }
 
     static <T, S extends Iterable<T>> S filterAll(S values, Predicate<T>... predicates) {

@@ -4,11 +4,9 @@
 package org.geektimes.commons.net.util;
 
 import org.geektimes.commons.collection.util.MapUtils;
-import org.geektimes.commons.constants.Constants;
-import org.geektimes.commons.constants.PathConstants;
-import org.geektimes.commons.constants.ProtocolConstants;
-import org.geektimes.commons.constants.SeparatorConstants;
+import org.geektimes.commons.constants.*;
 import org.geektimes.commons.jar.util.JarUtils;
+import org.geektimes.commons.lang.util.ClassPathUtils;
 import org.geektimes.commons.lang.util.StringUtils;
 
 import java.io.File;
@@ -18,10 +16,13 @@ import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
 import static org.geektimes.commons.collection.util.CollectionUtils.newLinkedList;
+import static org.geektimes.commons.constants.Constants.DOT;
+import static org.geektimes.commons.constants.ProtocolConstants.*;
 import static org.geektimes.commons.lang.util.ArrayUtils.length;
 
 /**
@@ -85,6 +86,28 @@ public abstract class URLUtils {
             archiveFile = archiveFile.exists() ? archiveFile : null;
         }
         return archiveFile;
+    }
+
+    public static File resolveArchiveFile(URL resourceURL) throws NullPointerException {
+        String protocol = resourceURL.getProtocol();
+        if (FILE.equals(protocol)) {
+            return resolveArchiveDirectory(resourceURL);
+        } else {
+            return resolveArchiveFile(resourceURL, DOT + protocol);
+        }
+    }
+
+    private static File resolveArchiveDirectory(URL resourceURL) {
+        String resourcePath = resourceURL.getPath();
+        Set<String> classPaths = ClassPathUtils.getClassPaths();
+        File archiveDirectory = null;
+        for (String classPath : classPaths) {
+            if (resourcePath.contains(classPath)) {
+                archiveDirectory = new File(classPath);
+                break;
+            }
+        }
+        return archiveDirectory;
     }
 
 
@@ -241,7 +264,7 @@ public abstract class URLUtils {
         if (url != null) {
             String protocol = url.getProtocol();
             try {
-                if (ProtocolConstants.JAR.equals(protocol)) {
+                if (JAR.equals(protocol)) {
                     JarFile jarFile = JarUtils.toJarFile(url); // Test whether valid jar or not
                     final String relativePath = JarUtils.resolveRelativePath(url);
                     if (StringUtils.EMPTY.equals(relativePath)) { // root directory in jar
@@ -250,7 +273,7 @@ public abstract class URLUtils {
                         JarEntry jarEntry = jarFile.getJarEntry(relativePath);
                         isDirectory = jarEntry != null && jarEntry.isDirectory();
                     }
-                } else if (ProtocolConstants.FILE.equals(protocol)) {
+                } else if (FILE.equals(protocol)) {
                     File classPathFile = new File(url.toURI());
                     isDirectory = classPathFile.isDirectory();
                 }
@@ -271,14 +294,14 @@ public abstract class URLUtils {
     public static boolean isJarURL(URL url) {
         String protocol = url.getProtocol();
         boolean flag = false;
-        if (ProtocolConstants.FILE.equals(protocol)) {
+        if (FILE.equals(protocol)) {
             try {
                 File file = new File(url.toURI());
                 JarFile jarFile = new JarFile(file);
                 flag = jarFile != null;
             } catch (Exception e) {
             }
-        } else if (ProtocolConstants.JAR.equals(protocol)) {
+        } else if (JAR.equals(protocol)) {
             flag = true;
         }
         return flag;

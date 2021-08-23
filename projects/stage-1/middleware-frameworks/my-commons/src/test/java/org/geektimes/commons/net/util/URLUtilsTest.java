@@ -19,6 +19,7 @@ import java.util.Map;
 
 import static org.geektimes.commons.collection.util.MapUtils.newLinkedHashMap;
 import static org.geektimes.commons.constants.SystemConstants.JAVA_HOME;
+import static org.geektimes.commons.net.util.URLUtils.resolveArchiveFile;
 import static org.junit.Assert.*;
 
 /**
@@ -144,5 +145,18 @@ public class URLUtilsTest {
         resourceURL = new URL(externalForm);
         assertTrue(URLUtils.isDirectoryURL(resourceURL));
 
+    }
+
+    @Test
+    public void testResolveArchiveFile2() {
+        ClassLoader classLoader = ClassLoader.getSystemClassLoader();
+        URL resourceURL = ClassLoaderUtils.getClassResource(classLoader, String.class);
+        File archiveFile = resolveArchiveFile(resourceURL);
+        assertTrue(archiveFile.isFile());
+
+        resourceURL = ClassLoaderUtils.getClassResource(classLoader, StringUtils.class);
+
+        archiveFile = resolveArchiveFile(resourceURL);
+        assertTrue(archiveFile.isDirectory());
     }
 }

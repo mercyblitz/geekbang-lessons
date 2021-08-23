@@ -5,6 +5,7 @@ package org.geektimes.commons.filter;
 
 import org.geektimes.commons.constants.FileSuffixConstants;
 
+import java.util.function.Predicate;
 import java.util.jar.JarEntry;
 
 /**
@@ -15,7 +16,7 @@ import java.util.jar.JarEntry;
  * @see ClassFileJarEntryFilter
  * @since 1.0.0
  */
-public class ClassFileJarEntryFilter implements JarEntryFilter {
+public class ClassFileJarEntryFilter implements Predicate<JarEntry> {
 
     /**
      * {@link ClassFileJarEntryFilter} Singleton instance
@@ -27,7 +28,7 @@ public class ClassFileJarEntryFilter implements JarEntryFilter {
     }
 
     @Override
-    public boolean accept(JarEntry jarEntry) {
+    public boolean test(JarEntry jarEntry) {
         return !jarEntry.isDirectory() && jarEntry.getName().endsWith(FileSuffixConstants.CLASS);
     }
 }

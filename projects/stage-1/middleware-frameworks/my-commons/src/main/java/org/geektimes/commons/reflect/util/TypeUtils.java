@@ -32,8 +32,8 @@ import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toSet;
 import static java.util.stream.StreamSupport.stream;
 import static org.geektimes.commons.function.Predicates.and;
+import static org.geektimes.commons.function.Streams.filter;
 import static org.geektimes.commons.function.Streams.filterAll;
-import static org.geektimes.commons.function.Streams.filterList;
 import static org.geektimes.commons.reflect.util.ClassUtils.getAllSuperClasses;
 import static org.geektimes.commons.reflect.util.ClassUtils.isAssignableFrom;
 
@@ -126,12 +126,11 @@ public abstract class TypeUtils extends BaseUtils {
         genericTypes.add(rawClass.getGenericSuperclass());
         genericTypes.addAll(asList(rawClass.getGenericInterfaces()));
 
-        return unmodifiableList(
-                filterList(genericTypes, TypeUtils::isParameterizedType)
-                        .stream()
-                        .map(ParameterizedType.class::cast)
-                        .filter(and(typeFilters))
-                        .collect(toList())
+        return unmodifiableList(filter(genericTypes, TypeUtils::isParameterizedType)
+                .stream()
+                .map(ParameterizedType.class::cast)
+                .filter(and(typeFilters))
+                .collect(toList())
         );
     }
 

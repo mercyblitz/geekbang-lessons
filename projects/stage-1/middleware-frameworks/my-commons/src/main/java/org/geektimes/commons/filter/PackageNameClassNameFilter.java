@@ -3,6 +3,8 @@
  */
 package org.geektimes.commons.filter;
 
+import java.util.function.Predicate;
+
 import static org.geektimes.commons.reflect.util.ClassUtils.resolvePackageName;
 
 /**
@@ -13,7 +15,7 @@ import static org.geektimes.commons.reflect.util.ClassUtils.resolvePackageName;
  * @see PackageNameClassNameFilter
  * @since 1.0.0
  */
-public class PackageNameClassNameFilter implements Filter<String> {
+public class PackageNameClassNameFilter implements Predicate<String> {
 
     private String packageName;
     private boolean includedSubPackages;
@@ -22,10 +24,8 @@ public class PackageNameClassNameFilter implements Filter<String> {
     /**
      * Constructor
      *
-     * @param packageName
-     *         the name of package
-     * @param includedSubPackages
-     *         included sub-packages
+     * @param packageName         the name of package
+     * @param includedSubPackages included sub-packages
      */
     public PackageNameClassNameFilter(String packageName, boolean includedSubPackages) {
         this.packageName = packageName;
@@ -34,7 +34,7 @@ public class PackageNameClassNameFilter implements Filter<String> {
     }
 
     @Override
-    public boolean accept(String className) {
+    public boolean test(String className) {
         String packageName = resolvePackageName(className);
         boolean accepted = packageName.equals(this.packageName);
         if (!accepted && includedSubPackages) {

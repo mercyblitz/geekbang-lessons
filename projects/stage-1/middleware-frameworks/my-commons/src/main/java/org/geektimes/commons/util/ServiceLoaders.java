@@ -40,7 +40,11 @@ public abstract class ServiceLoaders {
     }
 
     public static <T> T loadSpi(Class<T> serviceClass) {
-        return load(serviceClass, getClassLoader(serviceClass)).iterator().next();
+        return loadSpi(serviceClass, getClassLoader(serviceClass));
+    }
+
+    public static <T> T loadSpi(Class<T> serviceClass, ClassLoader classLoader) {
+        return load(serviceClass, classLoader).iterator().next();
     }
 
     public static <T> T[] loadAsArray(Class<T> serviceClass) {

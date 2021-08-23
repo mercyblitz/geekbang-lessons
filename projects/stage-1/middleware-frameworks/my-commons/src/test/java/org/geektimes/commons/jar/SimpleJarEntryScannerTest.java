@@ -4,7 +4,6 @@
 package org.geektimes.commons.jar;
 
 import junit.framework.Assert;
-import org.geektimes.commons.filter.JarEntryFilter;
 import org.geektimes.commons.jar.util.JarUtils;
 import org.geektimes.commons.lang.util.ClassLoaderUtils;
 import org.junit.Test;
@@ -43,12 +42,9 @@ public class SimpleJarEntryScannerTest {
         assertTrue(jarEntrySet.size() > 1000);
 
 
-        jarEntrySet = simpleJarEntryScanner.scan(jarFile, true, new JarEntryFilter() {
-            @Override
-            public boolean accept(JarEntry jarEntry) {
-                return jarEntry.getName().equals("java/lang/String.class");
-            }
-        });
+        jarEntrySet = simpleJarEntryScanner.scan(jarFile, true, jarEntry ->
+                jarEntry.getName().equals("java/lang/String.class")
+        );
 
         assertEquals(1, jarEntrySet.size());
 

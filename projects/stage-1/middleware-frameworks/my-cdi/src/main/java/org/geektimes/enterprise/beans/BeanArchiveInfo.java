@@ -14,34 +14,42 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.beans.xml;
+package org.geektimes.enterprise.beans;
 
 import org.geektimes.enterprise.beans.xml.bind.Beans;
 
-import java.io.IOException;
 import java.net.URL;
+import java.util.Set;
 
 /**
- * A Reader for {@link Beans}
+ * The information class for a Bean archive.
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public interface BeansReader {
+public class BeanArchiveInfo {
 
-    String BEANS_XML_RESOURCE_NAME = "META-INF/beans.xml";
+    private final URL beansXMLResource;
 
-    /**
-     * Read a {@link Beans} instance from the specified bean archive which contains
-     * XML {@link #BEANS_XML_RESOURCE_NAME resource} in the
-     * specified {@link ClassLoader}.
-     *
-     * @param beansXMLResource the URL represents the {@link #BEANS_XML_RESOURCE_NAME Beans XML resource}
-     * @param classLoader      the specified {@link ClassLoader}
-     * @return <code>null</code> if the resource is an empty file, or
-     * {@link Beans} instance parsed from {@link #BEANS_XML_RESOURCE_NAME "META-INF/beans.xml"} {@link Beans}
-     * @throws IOException
-     */
-    Beans readBeans(URL beansXMLResource, ClassLoader classLoader) throws IOException;
+    private final Beans beans;
 
+    private final Set<Class<?>> classes;
+
+    public BeanArchiveInfo(URL beansXMLResource, Beans beans, Set<Class<?>> classes) {
+        this.beansXMLResource = beansXMLResource;
+        this.beans = beans;
+        this.classes = classes;
+    }
+
+    public URL getBeansXMLResource() {
+        return beansXMLResource;
+    }
+
+    public Beans getBeans() {
+        return beans;
+    }
+
+    public Set<Class<?>> getClasses() {
+        return classes;
+    }
 }

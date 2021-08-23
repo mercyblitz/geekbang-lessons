@@ -4,18 +4,19 @@
 package org.geektimes.commons.jar;
 
 import org.geektimes.commons.constants.PathConstants;
-import org.geektimes.commons.filter.JarEntryFilter;
 import org.geektimes.commons.jar.util.JarUtils;
 import org.geektimes.commons.lang.util.StringUtils;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+
+import static java.util.Collections.unmodifiableSet;
 
 /**
  * Simple {@link JarEntry} Scanner
@@ -49,7 +50,7 @@ public class SimpleJarEntryScanner {
      *         <ul> <li>{@link JarUtils#toJarFile(URL)}
      * @since 1.0.0
      */
-    
+
     public Set<JarEntry> scan(URL jarURL, final boolean recursive) throws NullPointerException, IllegalArgumentException, IOException {
         return scan(jarURL, recursive, null);
     }
@@ -60,7 +61,7 @@ public class SimpleJarEntryScanner {
      * @param recursive
      *         recursive
      * @param jarEntryFilter
-     *         {@link JarEntryFilter}
+     *         {@link Predicate<JarEntry>}
      * @return Read-only {@link Set}
      * @throws NullPointerException
      *         If argument <code>null</code>
@@ -71,8 +72,8 @@ public class SimpleJarEntryScanner {
      * @see JarEntryFilter
      * @since 1.0.0
      */
-    
-    public Set<JarEntry> scan(URL jarURL, final boolean recursive, JarEntryFilter jarEntryFilter) throws NullPointerException, IllegalArgumentException, IOException {
+
+    public Set<JarEntry> scan(URL jarURL, final boolean recursive, Predicate<JarEntry> jarEntryFilter) throws NullPointerException, IllegalArgumentException, IOException {
         String relativePath = JarUtils.resolveRelativePath(jarURL);
         JarFile jarFile = JarUtils.toJarFile(jarURL);
         return scan(jarFile, relativePath, recursive, jarEntryFilter);
@@ -100,11 +101,14 @@ public class SimpleJarEntryScanner {
      * @throws IllegalArgumentException
      * @throws IOException
      */
-    public Set<JarEntry> scan(JarFile jarFile, final boolean recursive, JarEntryFilter jarEntryFilter) throws NullPointerException, IllegalArgumentException, IOException {
+    public Set<JarEntry> scan(JarFile jarFile, final boolean recursive, Predicate<JarEntry> jarEntryFilter)
+            throws NullPointerException, IllegalArgumentException, IOException {
         return scan(jarFile, StringUtils.EMPTY, recursive, jarEntryFilter);
     }
 
-    protected Set<JarEntry> scan(JarFile jarFile, String relativePath, final boolean recursive, JarEntryFilter jarEntryFilter) throws NullPointerException, IllegalArgumentException, IOException {
+    protected Set<JarEntry> scan(JarFile jarFile, String relativePath, final boolean recursive,
+                                 Predicate<JarEntry> jarEntryFilter)
+            throws NullPointerException, IllegalArgumentException, IOException {
         Set<JarEntry> jarEntriesSet = new LinkedHashSet<>();
         List<JarEntry> jarEntriesList = JarUtils.filter(jarFile, jarEntryFilter);
 
@@ -128,6 +132,6 @@ public class SimpleJarEntryScanner {
                 jarEntriesSet.add(jarEntry);
             }
         }
-        return Collections.unmodifiableSet(jarEntriesSet);
+        return unmodifiableSet(jarEntriesSet);
     }
 }

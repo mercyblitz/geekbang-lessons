@@ -25,7 +25,7 @@ import java.util.function.Predicate;
 import static java.util.Arrays.asList;
 import static org.geektimes.commons.collection.util.CollectionUtils.ofSet;
 import static org.geektimes.commons.function.Predicates.and;
-import static org.geektimes.commons.function.Streams.filterSet;
+import static org.geektimes.commons.function.Streams.filter;
 import static org.geektimes.commons.function.ThrowableSupplier.execute;
 import static org.geektimes.commons.reflect.util.ClassUtils.getAllInheritedTypes;
 
@@ -41,7 +41,7 @@ public abstract class FieldUtils {
         for (Class superType : getAllInheritedTypes(declaredClass)) {
             allFields.addAll(asList(superType.getFields()));
         }
-        return filterSet(allFields, and(fieldFilters));
+        return filter(allFields, and(fieldFilters));
     }
 
     public static Set<Field> getAllDeclaredFields(Class<?> declaredClass, Predicate<Field>... fieldFilters) {
@@ -49,7 +49,7 @@ public abstract class FieldUtils {
         for (Class superType : getAllInheritedTypes(declaredClass)) {
             allDeclaredFields.addAll(asList(superType.getDeclaredFields()));
         }
-        return filterSet(allDeclaredFields, and(fieldFilters));
+        return filter(allDeclaredFields, and(fieldFilters));
     }
 
     /**

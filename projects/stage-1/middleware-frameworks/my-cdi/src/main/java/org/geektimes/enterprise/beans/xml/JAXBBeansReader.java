@@ -25,9 +25,6 @@ import javax.xml.bind.Unmarshaller;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Enumeration;
-import java.util.LinkedList;
-import java.util.List;
 
 /**
  * {@link BeansReader} based on JAXB
@@ -38,28 +35,18 @@ import java.util.List;
 public class JAXBBeansReader implements BeansReader {
 
     @Override
-    public List<Beans> readAllBeans(ClassLoader classLoader) {
-        List<Beans> beansList = null;
-        try {
-            Enumeration<URL> urls = classLoader.getResources(BEANS_XML_RESOURCE_NAME);
-            beansList = new LinkedList<>();
-            while (urls.hasMoreElements()) {
-                URL url = urls.nextElement();
-                beansList.add(readBean(url, classLoader));
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return beansList;
-    }
-
-    private Beans readBean(URL url, ClassLoader classLoader) throws IOException, JAXBException {
+    public Beans readBeans(URL beansXMLResource, ClassLoader classLoader) throws IOException {
         Beans beans = null;
-        try (InputStream inputStream = url.openStream()) {
-            String contextPath = ObjectFactory.class.getPackage().getName();
-            JAXBContext jaxbContext = JAXBContext.newInstance(contextPath, classLoader);
-            Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
-            beans = (Beans) unmarshaller.unmarshal(inputStream);
+        try (InputStream inputStream = beansXMLResource.openStream()) {
+            if (inputStream.available() > 0) {
+                String contextPath = ObjectFactory.class.getPackage().getName();
+                JAXBContext jaxbContext = JAXBContext.newInstance(contextPath, classLoader);
+                Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
+                beans = (Beans) unmarshaller.unmarshal(inputStream);
+            }
+        } catch (JAXBException e) {
+            // rethrows the exception as IOException
+            throw new IOException(e);
         }
         return beans;
     }

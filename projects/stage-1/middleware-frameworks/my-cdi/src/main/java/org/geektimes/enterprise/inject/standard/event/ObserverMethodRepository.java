@@ -16,6 +16,7 @@
  */
 package org.geektimes.enterprise.inject.standard.event;
 
+import org.geektimes.commons.function.Streams;
 import org.geektimes.commons.reflect.util.ClassUtils;
 import org.geektimes.commons.reflect.util.TypeUtils;
 
@@ -30,7 +31,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptySet;
-import static org.geektimes.commons.function.Streams.filterSet;
 import static org.geektimes.commons.reflect.util.TypeUtils.getAllTypes;
 
 /**
@@ -74,7 +74,7 @@ public class ObserverMethodRepository {
         Set<Type> subEventTypes = getAllTypes(eventType);
         subEventTypes.forEach(subEventType -> {
             Set<ObserverMethod> observerMethods = storage.getOrDefault(subEventType, emptySet());
-            Set<ObserverMethod> matchedObserverMethods = filterSet(observerMethods,
+            Set<ObserverMethod> matchedObserverMethods = Streams.filter(observerMethods,
                     observerMethod -> {
                         Class<?> observedClass = TypeUtils.asClass(observerMethod.getObservedType());
                         if (ClassUtils.isAssignableFrom(observedClass, eventType)) {

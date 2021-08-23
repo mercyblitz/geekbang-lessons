@@ -6,7 +6,6 @@ package org.geektimes.commons.jar.util;
 import junit.framework.Assert;
 import junit.framework.TestCase;
 import org.apache.commons.io.FileUtils;
-import org.geektimes.commons.filter.JarEntryFilter;
 import org.geektimes.commons.lang.util.ClassLoaderUtils;
 import org.geektimes.commons.lang.util.ClassPathUtils;
 import org.junit.Before;
@@ -18,6 +17,7 @@ import java.net.URL;
 import java.util.Set;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.zip.ZipEntry;
 
 import static org.geektimes.commons.constants.SystemConstants.JAVA_HOME;
 import static org.geektimes.commons.constants.SystemConstants.JAVA_IO_TMPDIR;
@@ -96,11 +96,6 @@ public class JarUtilsTest {
     @Test
     public void testExtractWithURL() throws IOException {
         URL resourceURL = ClassLoaderUtils.getResource(classLoader, ClassLoaderUtils.ResourceType.PACKAGE, "org.apache.commons.lang3");
-        JarUtils.extract(resourceURL, targetDirectory, new JarEntryFilter() {
-            @Override
-            public boolean accept(JarEntry filteredObject) {
-                return !filteredObject.isDirectory();
-            }
-        });
+        JarUtils.extract(resourceURL, targetDirectory, ZipEntry::isDirectory);
     }
 }

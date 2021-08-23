@@ -30,7 +30,6 @@ import org.geektimes.commons.lang.util.StringUtils;
 
 import java.io.File;
 import java.lang.reflect.Array;
-import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
@@ -790,15 +789,28 @@ public abstract class ClassUtils {
      * @param recursive is recursive on sub directories
      * @return all class names in class path
      */
-
     public static Set<String> findClassNamesInClassPath(String classPath, boolean recursive) {
-        File classesFileHolder = new File(classPath); // JarFile or Directory
-        if (classesFileHolder.isDirectory()) { //Directory
-            return findClassNamesInDirectory(classesFileHolder, recursive);
-        } else if (classesFileHolder.isFile() && classPath.endsWith(FileSuffixConstants.JAR)) { //JarFile
-            return findClassNamesInJarFile(classesFileHolder, recursive);
+        File archiveFile = new File(classPath); // JarFile or Directory
+        return findClassNamesInClassPath(archiveFile, recursive);
+    }
+
+    /**
+     * Find all class names in class path
+     *
+     * @param archiveFile JarFile or class patch directory
+     * @param recursive   is recursive on sub directories
+     * @return all class names in class path
+     */
+    public static Set<String> findClassNamesInClassPath(File archiveFile, boolean recursive) {
+        if (!archiveFile.exists()) {
+            return emptySet();
         }
-        return Collections.emptySet();
+        if (archiveFile.isDirectory()) { // Directory
+            return findClassNamesInArchiveDirectory(archiveFile, recursive);
+        } else if (archiveFile.isFile() && archiveFile.getName().endsWith(FileSuffixConstants.JAR)) { //JarFile
+            return findClassNamesInArchiveFile(archiveFile, recursive);
+        }
+        return emptySet();
     }
 
     /**
@@ -861,7 +873,7 @@ public abstract class ClassUtils {
     }
 
 
-    protected static Set<String> findClassNamesInDirectory(File classesDirectory, boolean recursive) {
+    protected static Set<String> findClassNamesInArchiveDirectory(File classesDirectory, boolean recursive) {
         Set<String> classNames = new LinkedHashSet<>();
         SimpleFileScanner simpleFileScanner = SimpleFileScanner.INSTANCE;
         Set<File> classFiles = simpleFileScanner.scan(classesDirectory, recursive, new SuffixFileFilter(FileSuffixConstants.CLASS));
@@ -872,18 +884,12 @@ public abstract class ClassUtils {
         return classNames;
     }
 
-    protected static Set<String> findClassNamesInJarFile(File jarFile, boolean recursive) {
-        if (!jarFile.exists()) {
-            return Collections.emptySet();
-        }
-
+    protected static Set<String> findClassNamesInArchiveFile(File jarFile, boolean recursive) {
         Set<String> classNames = new LinkedHashSet<>();
-
         SimpleJarEntryScanner simpleJarEntryScanner = SimpleJarEntryScanner.INSTANCE;
         try {
             JarFile jarFile_ = new JarFile(jarFile);
             Set<JarEntry> jarEntries = simpleJarEntryScanner.scan(jarFile_, recursive, ClassFileJarEntryFilter.INSTANCE);
-
             for (JarEntry jarEntry : jarEntries) {
                 String jarEntryName = jarEntry.getName();
                 String className = resolveClassName(jarEntryName);
@@ -891,11 +897,8 @@ public abstract class ClassUtils {
                     classNames.add(className);
                 }
             }
-
-        } catch (Exception e) {
-
+        } catch (Exception ignored) {
         }
-
         return classNames;
     }
 
