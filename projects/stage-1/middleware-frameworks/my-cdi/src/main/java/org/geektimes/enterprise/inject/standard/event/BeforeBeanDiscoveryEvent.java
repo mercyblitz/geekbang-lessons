@@ -16,6 +16,7 @@
  */
 package org.geektimes.enterprise.inject.standard.event;
 
+import org.geektimes.enterprise.beans.BeanArchiveManager;
 import org.geektimes.enterprise.inject.standard.beans.StandardBeanManager;
 
 import javax.enterprise.inject.spi.AnnotatedType;
@@ -34,15 +35,18 @@ public class BeforeBeanDiscoveryEvent extends ContainerEvent implements BeforeBe
 
     private final StandardBeanManager standardBeanManager;
 
+    private final BeanArchiveManager beanArchiveManager;
+
     public BeforeBeanDiscoveryEvent(StandardBeanManager standardBeanManager) {
         super(standardBeanManager);
         this.standardBeanManager = standardBeanManager;
+        this.beanArchiveManager = standardBeanManager.getBeanArchiveManager();
     }
 
     @Override
     public void addQualifier(Class<? extends Annotation> qualifier) {
         getCallerExtension();
-        standardBeanManager.addQualifier(qualifier);
+        beanArchiveManager.addSyntheticQualifier(qualifier);
     }
 
     @Override
@@ -54,13 +58,13 @@ public class BeforeBeanDiscoveryEvent extends ContainerEvent implements BeforeBe
     @Override
     public void addScope(Class<? extends Annotation> scopeType, boolean normal, boolean passivating) {
         getCallerExtension();
-        standardBeanManager.addScope(scopeType, normal, passivating);
+        beanArchiveManager.addSyntheticScope(scopeType, normal, passivating);
     }
 
     @Override
     public void addStereotype(Class<? extends Annotation> stereotype, Annotation... stereotypeDef) {
         getCallerExtension();
-        standardBeanManager.addStereotype(stereotype, stereotypeDef);
+        beanArchiveManager.addSyntheticStereotype(stereotype, stereotypeDef);
     }
 
     @Override
@@ -72,7 +76,7 @@ public class BeforeBeanDiscoveryEvent extends ContainerEvent implements BeforeBe
     @Override
     public void addInterceptorBinding(Class<? extends Annotation> bindingType, Annotation... bindingTypeDef) {
         getCallerExtension();
-        standardBeanManager.addInterceptorBinding(bindingType, bindingTypeDef);
+        beanArchiveManager.addSyntheticInterceptorBinding(bindingType, bindingTypeDef);
     }
 
     @Override

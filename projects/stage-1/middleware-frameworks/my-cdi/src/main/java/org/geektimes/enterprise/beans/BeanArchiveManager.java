@@ -16,6 +16,7 @@
  */
 package org.geektimes.enterprise.beans;
 
+import org.geektimes.commons.lang.util.ClassPathUtils;
 import org.geektimes.commons.reflect.util.ClassUtils;
 import org.geektimes.commons.reflect.util.SimpleClassScanner;
 import org.geektimes.commons.util.PriorityComparator;
@@ -28,8 +29,11 @@ import org.geektimes.enterprise.inject.util.*;
 
 import javax.enterprise.context.*;
 import javax.enterprise.inject.Stereotype;
+import javax.enterprise.inject.se.SeContainerInitializer;
+import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.DeploymentException;
 import javax.interceptor.InterceptorBinding;
+import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.net.URL;
@@ -39,8 +43,9 @@ import java.util.function.Predicate;
 
 import static java.lang.String.format;
 import static java.lang.System.getProperty;
-import static java.util.Collections.sort;
+import static java.util.Collections.*;
 import static java.util.Objects.requireNonNull;
+import static org.geektimes.commons.collection.util.CollectionUtils.newLinkedHashSet;
 import static org.geektimes.commons.collection.util.CollectionUtils.ofSet;
 import static org.geektimes.commons.lang.util.StringUtils.endsWith;
 import static org.geektimes.commons.lang.util.StringUtils.isBlank;
@@ -58,7 +63,7 @@ import static org.geektimes.enterprise.inject.util.Interceptors.isInterceptor;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class BeanArchivesManager {
+public class BeanArchiveManager {
 
     private static final Predicate<Class<?>> annotationFilter = Class::isAnnotation;
 
@@ -70,13 +75,9 @@ public class BeanArchivesManager {
 
     private final SimpleClassScanner classScanner;
 
+    // Discovered types
+
     private final Set<Class<?>> beanClasses;
-
-    private final Set<Class<?>> interfaceClasses;
-
-    private final Set<Enum<?>> enumClasses;
-
-    private final Map<String, Boolean> packagesToScan;
 
     private final List<Class<?>> interceptorClasses;
 
@@ -86,68 +87,128 @@ public class BeanArchivesManager {
 
     private final Set<Class<? extends Annotation>> alternativeStereotypeClasses;
 
-    /**
-     * Qualifiers from extensions
-     */
-    private final Set<Class<? extends Annotation>> extendedQualifiers;
+    // Synthetic meta-data
 
     /**
+     * Synthetic Bean classes from {@link SeContainerInitializer#addBeanClasses(Class[])}
+     */
+    private final Set<Class<?>> syntheticBeanClasses;
+
+    /**
+     * Synthetic package names from {@link SeContainerInitializer#addPackages(boolean, Package...)}
+     * <p>
+     * Key is {@link Package#getName() the package name}, the value is scanRecursively or not
+     */
+    private final Map<String, Boolean> syntheticPackagesToScan;
+
+    /**
+     * Synthetic Qualifiers from {@link BeforeBeanDiscovery#addQualifier(Class)}
+     */
+    private final Set<Class<? extends Annotation>> syntheticQualifiers;
+
+    /**
+     * Synthetic Stereotypes from {@link BeforeBeanDiscovery#addStereotype(Class, Annotation...)}
+     * <p>
      * The key is annotation type, the value is meta-annotations
      */
-    private final Map<Class<? extends Annotation>, Set<Annotation>> extendedStereotypes;
-
-    private final Set<Class<? extends Annotation>> extendedScopes;
+    private final Map<Class<? extends Annotation>, Set<Annotation>> syntheticStereotypes;
 
     /**
+     * Synthetic Scopes from {@link BeforeBeanDiscovery#addScope(Class, boolean, boolean)}
+     */
+    private final Set<Class<? extends Annotation>> syntheticScopes;
+
+    /**
+     * Synthetic Normal Scopes from {@link BeforeBeanDiscovery#addScope(Class, boolean, boolean)}
+     * <p>
      * The key is annotation type, the value is passivating or not
      */
-    private final Map<Class<? extends Annotation>, Boolean> extendsNormalScopes;
+    private final Map<Class<? extends Annotation>, Boolean> syntheticNormalScopes;
 
     /**
+     * Synthetic InterceptorBindings from {@link BeforeBeanDiscovery#addInterceptorBinding(Class, Annotation...)}
+     * <p>
      * The key is annotation type of {@link InterceptorBinding}, the value is meta-annotations
      */
-    private final Map<Class<? extends Annotation>, Set<Annotation>> extendedInterceptorBindings;
+    private final Map<Class<? extends Annotation>, Set<Annotation>> syntheticInterceptorBindings;
 
-    private boolean scanNonBeanArchives;
+    private boolean discoveryEnabled;
 
-    public BeanArchivesManager(ClassLoader classLoader) {
+    private boolean scanImplicitEnabled;
+
+    private volatile boolean discovered;
+
+    public BeanArchiveManager(ClassLoader classLoader) {
         this.classLoader = classLoader;
         this.beansReader = ServiceLoaders.loadSpi(BeansReader.class, classLoader);
         this.classScanner = SimpleClassScanner.INSTANCE;
         this.beanClasses = new LinkedHashSet<>();
-        this.interfaceClasses = new LinkedHashSet<>();
-        this.enumClasses = new LinkedHashSet<>();
-        this.packagesToScan = new TreeMap<>();
         this.interceptorClasses = new LinkedList<>();
         this.decoratorClasses = new LinkedList<>();
         this.alternativeClasses = new LinkedList<>();
         this.alternativeStereotypeClasses = new LinkedHashSet<>();
-        this.extendedQualifiers = new LinkedHashSet<>();
-        this.extendedStereotypes = new LinkedHashMap<>();
-        this.extendedScopes = new LinkedHashSet<>();
-        this.extendsNormalScopes = new LinkedHashMap<>();
-        this.extendedInterceptorBindings = new LinkedHashMap<>();
-        this.scanNonBeanArchives = false;
+
+        this.syntheticBeanClasses = new LinkedHashSet<>();
+        this.syntheticPackagesToScan = new TreeMap<>();
+        this.syntheticQualifiers = new LinkedHashSet<>();
+        this.syntheticStereotypes = new LinkedHashMap<>();
+        this.syntheticScopes = new LinkedHashSet<>();
+        this.syntheticNormalScopes = new LinkedHashMap<>();
+        this.syntheticInterceptorBindings = new LinkedHashMap<>();
+
+        this.discoveryEnabled = true;
+        this.scanImplicitEnabled = false;
     }
 
-    public BeanArchivesManager addPackage(Package packageToScan, boolean scanRecursively) {
+    public BeanArchiveManager addSyntheticPackage(Package packageToScan, boolean scanRecursively) {
         requireNonNull(packageToScan, "The 'packageToScan' argument must not be null!");
-        return addPackage(packageToScan.getName(), scanRecursively);
+        return addSyntheticPackage(packageToScan.getName(), scanRecursively);
     }
 
-    public BeanArchivesManager addPackage(String packageToScan, boolean scanRecursively) {
+    public BeanArchiveManager addSyntheticPackage(String packageToScan, boolean scanRecursively) {
         requireNonNull(packageToScan, "The 'packageToScan' argument must not be null!");
-        this.packagesToScan.put(packageToScan, scanRecursively);
+        this.syntheticPackagesToScan.put(packageToScan, scanRecursively);
         return this;
     }
 
-    private BeanArchivesManager excludePackage(String packageToScan, boolean scanRecursively) {
-        requireNonNull(packageToScan, "The 'packageToScan' argument must not be null!");
-        if (this.packagesToScan.remove(packageToScan, scanRecursively)) {
-            this.packagesToScan.remove(packageToScan);
+    public BeanArchiveManager addSyntheticBeanClass(Class<?> beanClass) {
+        requireNonNull(beanClass, "The 'beanClass' argument must not be null!");
+        this.syntheticBeanClasses.add(beanClass);
+        return this;
+    }
+
+    public BeanArchiveManager addSyntheticQualifier(Class<? extends Annotation> qualifier) {
+        requireNonNull(qualifier, "The 'qualifier' argument must not be null!");
+        this.syntheticQualifiers.add(qualifier);
+        return this;
+    }
+
+    public BeanArchiveManager addSyntheticStereotype(Class<? extends Annotation> stereotype, Annotation... stereotypeDef) {
+        syntheticStereotypes.put(stereotype, ofSet(stereotypeDef));
+        return this;
+    }
+
+    public BeanArchiveManager addSyntheticScope(Class<? extends Annotation> scopeType, boolean normal, boolean passivating) {
+        if (normal) {
+            syntheticNormalScopes.put(scopeType, passivating);
+        } else {
+            syntheticScopes.add(scopeType);
         }
         return this;
     }
+
+    public BeanArchiveManager addSyntheticInterceptorBinding(Class<? extends Annotation> bindingType, Annotation[] bindingTypeDef) {
+        syntheticInterceptorBindings.put(bindingType, ofSet(bindingTypeDef));
+        return this;
+    }
+
+//    private BeanArchiveManager excludePackage(String packageToScan, boolean scanRecursively) {
+//        requireNonNull(packageToScan, "The 'packageToScan' argument must not be null!");
+//        if (this.extendedPackagesToScan.remove(packageToScan, scanRecursively)) {
+//            this.extendedPackagesToScan.remove(packageToScan);
+//        }
+//        return this;
+//    }
 
     private void discoverBeanClasses(Set<Class<?>> discoveredTypes) {
         filterAndHandleDiscoveredTypes(discoveredTypes,
@@ -156,43 +217,18 @@ public class BeanArchivesManager {
     }
 
     /**
-     * Add provided bean classes to the synthetic bean archive.
+     * Add provided bean classes.
      *
-     * @param beanClass bean class to add to the synthetic bean archive
+     * @param beanClass bean class
      * @return self
      */
-    public BeanArchivesManager addBeanClass(Class<?> beanClass) {
+    private BeanArchiveManager addBeanClass(Class<?> beanClass) {
         requireNonNull(beanClass, "The 'beanClass' argument must not be null!");
         this.beanClasses.add(beanClass);
         return this;
     }
 
-    public BeanArchivesManager addQualifier(Class<? extends Annotation> qualifier) {
-        requireNonNull(qualifier, "The 'qualifier' argument must not be null!");
-        this.extendedQualifiers.add(qualifier);
-        return this;
-    }
-
-    public BeanArchivesManager addStereotype(Class<? extends Annotation> stereotype, Annotation... stereotypeDef) {
-        extendedStereotypes.put(stereotype, ofSet(stereotypeDef));
-        return this;
-    }
-
-    public BeanArchivesManager addScope(Class<? extends Annotation> scopeType, boolean normal, boolean passivating) {
-        if (normal) {
-            extendsNormalScopes.put(scopeType, passivating);
-        } else {
-            extendedScopes.add(scopeType);
-        }
-        return this;
-    }
-
-    public BeanArchivesManager addInterceptorBinding(Class<? extends Annotation> bindingType, Annotation[] bindingTypeDef) {
-        extendedInterceptorBindings.put(bindingType, ofSet(bindingTypeDef));
-        return this;
-    }
-
-    public BeanArchivesManager addAlternativeClass(Class<?> alternativeClass) {
+    public BeanArchiveManager addAlternativeClass(Class<?> alternativeClass) {
         requireNonNull(alternativeClass, "The 'alternativeClass' argument must not be null!");
         this.alternativeClasses.add(alternativeClass);
         return this;
@@ -229,7 +265,7 @@ public class BeanArchivesManager {
      * @return
      * @throws DeploymentException If <code>interceptorClass</code> is not an interceptor class.
      */
-    public BeanArchivesManager addInterceptorClass(Class<?> interceptorClass) throws DeploymentException {
+    public BeanArchiveManager addInterceptorClass(Class<?> interceptorClass) throws DeploymentException {
         requireNonNull(interceptorClass, "The 'interceptorClass' argument must not be null!");
         this.interceptorClasses.add(interceptorClass);
         // Interceptors enabled using @Priority are called before interceptors enabled using beans.xml.
@@ -261,7 +297,7 @@ public class BeanArchivesManager {
                 this::addDecoratorClass);
     }
 
-    public BeanArchivesManager addDecoratorClass(Class<?> decoratorClass) {
+    public BeanArchiveManager addDecoratorClass(Class<?> decoratorClass) {
         requireNonNull(decoratorClass, "The 'decoratorClass' argument must not be null!");
         this.decoratorClasses.add(decoratorClass);
         return this;
@@ -276,7 +312,7 @@ public class BeanArchivesManager {
         // TODO
     }
 
-    public BeanArchivesManager addAlternativeStereotypeClass(Class<? extends Annotation> alternativeStereotypeClass) {
+    public BeanArchiveManager addAlternativeStereotypeClass(Class<? extends Annotation> alternativeStereotypeClass) {
         requireNonNull(alternativeStereotypeClass, "The 'alternativeStereotypeClass' argument must not be null!");
         this.alternativeStereotypeClasses.add(alternativeStereotypeClass);
         return this;
@@ -301,58 +337,71 @@ public class BeanArchivesManager {
     public boolean isScope(Class<? extends Annotation> annotationType) {
         return Scopes.isScope(annotationType) ||
                 // Extensions
-                extendedScopes.contains(annotationType);
+                syntheticScopes.contains(annotationType);
     }
 
     public boolean isNormalScope(Class<? extends Annotation> annotationType) {
         return Scopes.isNormalScope(annotationType) ||
                 // Extensions
-                extendsNormalScopes.containsKey(annotationType);
+                syntheticNormalScopes.containsKey(annotationType);
     }
 
     public boolean isPassivatingScope(Class<? extends Annotation> annotationType) {
         return Scopes.isPassivatingScope(annotationType) ||
                 // Extensions
-                extendsNormalScopes.getOrDefault(annotationType, Boolean.FALSE);
+                syntheticNormalScopes.getOrDefault(annotationType, Boolean.FALSE);
     }
 
     public boolean isQualifier(Class<? extends Annotation> annotationType) {
         return Qualifiers.isQualifier(annotationType) ||
                 // Extensions
-                extendedQualifiers.contains(annotationType);
+                syntheticQualifiers.contains(annotationType);
     }
 
     public boolean isInterceptorBinding(Class<? extends Annotation> annotationType) {
         return Interceptors.isInterceptorBinding(annotationType) ||
                 // Extensions
-                extendedInterceptorBindings.containsKey(annotationType);
+                syntheticInterceptorBindings.containsKey(annotationType);
     }
 
     public boolean isStereotype(Class<? extends Annotation> annotationType) {
         return Stereotypes.isStereotype(annotationType) ||
                 // Extensions
-                extendedStereotypes.containsKey(annotationType);
+                syntheticStereotypes.containsKey(annotationType);
     }
 
     public boolean isBeanClass(Class<?> type) {
         return isDefiningAnnotationType(type, false, false);
     }
 
-    public void discoverTypes() {
-        discoverTypesInBeanArchives();
-        discoverTypesInNonBeanArchives();
+    public Set<Annotation> getInterceptorBindingDefinition(Class<? extends Annotation> bindingType) {
+        return syntheticInterceptorBindings.getOrDefault(bindingType, emptySet());
     }
 
-    public void discoverTypesInBeanArchives() {
+    public Set<Annotation> getStereotypeDefinition(Class<? extends Annotation> stereotype) {
+        return syntheticStereotypes.getOrDefault(stereotype, emptySet());
+    }
+
+    /**
+     * @return an unmodifiable view of discovered types
+     */
+    public Set<Class<?>> discoverTypes() {
+        if(!discovered){
+            discoverTypesInBeanArchives();
+            discoverTypesInNonBeanArchivesAsImplicit();
+            discoverTypesInSyntheticBeanArchives();
+            discovered = true;
+        }
+        return getDiscoveredTypes();
+    }
+
+    private void discoverTypesInBeanArchives() {
         try {
             Enumeration<URL> beansXMLResources = classLoader.getResources(BEANS_XML_RESOURCE_NAME);
             while (beansXMLResources.hasMoreElements()) {
                 URL beansXMLResource = beansXMLResources.nextElement();
-
                 Beans beans = beansReader.readBeans(beansXMLResource, classLoader);
-
                 BeanArchiveType beanArchiveType = resolveBeanArchiveType(beans);
-
                 switch (beanArchiveType) {
                     case OTHER:
                         // Ignore
@@ -381,15 +430,34 @@ public class BeanArchivesManager {
      *      <code>"javax.enterprise.inject.scan.implicit"</code> as key and Boolean.TRUE as value.</li>
      * </ul>
      */
-    private void discoverTypesInNonBeanArchives() {
-        if (scanNonBeanArchives) {
-            Set<Class<?>> discoveredTypes = discoverTypesInPackages();
-            discoverDefiningAnnotationBeanTypes(discoveredTypes);
+    private void discoverTypesInNonBeanArchivesAsImplicit() {
+        if (isScanImplicitEnabled()) {
+            Set<String> classPaths = ClassPathUtils.getClassPaths();
+            classPaths.stream().map(File::new).forEach(archiveFile ->{
+                Set<Class<?>> discoveredTypes = scan(classLoader,archiveFile);
+                discoverDefiningAnnotationBeanTypes(discoveredTypes);
+            });
         }
+    }
+
+
+    /**
+     * Discover types in the synthetic bean archives by {@link SeContainerInitializer#addPackages}
+     *
+     * @see SeContainerInitializer#addPackages
+     */
+    private void discoverTypesInSyntheticBeanArchives() {
+        discoverTypesInExtendedPackages();
+        // Merge synthetic bean classes into enabled bean classes
+        syntheticBeanClasses.forEach(this::addBeanClass);
     }
 
     private Set<Class<?>> scan(URL beansXMLResource, Predicate<Class<?>>... classFilters) {
         return new LinkedHashSet<>(classScanner.scan(classLoader, beansXMLResource, true, classFilters));
+    }
+
+    private Set<Class<?>> scan(ClassLoader classLoader, File archiveFile,Predicate<Class<?>>... classFilters) {
+        return new LinkedHashSet<>(classScanner.scan(classLoader,archiveFile,true,classFilters));
     }
 
     /**
@@ -400,49 +468,51 @@ public class BeanArchivesManager {
      *     <li>that is an empty file</li>
      * </ul>
      * <p>
-     * <p>
      * Each Java class, interface (excluding the special kind of interface declaration annotation type) or
      * enum deployed in an explicit bean archive
      *
-     * @param beansXMLResource the URL represents the {@link #BEANS_XML_RESOURCE_NAME Beans XML resource}
-     * @param beans            {@link Beans} instance parsed from {@link #BEANS_XML_RESOURCE_NAME "META-INF/beans.xml"}            {@link Beans}
+     * @param beansXMLResource the URL represents the {@link BeansReader#BEANS_XML_RESOURCE_NAME Beans XML resource}
+     * @param beans            {@link Beans} instance parsed from {@link BeansReader#BEANS_XML_RESOURCE_NAME "META-INF/beans.xml"}            {@link Beans}
      */
     private void discoverTypesInExplicitBeanArchive(URL beansXMLResource, Beans beans) {
-        Predicate<Class<?>> annotationFilter = Class::isAnnotation;
-        Set<Class<?>> discoveredTypes = scan(beansXMLResource, annotationFilter.negate());
-        // Exclude filters
-        excludeFilters(discoveredTypes, beans);
-        // Add Interceptor classes
-        addInterceptors(beans.getInterceptors());
-        // Add Decorator classes
-        addDecorators(beans.getDecorators());
-        // Add Alternative classes
-        addAlternatives(beans.getAlternatives());
-        // Trimmed bean archive
-        if (!trimBeanArchive(discoveredTypes, beans)) {
-            // Add bean classes from the remaining discovered types
-            discoveredTypes.forEach(this::addBeanClass);
+        if (isDiscoveryEnabled()) {
+            Set<Class<?>> discoveredTypes = scan(beansXMLResource, nonAnnotationFilter);
+            // Exclude filters
+            excludeFilters(discoveredTypes, beans);
+            // Add Interceptor classes
+            addInterceptors(beans.getInterceptors());
+            // Add Decorator classes
+            addDecorators(beans.getDecorators());
+            // Add Alternative classes
+            addAlternatives(beans.getAlternatives());
+            // Trimmed bean archive
+            if (!trimBeanArchive(discoveredTypes, beans)) {
+                // Add bean classes from the remaining discovered types
+                discoveredTypes.forEach(this::addBeanClass);
+            }
         }
     }
 
     /**
      * Each Java class with a bean defining annotation in an implicit bean archive.
      *
-     * @param beansXMLResource the URL represents the {@link #BEANS_XML_RESOURCE_NAME Beans XML resource}
+     * @param beansXMLResource the URL represents the {@link BeansReader#BEANS_XML_RESOURCE_NAME Beans XML resource}
      */
     private void discoverTypesInImplicitBeanArchive(URL beansXMLResource) {
-        Set<Class<?>> discoveredTypes = scan(beansXMLResource);
+        Set<Class<?>> discoveredTypes = scan(beansXMLResource, ClassUtils::isGeneralClass);
         discoverDefiningAnnotationBeanTypes(discoveredTypes);
     }
 
-    private Set<Class<?>> discoverTypesInPackages() {
-        Set<Class<?>> classes = new LinkedHashSet<>();
-        for (Map.Entry<String, Boolean> packageEntry : packagesToScan.entrySet()) {
-            String packageToDiscovery = packageEntry.getKey();
-            boolean scanRecursively = Boolean.TRUE.equals(packageEntry.getValue());
-            classes.addAll(classScanner.scan(classLoader, packageToDiscovery, scanRecursively, true));
+    private void discoverTypesInExtendedPackages() {
+        if (isDiscoveryEnabled()) {
+            Set<Class<?>> discoveredTypes = new LinkedHashSet<>();
+            for (Map.Entry<String, Boolean> packageEntry : syntheticPackagesToScan.entrySet()) {
+                String packageToDiscovery = packageEntry.getKey();
+                boolean scanRecursively = Boolean.TRUE.equals(packageEntry.getValue());
+                discoveredTypes.addAll(classScanner.scan(classLoader, packageToDiscovery, scanRecursively, true));
+            }
+            discoverDefiningAnnotationBeanTypes(discoveredTypes);
         }
-        return classes;
     }
 
     /**
@@ -459,7 +529,7 @@ public class BeanArchivesManager {
      * </ul>
      *
      * @param discoveredTypes the {@link Class types} has been discovered
-     * @param beans           {@link Beans} instance parsed from {@link #BEANS_XML_RESOURCE_NAME "META-INF/beans.xml"}
+     * @param beans           {@link Beans} instance parsed from {@link BeansReader#BEANS_XML_RESOURCE_NAME "META-INF/beans.xml"}
      */
     private void excludeFilters(Set<Class<?>> discoveredTypes, Beans beans) {
         Scan scan = beans.getScan();
@@ -522,7 +592,7 @@ public class BeanArchivesManager {
      * from the set of discovered types.
      *
      * @param discoveredTypes the {@link Class types} has been discovered
-     * @param beans           {@link Beans} instance parsed from {@link #BEANS_XML_RESOURCE_NAME "META-INF/beans.xml"}
+     * @param beans           {@link Beans} instance parsed from {@link BeansReader#BEANS_XML_RESOURCE_NAME "META-INF/beans.xml"}
      * @return <code>true</code> if &lt;trim/&gt; element presents , <code>false</code> otherwise
      */
     private boolean trimBeanArchive(Set<Class<?>> discoveredTypes, Beans beans) {
@@ -650,7 +720,7 @@ public class BeanArchivesManager {
      * A bean archive which contains a beans.xml file with version 1.1 (or later) must specify the bean-discovery-mode
      * attribute. The default value for the attribute is {@link BeanDiscoveryMode#ANNOTATED annotated}.
      *
-     * @param beans {@link Beans} instance parsed from {@link #BEANS_XML_RESOURCE_NAME "META-INF/beans.xml"} {@link Beans}
+     * @param beans {@link Beans} instance parsed from {@link BeansReader#BEANS_XML_RESOURCE_NAME "META-INF/beans.xml"}
      * @return {@link BeanDiscoveryMode}
      */
     private BeanDiscoveryMode resolveDiscoveryMode(Beans beans) {
@@ -725,23 +795,58 @@ public class BeanArchivesManager {
         this.classLoader = classLoader;
     }
 
-    public boolean isScanNonBeanArchives() {
-        return scanNonBeanArchives;
+    public void disableDiscovery() {
+        this.discoveryEnabled = false;
     }
 
-    public void setScanNonBeanArchives(boolean scanNonBeanArchives) {
-        this.scanNonBeanArchives = scanNonBeanArchives;
+    /**
+     * All bean archives will be ignored except the implicit bean archive.
+     *
+     * @return <code>true</code> if discovery enabled, <code>false</code> otherwise
+     */
+    public boolean isDiscoveryEnabled() {
+        return discoveryEnabled;
     }
 
-    public List<Class<?>> getAlternatives() {
-        return alternativeClasses;
+    public void enableScanImplicit(boolean enabled) {
+        this.scanImplicitEnabled = enabled;
     }
 
-    public List<Class<?>> getInterceptors() {
+    public boolean isScanImplicitEnabled() {
+        return this.scanImplicitEnabled;
+    }
+
+    /**
+     * @return an unmodifiable view of discovered types
+     */
+    public Set<Class<?>> getDiscoveredTypes() {
+        int size = beanClasses.size() + alternativeClasses.size()
+                + interceptorClasses.size() + decoratorClasses.size();
+        Set<Class<?>> discoveredTypes = newLinkedHashSet(size);
+        discoveredTypes.addAll(beanClasses);
+        discoveredTypes.addAll(alternativeClasses);
+        discoveredTypes.addAll(interceptorClasses);
+        discoveredTypes.addAll(decoratorClasses);
+        return unmodifiableSet(discoveredTypes);
+    }
+
+    public Set<Class<?>> getBeanClasses() {
+        return beanClasses;
+    }
+
+    public List<Class<?>> getInterceptorClasses() {
         return interceptorClasses;
     }
 
-    public List<Class<?>> getDecorators() {
+    public List<Class<?>> getDecoratorClasses() {
         return decoratorClasses;
+    }
+
+    public List<Class<?>> getAlternativeClasses() {
+        return alternativeClasses;
+    }
+
+    public Set<Class<? extends Annotation>> getAlternativeStereotypeClasses() {
+        return alternativeStereotypeClasses;
     }
 }

@@ -4,7 +4,6 @@
 package org.geektimes.commons.reflect.util;
 
 import org.geektimes.commons.filter.PackageNameClassNameFilter;
-import org.geektimes.commons.function.Streams;
 import org.geektimes.commons.lang.util.ClassLoaderUtils;
 import org.geektimes.commons.lang.util.StringUtils;
 
@@ -131,6 +130,19 @@ public class SimpleClassScanner {
     public Set<Class<?>> scan(ClassLoader classLoader, URL resourceInArchive, boolean requiredLoad,
                               Predicate<Class<?>>... classFilters) {
         File archiveFile = resolveArchiveFile(resourceInArchive);
+        Set<String> classNames = findClassNamesInClassPath(archiveFile, true);
+        Set<Class<?>> classesSet = new LinkedHashSet<>();
+        for (String className : classNames) {
+            Class<?> class_ = requiredLoad ? loadClass(classLoader, className) : findLoadedClass(classLoader, className);
+            if (class_ != null) {
+                classesSet.add(class_);
+            }
+        }
+        return filterAll(classesSet, classFilters);
+    }
+
+    public Set<Class<?>> scan(ClassLoader classLoader, File archiveFile, boolean requiredLoad,
+                              Predicate<Class<?>>... classFilters) {
         Set<String> classNames = findClassNamesInClassPath(archiveFile, true);
         Set<Class<?>> classesSet = new LinkedHashSet<>();
         for (String className : classNames) {

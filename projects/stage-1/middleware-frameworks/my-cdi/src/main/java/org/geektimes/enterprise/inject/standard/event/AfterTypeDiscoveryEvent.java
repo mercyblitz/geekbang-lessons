@@ -16,6 +16,7 @@
  */
 package org.geektimes.enterprise.inject.standard.event;
 
+import org.geektimes.enterprise.beans.BeanArchiveManager;
 import org.geektimes.enterprise.inject.standard.beans.StandardBeanManager;
 
 import javax.enterprise.inject.spi.AfterTypeDiscovery;
@@ -34,15 +35,18 @@ public class AfterTypeDiscoveryEvent extends ContainerEvent implements AfterType
 
     private final StandardBeanManager standardBeanManager;
 
+    private final BeanArchiveManager beanArchiveManager;
+
     public AfterTypeDiscoveryEvent(StandardBeanManager standardBeanManager) {
         super(standardBeanManager);
         this.standardBeanManager = standardBeanManager;
+        this.beanArchiveManager = standardBeanManager.getBeanArchiveManager();
     }
 
     @Override
     public List<Class<?>> getAlternatives() {
         getCallerExtension();
-        return standardBeanManager.getAlternatives();
+        return beanArchiveManager.getAlternativeClasses();
     }
 
     /**
@@ -56,13 +60,13 @@ public class AfterTypeDiscoveryEvent extends ContainerEvent implements AfterType
     @Override
     public List<Class<?>> getInterceptors() {
         getCallerExtension();
-        return standardBeanManager.getInterceptors();
+        return beanArchiveManager.getInterceptorClasses();
     }
 
     @Override
     public List<Class<?>> getDecorators() {
         getCallerExtension();
-        return standardBeanManager.getDecorators();
+        return beanArchiveManager.getDecoratorClasses();
     }
 
     @Override

@@ -20,9 +20,9 @@ import org.geektimes.commons.util.BaseUtils;
 
 import java.lang.reflect.Array;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Enumeration;
-import java.util.List;
+import java.util.Objects;
+import java.util.function.Consumer;
 
 import static java.lang.reflect.Array.newInstance;
 import static java.util.Collections.list;
@@ -57,6 +57,13 @@ public abstract class ArrayUtils extends BaseUtils {
 
     public static <E> E[] asArray(Collection<E> collection, Class<?> componentType) {
         return collection.toArray((E[]) newInstance(componentType, 0));
+    }
+
+    public static <T> void iterate(T[] values, Consumer<T> consumer) {
+        Objects.requireNonNull(values, "The argument must not be null!");
+        for (T value : values) {
+            consumer.accept(value);
+        }
     }
 
 }

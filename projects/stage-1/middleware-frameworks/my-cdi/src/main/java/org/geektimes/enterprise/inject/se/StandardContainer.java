@@ -16,6 +16,7 @@
  */
 package org.geektimes.enterprise.inject.se;
 
+import org.geektimes.enterprise.beans.BeanArchiveManager;
 import org.geektimes.enterprise.inject.standard.beans.StandardBeanManager;
 
 import javax.enterprise.inject.Instance;
@@ -24,8 +25,11 @@ import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.Extension;
 import javax.enterprise.util.TypeLiteral;
 import java.lang.annotation.Annotation;
-import java.util.*;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.logging.Logger;
+
+import static org.geektimes.commons.lang.util.ArrayUtils.iterate;
 
 
 /**
@@ -42,19 +46,21 @@ public class StandardContainer implements SeContainer {
 
     private final StandardBeanManager standardBeanManager;
 
+    private final BeanArchiveManager beanArchiveManager;
+
     public StandardContainer() {
         this.running = false;
         // Create BeanManager
-        standardBeanManager = new StandardBeanManager();
+        this.standardBeanManager = new StandardBeanManager();
+        this.beanArchiveManager = standardBeanManager.getBeanArchiveManager();
     }
 
-
-    void addBeanClasses(Class<?>... classes) {
-        standardBeanManager.beanClasses(classes);
+    void addBeanClasses(Class<?>... beanClasses) {
+        iterate(beanClasses, beanArchiveManager::addSyntheticBeanClass);
     }
 
     void addPackages(boolean scanRecursively, Package... packages) {
-        standardBeanManager.packages(scanRecursively, packages);
+        iterate(packages, packageToScan -> beanArchiveManager.addSyntheticPackage(packageToScan, scanRecursively));
     }
 
     void addExtensions(Extension... extensions) {
@@ -86,7 +92,7 @@ public class StandardContainer implements SeContainer {
     }
 
     void disableDiscovery() {
-        standardBeanManager.disableDiscovery();
+        beanArchiveManager.disableDiscovery();
     }
 
     void setClassLoader(ClassLoader classLoader) {
