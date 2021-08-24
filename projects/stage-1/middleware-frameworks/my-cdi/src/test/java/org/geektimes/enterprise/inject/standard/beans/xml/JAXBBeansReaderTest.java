@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.beans.xml;
+package org.geektimes.enterprise.inject.standard.beans.xml;
 
-import org.geektimes.enterprise.beans.xml.bind.Beans;
-import org.geektimes.enterprise.beans.xml.bind.Scan;
+import org.geektimes.enterprise.inject.standard.beans.xml.bind.Beans;
+import org.geektimes.enterprise.inject.standard.beans.xml.bind.Scan;
 import org.junit.Test;
 
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.List;
 
-import static org.geektimes.enterprise.beans.xml.BeansReader.BEANS_XML_RESOURCE_NAME;
+import static org.geektimes.enterprise.inject.standard.beans.xml.BeansReader.BEANS_XML_RESOURCE_NAME;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 

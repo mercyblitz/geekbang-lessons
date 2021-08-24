@@ -14,17 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.beans;
+package org.geektimes.enterprise.inject.standard.beans;
 
 import org.geektimes.commons.lang.util.ClassPathUtils;
 import org.geektimes.commons.reflect.util.ClassUtils;
 import org.geektimes.commons.reflect.util.SimpleClassScanner;
 import org.geektimes.commons.util.PriorityComparator;
 import org.geektimes.commons.util.ServiceLoaders;
-import org.geektimes.enterprise.beans.xml.BeansReader;
-import org.geektimes.enterprise.beans.xml.bind.Alternatives;
-import org.geektimes.enterprise.beans.xml.bind.Beans;
-import org.geektimes.enterprise.beans.xml.bind.Scan;
+import org.geektimes.enterprise.inject.standard.beans.xml.BeansReader;
+import org.geektimes.enterprise.inject.standard.beans.xml.bind.Alternatives;
+import org.geektimes.enterprise.inject.standard.beans.xml.bind.Beans;
+import org.geektimes.enterprise.inject.standard.beans.xml.bind.Scan;
 import org.geektimes.enterprise.inject.util.*;
 
 import javax.enterprise.context.*;
@@ -49,11 +49,11 @@ import static org.geektimes.commons.collection.util.CollectionUtils.newLinkedHas
 import static org.geektimes.commons.collection.util.CollectionUtils.ofSet;
 import static org.geektimes.commons.lang.util.StringUtils.endsWith;
 import static org.geektimes.commons.lang.util.StringUtils.isBlank;
-import static org.geektimes.enterprise.beans.BeanArchiveType.EXPLICIT;
-import static org.geektimes.enterprise.beans.BeanArchiveType.OTHER;
-import static org.geektimes.enterprise.beans.BeanDiscoveryMode.ALL;
-import static org.geektimes.enterprise.beans.BeanDiscoveryMode.NONE;
-import static org.geektimes.enterprise.beans.xml.BeansReader.BEANS_XML_RESOURCE_NAME;
+import static org.geektimes.enterprise.inject.standard.beans.BeanArchiveType.EXPLICIT;
+import static org.geektimes.enterprise.inject.standard.beans.BeanArchiveType.OTHER;
+import static org.geektimes.enterprise.inject.standard.beans.BeanDiscoveryMode.ALL;
+import static org.geektimes.enterprise.inject.standard.beans.BeanDiscoveryMode.NONE;
+import static org.geektimes.enterprise.inject.standard.beans.xml.BeansReader.BEANS_XML_RESOURCE_NAME;
 import static org.geektimes.enterprise.inject.util.Decorators.isDecorator;
 import static org.geektimes.enterprise.inject.util.Interceptors.isInterceptor;
 
@@ -246,7 +246,7 @@ public class BeanArchiveManager {
      *
      * @param interceptors
      */
-    private void addInterceptors(org.geektimes.enterprise.beans.xml.bind.Interceptors interceptors) {
+    private void addInterceptors(org.geektimes.enterprise.inject.standard.beans.xml.bind.Interceptors interceptors) {
         if (interceptors != null) {
             List<String> classNames = interceptors.getClazz();
             loadAnnotatedClasses(classNames, javax.interceptor.Interceptor.class)
@@ -283,7 +283,7 @@ public class BeanArchiveManager {
      *
      * @param decorators
      */
-    private void addDecorators(org.geektimes.enterprise.beans.xml.bind.Decorators decorators) {
+    private void addDecorators(org.geektimes.enterprise.inject.standard.beans.xml.bind.Decorators decorators) {
         if (decorators != null) {
             List<String> classNames = decorators.getClazz();
             loadAnnotatedClasses(classNames, javax.decorator.Decorator.class)

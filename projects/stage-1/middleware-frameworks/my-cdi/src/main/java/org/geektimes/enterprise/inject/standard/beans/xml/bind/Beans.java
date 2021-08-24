@@ -6,7 +6,7 @@
 //
 
 
-package org.geektimes.enterprise.beans.xml.bind;
+package org.geektimes.enterprise.inject.standard.beans.xml.bind;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;

@@ -17,7 +17,6 @@
 package org.geektimes.enterprise.inject.standard.beans;
 
 import org.geektimes.commons.lang.util.ClassLoaderUtils;
-import org.geektimes.enterprise.beans.BeanArchiveManager;
 import org.geektimes.enterprise.inject.standard.*;
 import org.geektimes.enterprise.inject.standard.event.*;
 import org.geektimes.enterprise.inject.util.Annotations;
@@ -521,12 +520,16 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
      *     <li>fire an event of type {@link ProcessInjectionPoint} for each injection point in the class</li>
      *     <li>fire an event of type {@link ProcessInjectionTarget}</li>
      *     <li>fire an event of type {@link ProcessBeanAttributes}</li>
+     *     <li>fire an event of type {@link ProcessBeanEvent} if {@link ProcessBeanAttributes#veto()}
+     *     wasn’t called in previous step</li>
      * </ol>
+     *
      * @param annotatedType
      * @param beanClass
      * @see ProcessInjectionPoint
      * @see ProcessInjectionTarget
      * @see ProcessBeanAttributes
+     * @see ProcessBeanEvent
      */
     private void addManagedBean(AnnotatedType annotatedType, Class<?> beanClass) {
         ManagedBean managedBean = new ManagedBean(this, beanClass);

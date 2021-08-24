@@ -6,4 +6,4 @@
 //
 
 @javax.xml.bind.annotation.XmlSchema(namespace = "http://xmlns.jcp.org/xml/ns/javaee", elementFormDefault = javax.xml.bind.annotation.XmlNsForm.QUALIFIED)
-package org.geektimes.enterprise.beans.xml.bind;
+package org.geektimes.enterprise.inject.standard.beans.xml.bind;

@@ -14,10 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.beans.xml;
+package org.geektimes.enterprise.inject.standard.beans.xml;
 
-import org.geektimes.enterprise.beans.xml.bind.Beans;
-import org.geektimes.enterprise.beans.xml.bind.ObjectFactory;
+import org.geektimes.enterprise.inject.standard.beans.xml.bind.Beans;
+import org.geektimes.enterprise.inject.standard.beans.xml.bind.ObjectFactory;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;

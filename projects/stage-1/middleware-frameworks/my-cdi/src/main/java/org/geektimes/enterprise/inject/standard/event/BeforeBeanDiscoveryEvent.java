@@ -16,7 +16,7 @@
  */
 package org.geektimes.enterprise.inject.standard.event;
 
-import org.geektimes.enterprise.beans.BeanArchiveManager;
+import org.geektimes.enterprise.inject.standard.beans.BeanArchiveManager;
 import org.geektimes.enterprise.inject.standard.beans.StandardBeanManager;
 
 import javax.enterprise.inject.spi.AnnotatedType;

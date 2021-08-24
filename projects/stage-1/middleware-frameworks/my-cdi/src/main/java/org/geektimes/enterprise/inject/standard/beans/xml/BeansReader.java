@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.beans.xml;
+package org.geektimes.enterprise.inject.standard.beans.xml;
 
-import org.geektimes.enterprise.beans.xml.bind.Beans;
+import org.geektimes.enterprise.inject.standard.beans.xml.bind.Beans;
 
 import java.io.IOException;
 import java.net.URL;
