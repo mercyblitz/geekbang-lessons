@@ -514,6 +514,20 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         }
     }
 
+    /**
+     * Add Managed Bean, and fire events as below:
+     *
+     * <ol>
+     *     <li>fire an event of type {@link ProcessInjectionPoint} for each injection point in the class</li>
+     *     <li>fire an event of type {@link ProcessInjectionTarget}</li>
+     *     <li>fire an event of type {@link ProcessBeanAttributes}</li>
+     * </ol>
+     * @param annotatedType
+     * @param beanClass
+     * @see ProcessInjectionPoint
+     * @see ProcessInjectionTarget
+     * @see ProcessBeanAttributes
+     */
     private void addManagedBean(AnnotatedType annotatedType, Class<?> beanClass) {
         ManagedBean managedBean = new ManagedBean(this, beanClass);
         this.managedBeans.add(managedBean);
