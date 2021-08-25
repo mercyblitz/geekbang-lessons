@@ -8,20 +8,16 @@
 
 package org.geektimes.enterprise.inject.standard.beans.xml.bind;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
-import javax.xml.bind.annotation.XmlType;
+import javax.xml.bind.annotation.*;
 import javax.xml.bind.annotation.adapters.CollapsedStringAdapter;
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 
 /**
  * <p>Java class for anonymous complex type.
- * 
+ *
  * <p>The following schema fragment specifies the expected content contained within this class.
- * 
+ *
  * <pre>
  * &lt;complexType>
  *   &lt;complexContent>
@@ -53,8 +49,6 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  *   &lt;/complexContent>
  * &lt;/complexType>
  * </pre>
- * 
- * 
  */
 @XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "", propOrder = {
@@ -76,11 +70,9 @@ public class Beans {
 
     /**
      * Gets the value of the interceptors property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Interceptors }
-     *     
+     *
+     * @return possible object is
+     * {@link Interceptors }
      */
     public Interceptors getInterceptors() {
         return interceptors;
@@ -88,11 +80,9 @@ public class Beans {
 
     /**
      * Sets the value of the interceptors property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Interceptors }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link Interceptors }
      */
     public void setInterceptors(Interceptors value) {
         this.interceptors = value;
@@ -100,11 +90,9 @@ public class Beans {
 
     /**
      * Gets the value of the decorators property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Decorators }
-     *     
+     *
+     * @return possible object is
+     * {@link Decorators }
      */
     public Decorators getDecorators() {
         return decorators;
@@ -112,11 +100,9 @@ public class Beans {
 
     /**
      * Sets the value of the decorators property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Decorators }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link Decorators }
      */
     public void setDecorators(Decorators value) {
         this.decorators = value;
@@ -124,11 +110,9 @@ public class Beans {
 
     /**
      * Gets the value of the alternatives property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Alternatives }
-     *     
+     *
+     * @return possible object is
+     * {@link Alternatives }
      */
     public Alternatives getAlternatives() {
         return alternatives;
@@ -136,11 +120,9 @@ public class Beans {
 
     /**
      * Sets the value of the alternatives property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Alternatives }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link Alternatives }
      */
     public void setAlternatives(Alternatives value) {
         this.alternatives = value;
@@ -148,11 +130,9 @@ public class Beans {
 
     /**
      * Gets the value of the scan property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link Scan }
-     *     
+     *
+     * @return possible object is
+     * {@link Scan }
      */
     public Scan getScan() {
         return scan;
@@ -160,11 +140,9 @@ public class Beans {
 
     /**
      * Sets the value of the scan property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link Scan }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link Scan }
      */
     public void setScan(Scan value) {
         this.scan = value;
@@ -172,11 +150,9 @@ public class Beans {
 
     /**
      * Gets the value of the trim property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getTrim() {
         return trim;
@@ -184,11 +160,9 @@ public class Beans {
 
     /**
      * Sets the value of the trim property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setTrim(String value) {
         this.trim = value;
@@ -196,11 +170,9 @@ public class Beans {
 
     /**
      * Gets the value of the version property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getVersion() {
         if (version == null) {
@@ -212,11 +184,9 @@ public class Beans {
 
     /**
      * Sets the value of the version property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setVersion(String value) {
         this.version = value;
@@ -224,11 +194,9 @@ public class Beans {
 
     /**
      * Gets the value of the beanDiscoveryMode property.
-     * 
-     * @return
-     *     possible object is
-     *     {@link String }
-     *     
+     *
+     * @return possible object is
+     * {@link String }
      */
     public String getBeanDiscoveryMode() {
         return beanDiscoveryMode;
@@ -236,11 +204,9 @@ public class Beans {
 
     /**
      * Sets the value of the beanDiscoveryMode property.
-     * 
-     * @param value
-     *     allowed object is
-     *     {@link String }
-     *     
+     *
+     * @param value allowed object is
+     *              {@link String }
      */
     public void setBeanDiscoveryMode(String value) {
         this.beanDiscoveryMode = value;

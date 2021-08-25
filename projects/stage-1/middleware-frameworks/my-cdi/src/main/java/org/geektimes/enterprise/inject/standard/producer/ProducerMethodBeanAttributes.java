@@ -14,38 +14,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard;
+package org.geektimes.enterprise.inject.standard.producer;
 
+import org.geektimes.enterprise.inject.standard.AbstractBeanAttributes;
 import org.geektimes.enterprise.inject.util.Beans;
+import org.geektimes.enterprise.inject.util.Producers;
 
-import javax.enterprise.inject.spi.Annotated;
+import javax.enterprise.inject.Produces;
+import javax.enterprise.inject.spi.AnnotatedMethod;
 import javax.enterprise.inject.spi.BeanAttributes;
+import java.lang.reflect.Method;
 
 /**
- * Generic {@link BeanAttributes} implementation
+ * {@link Produces Producer} {@link Method} {@link BeanAttributes} implementation
  *
  * @param <T> the class of the bean instance
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class GenericBeanAttributes<T> extends AbstractBeanAttributes<Class, T> {
+public class ProducerMethodBeanAttributes<T> extends AbstractBeanAttributes<Method, T> {
 
-    public GenericBeanAttributes(Class<?> beanClass) {
-        super(beanClass, beanClass);
+    private final AnnotatedMethod annotatedMethod;
+
+    public ProducerMethodBeanAttributes(AnnotatedMethod annotatedMethod) {
+        super(annotatedMethod.getJavaMember(), annotatedMethod.getJavaMember().getReturnType());
+        this.annotatedMethod = annotatedMethod;
     }
 
     @Override
-    protected String getBeanName(Class beanClass) {
-        return Beans.getBeanName(beanClass);
+    protected String getBeanName(Method producerMethod) {
+        return Beans.getBeanName(producerMethod);
     }
 
     @Override
-    protected void validateAnnotatedElement(Class beanClass) {
-        // DO NOTING
+    protected void validateAnnotatedElement(Method producerMethod) {
+        Producers.validateProducerMethod(producerMethod);
     }
 
     @Override
-    public Annotated getAnnotated() {
-        return getAnnotatedType();
+    public AnnotatedMethod getAnnotated() {
+        return annotatedMethod;
     }
 }

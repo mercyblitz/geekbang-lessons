@@ -14,38 +14,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard;
+package org.geektimes.enterprise.inject.standard.producer;
 
+import org.geektimes.enterprise.inject.standard.AbstractBeanAttributes;
 import org.geektimes.enterprise.inject.util.Beans;
+import org.geektimes.enterprise.inject.util.Producers;
 
-import javax.enterprise.inject.spi.Annotated;
+import javax.enterprise.inject.Produces;
+import javax.enterprise.inject.spi.AnnotatedField;
 import javax.enterprise.inject.spi.BeanAttributes;
+import java.lang.reflect.Field;
 
 /**
- * Generic {@link BeanAttributes} implementation
+ * {@link Produces Producer} {@link Field} {@link BeanAttributes} implementation
  *
  * @param <T> the class of the bean instance
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class GenericBeanAttributes<T> extends AbstractBeanAttributes<Class, T> {
+public class ProducerFieldBeanAttributes<T> extends AbstractBeanAttributes<Field, T> {
 
-    public GenericBeanAttributes(Class<?> beanClass) {
-        super(beanClass, beanClass);
+    private final AnnotatedField annotatedField;
+
+    public ProducerFieldBeanAttributes(AnnotatedField annotatedField) {
+        super(annotatedField.getJavaMember(), annotatedField.getJavaMember().getType());
+        this.annotatedField = annotatedField;
     }
 
     @Override
-    protected String getBeanName(Class beanClass) {
-        return Beans.getBeanName(beanClass);
+    protected String getBeanName(Field producerField) {
+        return Beans.getBeanName(producerField);
     }
 
     @Override
-    protected void validateAnnotatedElement(Class beanClass) {
-        // DO NOTING
+    protected void validateAnnotatedElement(Field producerField) {
+        Producers.validateProducerField(producerField);
     }
 
     @Override
-    public Annotated getAnnotated() {
-        return getAnnotatedType();
+    public AnnotatedField getAnnotated() {
+        return annotatedField;
     }
 }

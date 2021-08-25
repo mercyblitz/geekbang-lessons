@@ -15,18 +15,17 @@ import javax.xml.namespace.QName;
 
 
 /**
- * This object contains factory methods for each 
- * Java content interface and Java element interface 
+ * This object contains factory methods for each
+ * Java content interface and Java element interface
  * generated in the org.geektimes.enterprise.inject.standard.beans.xml package.
- * <p>An ObjectFactory allows you to programatically 
- * construct new instances of the Java representation 
- * for XML content. The Java representation of XML 
- * content can consist of schema derived interfaces 
- * and classes representing the binding of schema 
- * type definitions, element declarations and model 
- * groups.  Factory methods for each of these are 
+ * <p>An ObjectFactory allows you to programatically
+ * construct new instances of the Java representation
+ * for XML content. The Java representation of XML
+ * content can consist of schema derived interfaces
+ * and classes representing the binding of schema
+ * type definitions, element declarations and model
+ * groups.  Factory methods for each of these are
  * provided in this class.
- * 
  */
 @XmlRegistry
 public class ObjectFactory {
@@ -37,14 +36,12 @@ public class ObjectFactory {
 
     /**
      * Create a new ObjectFactory that can be used to create new instances of schema derived classes for package: org.geektimes.enterprise.inject.standard.beans.xml
-     * 
      */
     public ObjectFactory() {
     }
 
     /**
      * Create an instance of {@link Scan }
-     * 
      */
     public Scan createScan() {
         return new Scan();
@@ -52,7 +49,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link Scan.Exclude }
-     * 
      */
     public Scan.Exclude createScanExclude() {
         return new Scan.Exclude();
@@ -60,7 +56,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link Decorators }
-     * 
      */
     public Decorators createDecorators() {
         return new Decorators();
@@ -68,7 +63,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link Beans }
-     * 
      */
     public Beans createBeans() {
         return new Beans();
@@ -76,7 +70,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link Interceptors }
-     * 
      */
     public Interceptors createInterceptors() {
         return new Interceptors();
@@ -84,7 +77,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link Alternatives }
-     * 
      */
     public Alternatives createAlternatives() {
         return new Alternatives();
@@ -92,7 +84,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link Scan.Exclude.IfClassAvailable }
-     * 
      */
     public Scan.Exclude.IfClassAvailable createScanExcludeIfClassAvailable() {
         return new Scan.Exclude.IfClassAvailable();
@@ -100,7 +91,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link Scan.Exclude.IfClassNotAvailable }
-     * 
      */
     public Scan.Exclude.IfClassNotAvailable createScanExcludeIfClassNotAvailable() {
         return new Scan.Exclude.IfClassNotAvailable();
@@ -108,7 +98,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link Scan.Exclude.IfSystemProperty }
-     * 
      */
     public Scan.Exclude.IfSystemProperty createScanExcludeIfSystemProperty() {
         return new Scan.Exclude.IfSystemProperty();
@@ -116,7 +105,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
-     * 
      */
     @XmlElementDecl(namespace = "http://xmlns.jcp.org/xml/ns/javaee", name = "trim")
     public JAXBElement<String> createTrim(String value) {
@@ -125,7 +113,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
-     * 
      */
     @XmlElementDecl(namespace = "http://xmlns.jcp.org/xml/ns/javaee", name = "stereotype", scope = Alternatives.class)
     public JAXBElement<String> createAlternativesStereotype(String value) {
@@ -134,7 +121,6 @@ public class ObjectFactory {
 
     /**
      * Create an instance of {@link JAXBElement }{@code <}{@link String }{@code >}}
-     * 
      */
     @XmlElementDecl(namespace = "http://xmlns.jcp.org/xml/ns/javaee", name = "class", scope = Alternatives.class)
     public JAXBElement<String> createAlternativesClass(String value) {

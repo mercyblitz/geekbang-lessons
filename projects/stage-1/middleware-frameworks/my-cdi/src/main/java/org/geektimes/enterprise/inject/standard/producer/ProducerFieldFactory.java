@@ -14,26 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard;
+package org.geektimes.enterprise.inject.standard.producer;
 
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.InjectionTarget;
-import javax.enterprise.inject.spi.InjectionTargetFactory;
+import javax.enterprise.inject.spi.*;
+import java.lang.reflect.Method;
 
 /**
- * {@link ManagedBean} {@link InjectionTargetFactory}
+ * {@link ProducerFactory} from the Producer {@link Method}
  *
- * @param <T> type on which this InjectionTarget operates
+ * @param <X> type of the bean containing the producer
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class ManagedBeanInjectionTargetFactory<T> implements InjectionTargetFactory<T> {
+public class ProducerFieldFactory<X> implements ProducerFactory<X> {
+
+    private final AnnotatedField<X> producerField;
+
+    private final BeanManager beanManager;
+
+    private final Bean<X> declaringBean;
+
+    public ProducerFieldFactory(AnnotatedField<X> producerField, Bean<X> declaringBean, BeanManager beanManager) {
+        this.producerField = producerField;
+        this.beanManager = beanManager;
+        this.declaringBean = declaringBean;
+    }
 
     @Override
-    public InjectionTarget<T> createInjectionTarget(Bean<T> bean) {
-        if (bean instanceof ManagedBean) {
-            return new ManagedBeanInjectionTarget<>((ManagedBean) bean);
-        }
-        return null;
+    public Producer createProducer(Bean bean) {
+        return new AnnotatedFieldProducer(producerField, declaringBean, beanManager);
     }
 }

@@ -30,9 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
-import java.util.logging.Logger;
 
-import static java.lang.String.format;
 import static org.geektimes.commons.reflect.util.TypeUtils.getAllTypes;
 
 /**

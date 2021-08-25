@@ -19,6 +19,10 @@ package org.geektimes.enterprise.inject.standard.beans;
 import org.geektimes.commons.lang.util.ClassLoaderUtils;
 import org.geektimes.enterprise.inject.standard.*;
 import org.geektimes.enterprise.inject.standard.event.*;
+import org.geektimes.enterprise.inject.standard.producer.ProducerFieldBeanAttributes;
+import org.geektimes.enterprise.inject.standard.producer.ProducerFieldFactory;
+import org.geektimes.enterprise.inject.standard.producer.ProducerMethodBeanAttributes;
+import org.geektimes.enterprise.inject.standard.producer.ProducerMethodFactory;
 import org.geektimes.enterprise.inject.util.Annotations;
 
 import javax.el.ELResolver;
@@ -45,6 +49,7 @@ import static java.util.ServiceLoader.load;
 import static org.geektimes.commons.lang.util.ArrayUtils.iterate;
 import static org.geektimes.enterprise.inject.util.Beans.isAnnotatedVetoed;
 import static org.geektimes.enterprise.inject.util.Beans.isManagedBean;
+import static org.geektimes.enterprise.inject.util.Exceptions.newDefinitionException;
 import static org.geektimes.enterprise.inject.util.Injections.validateForbiddenAnnotation;
 import static org.geektimes.enterprise.inject.util.Parameters.isConstructorParameter;
 import static org.geektimes.enterprise.inject.util.Parameters.isMethodParameter;
@@ -308,45 +313,44 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     @Override
     public <T> InjectionTargetFactory<T> getInjectionTargetFactory(AnnotatedType<T> annotatedType) {
-        // FIXME how to use <code>annotatedType</code>
-        return new ManagedBeanInjectionTargetFactory<>();
+        return new AnnotatedTypeInjectionTargetFactory<>(annotatedType,this);
     }
 
     @Override
     public <X> ProducerFactory<X> getProducerFactory(AnnotatedField<? super X> field, Bean<X> declaringBean) {
-        // TODO
-        return null;
+        return new ProducerFieldFactory(field,declaringBean,this);
     }
 
     @Override
     public <X> ProducerFactory<X> getProducerFactory(AnnotatedMethod<? super X> method, Bean<X> declaringBean) {
-        // TODO
-        return null;
+        return new ProducerMethodFactory(method,declaringBean,this);
     }
 
     @Override
     public <T> BeanAttributes<T> createBeanAttributes(AnnotatedType<T> type) {
-        return new ManagedBean(this, type.getJavaClass());
+        return new GenericBeanAttributes(type.getJavaClass());
     }
 
     @Override
     public BeanAttributes<?> createBeanAttributes(AnnotatedMember<?> type) {
-        // TODO
-        return null;
+        if (type instanceof AnnotatedMethod) {
+            return new ProducerMethodBeanAttributes<>((AnnotatedMethod) type);
+        } else if (type instanceof AnnotatedField) {
+            return new ProducerFieldBeanAttributes<>((AnnotatedField) type);
+        }
+        throw newDefinitionException("Current BeanManager can't support the specified AnnotatedMember[type:%s]", type);
     }
 
     @Override
     public <T> Bean<T> createBean(BeanAttributes<T> attributes, Class<T> beanClass,
                                   InjectionTargetFactory<T> injectionTargetFactory) {
-        // TODO
-        return null;
+        return new InjectionTargetBean(attributes, beanClass, injectionTargetFactory);
     }
 
     @Override
     public <T, X> Bean<T> createBean(BeanAttributes<T> attributes, Class<X> beanClass,
                                      ProducerFactory<X> producerFactory) {
-        // TODO
-        return null;
+        return new ProducerBean<>(attributes, beanClass, producerFactory);
     }
 
     @Override
@@ -364,8 +368,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     @Override
     public <T extends Extension> T getExtension(Class<T> extensionClass) {
-        // TODO
-        return null;
+        return (T) extensions.get(extensionClass);
     }
 
     @Override
@@ -548,7 +551,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     }
 
     private void determineProducerMethod(ProducerMethodBean producerMethodBean) {
-        determineProducer(producerMethodBean,producerMethodBean.getMethod(),producerMethodBean);
+        determineProducer(producerMethodBean, producerMethodBean.getMethod(), producerMethodBean);
     }
 
     private void determineProducerFields(ManagedBean managedBean) {
@@ -557,10 +560,10 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     }
 
     private void determineProducerField(ProducerFieldBean producerFieldBean) {
-        determineProducer(producerFieldBean,producerFieldBean.getProducerField(),producerFieldBean);
+        determineProducer(producerFieldBean, producerFieldBean.getProducerField(), producerFieldBean);
     }
 
-    private void determineProducer(Producer producer,AnnotatedMember annotatedMember, AbstractBean bean) {
+    private void determineProducer(Producer producer, AnnotatedMember annotatedMember, AbstractBean bean) {
         AnnotatedType annotatedType = bean.getAnnotatedType();
         addAnnotatedType(annotatedType);
         Set<InjectionPoint> injectionPoints = producer.getInjectionPoints();
@@ -720,7 +723,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         }
     }
 
-    private boolean hasAnnotatedType(AnnotatedType annotatedType){
+    private boolean hasAnnotatedType(AnnotatedType annotatedType) {
         return this.annotatedTypes.containsValue(annotatedType);
     }
 

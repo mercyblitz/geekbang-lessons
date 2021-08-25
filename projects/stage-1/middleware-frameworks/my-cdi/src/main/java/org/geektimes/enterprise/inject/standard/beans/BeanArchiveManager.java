@@ -386,7 +386,7 @@ public class BeanArchiveManager {
      * @return an unmodifiable view of discovered types
      */
     public Set<Class<?>> discoverTypes() {
-        if(!discovered){
+        if (!discovered) {
             discoverTypesInBeanArchives();
             discoverTypesInNonBeanArchivesAsImplicit();
             discoverTypesInSyntheticBeanArchives();
@@ -433,8 +433,8 @@ public class BeanArchiveManager {
     private void discoverTypesInNonBeanArchivesAsImplicit() {
         if (isScanImplicitEnabled()) {
             Set<String> classPaths = ClassPathUtils.getClassPaths();
-            classPaths.stream().map(File::new).forEach(archiveFile ->{
-                Set<Class<?>> discoveredTypes = scan(classLoader,archiveFile);
+            classPaths.stream().map(File::new).forEach(archiveFile -> {
+                Set<Class<?>> discoveredTypes = scan(classLoader, archiveFile);
                 discoverDefiningAnnotationBeanTypes(discoveredTypes);
             });
         }
@@ -456,8 +456,8 @@ public class BeanArchiveManager {
         return new LinkedHashSet<>(classScanner.scan(classLoader, beansXMLResource, true, classFilters));
     }
 
-    private Set<Class<?>> scan(ClassLoader classLoader, File archiveFile,Predicate<Class<?>>... classFilters) {
-        return new LinkedHashSet<>(classScanner.scan(classLoader,archiveFile,true,classFilters));
+    private Set<Class<?>> scan(ClassLoader classLoader, File archiveFile, Predicate<Class<?>>... classFilters) {
+        return new LinkedHashSet<>(classScanner.scan(classLoader, archiveFile, true, classFilters));
     }
 
     /**

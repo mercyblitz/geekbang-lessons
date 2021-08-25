@@ -167,7 +167,7 @@ public abstract class Producers {
     }
 
     private static void validateGenericArrayType(Method producerMethod, GenericArrayType returnType) {
-        if(returnType!=null) {
+        if (returnType != null) {
             Type genericComponentType = returnType.getGenericComponentType();
             if (isTypeVariable(genericComponentType)) {
                 throw newDefinitionException(
@@ -275,6 +275,7 @@ public abstract class Producers {
 
     public static void validateProducerField(Field producerField) {
         validateProducerRequiredAnnotation(producerField, Produces.class);
+        // TODO more validations
     }
 
     /**

@@ -16,37 +16,28 @@
  */
 package org.geektimes.enterprise.inject.standard;
 
-import javax.enterprise.inject.spi.Bean;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
+import javax.enterprise.inject.spi.*;
 
 /**
- * The Standard abstract implementation  {@link Bean} based on Java Reflection.
+ * {@link InjectionTargetFactory} based on {@link AnnotatedType}
  *
- * @param <A> The sub-type of {@link AnnotatedElement} as annotated object that may be :
- *            <ul>
- *            <li>{@link Class Bean Class}</li>
- *            <li>{@link Method Producer Method}</li>
- *            <li>{@link Field Producer Field}</li>
- *            </ul>
- * @param <T> the type of {@link Bean}
+ * @param <T> type on which this InjectionTarget operates
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public abstract class AbstractBean<A extends AnnotatedElement, T> extends AbstractBeanAttributes<A, T> implements Bean<T> {
+public class AnnotatedTypeInjectionTargetFactory<T> implements InjectionTargetFactory<T> {
 
-    public AbstractBean(A annotatedElement, Class<?> beanClass) {
-        super(annotatedElement, beanClass);
+    private final AnnotatedType<T> annotatedType;
+
+    private final BeanManager beanManager;
+
+    public AnnotatedTypeInjectionTargetFactory(AnnotatedType<T> annotatedType, BeanManager beanManager) {
+        this.annotatedType = annotatedType;
+        this.beanManager = beanManager;
     }
 
-    /**
-     * @return As of CDI 1.1 this method is deprecated and can safely always return false.
-     */
     @Override
-    @Deprecated
-    public final boolean isNullable() {
-        return false;
+    public InjectionTarget<T> createInjectionTarget(Bean<T> bean) {
+        return new AnnotatedTypeInjectionTarget(annotatedType, bean, beanManager);
     }
-
 }

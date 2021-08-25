@@ -14,38 +14,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard;
+package org.geektimes.enterprise.inject.standard.producer;
 
-import org.geektimes.enterprise.inject.util.Beans;
-
-import javax.enterprise.inject.spi.Annotated;
-import javax.enterprise.inject.spi.BeanAttributes;
+import javax.enterprise.inject.spi.*;
+import java.lang.reflect.Method;
 
 /**
- * Generic {@link BeanAttributes} implementation
+ * {@link ProducerFactory} from the Producer {@link Method}
  *
- * @param <T> the class of the bean instance
+ * @param <X> type of the bean containing the producer
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class GenericBeanAttributes<T> extends AbstractBeanAttributes<Class, T> {
+public class ProducerMethodFactory<X> implements ProducerFactory<X> {
 
-    public GenericBeanAttributes(Class<?> beanClass) {
-        super(beanClass, beanClass);
+    private final AnnotatedMethod<X> producerMethod;
+
+    private final BeanManager beanManager;
+
+    private final Bean<X> declaringBean;
+
+    public ProducerMethodFactory(AnnotatedMethod<X> producerMethod, Bean<X> declaringBean, BeanManager beanManager) {
+        this.producerMethod = producerMethod;
+        this.beanManager = beanManager;
+        this.declaringBean = declaringBean;
     }
 
     @Override
-    protected String getBeanName(Class beanClass) {
-        return Beans.getBeanName(beanClass);
-    }
-
-    @Override
-    protected void validateAnnotatedElement(Class beanClass) {
-        // DO NOTING
-    }
-
-    @Override
-    public Annotated getAnnotated() {
-        return getAnnotatedType();
+    public Producer createProducer(Bean bean) {
+        return new AnnotatedMethodProducer(producerMethod, declaringBean, beanManager);
     }
 }

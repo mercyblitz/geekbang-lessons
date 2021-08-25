@@ -58,7 +58,7 @@ public enum BeanArchiveType {
      *  <li>contains a beans.xml file with the bean-discovery-mode of "none"</li>
      *  <li>contains an extension and no beans.xml file</li>
      * </ul>
-     *
+     * <p>
      * is not a bean archive.
      */
     OTHER
