@@ -36,6 +36,17 @@ public abstract class MemberUtils {
         return member != null && Modifier.isStatic(member.getModifiers());
     }
 
+
+    /**
+     * check the specified {@link Member member} is abstract or not ?
+     *
+     * @param member {@link Member} instance, e.g, {@link Constructor}, {@link Method} or {@link Field}
+     * @return Iff <code>member</code> is static one, return <code>true</code>, or <code>false</code>
+     */
+    public static boolean isAbstract(Member member) {
+        return member != null && Modifier.isAbstract(member.getModifiers());
+    }
+
     public static boolean isNonStatic(Member member) {
         return member != null && !Modifier.isStatic(member.getModifiers());
     }

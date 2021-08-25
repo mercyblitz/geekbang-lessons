@@ -18,10 +18,7 @@ package org.geektimes.commons.reflect.util;
 
 import org.geektimes.commons.util.BaseUtils;
 
-import java.lang.reflect.GenericArrayType;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -51,9 +48,24 @@ public abstract class TypeUtils extends BaseUtils {
 
     public static final Predicate<Type> PARAMETERIZED_TYPE_FILTER = TypeUtils::isParameterizedType;
 
+    public static boolean isClass(Type type) {
+        return type instanceof Class;
+    }
 
     public static boolean isParameterizedType(Type type) {
         return type instanceof ParameterizedType;
+    }
+
+    public static boolean isTypeVariable(Type type) {
+        return type instanceof TypeVariable;
+    }
+
+    public static boolean isGenericArrayType(Type type) {
+        return type instanceof GenericArrayType;
+    }
+
+    public static boolean isWildcardType(Type type) {
+        return type instanceof WildcardType;
     }
 
     public static Type getRawType(Type type) {
@@ -70,10 +82,6 @@ public abstract class TypeUtils extends BaseUtils {
             return (Class) rawType;
         }
         return null;
-    }
-
-    public static boolean isClass(Type type) {
-        return type instanceof Class;
     }
 
     public static <T> Class<T> findActualTypeArgument(Type type, Class<?> interfaceClass, int index) {
@@ -301,6 +309,20 @@ public abstract class TypeUtils extends BaseUtils {
     public static ParameterizedType asParameterizedType(Type type) {
         if (isParameterizedType(type)) {
             return (ParameterizedType) type;
+        }
+        return null;
+    }
+
+    public static TypeVariable asTypeVariable(Type type) {
+        if (isTypeVariable(type)) {
+            return (TypeVariable) type;
+        }
+        return null;
+    }
+
+    public static WildcardType asWildcardType(Type type) {
+        if (isWildcardType(type)) {
+            return (WildcardType) type;
         }
         return null;
     }

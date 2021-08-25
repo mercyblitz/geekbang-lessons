@@ -16,25 +16,36 @@
  */
 package org.geektimes.enterprise.inject.util;
 
-import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.DefinitionException;
-import java.lang.reflect.Field;
 
-import static org.geektimes.enterprise.inject.util.Producers.validateProducerRequiredAnnotation;
+import static java.lang.String.format;
 
 /**
- * The utilities class {@link Field Producer Fields}
+ * The utilities class for {@link Exception}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public abstract class ProducerFields {
+public abstract class Exceptions {
 
-    /**
-     * @param producerField {@link Field Producer Field}
-     * @throws DefinitionException if {@link Field Producer Field} does not annotate {@link Produces @Produces}
-     */
-    public static void validateProducerFieldProduces(Field producerField) {
-        validateProducerRequiredAnnotation(producerField, Produces.class);
+    public static DefinitionException newDefinitionException(String errorMessage) {
+        return new DefinitionException(errorMessage);
+    }
+
+    public static DefinitionException newDefinitionException(String errorMessage, Throwable cause) {
+        if (cause == null) {
+            return newDefinitionException(errorMessage);
+        }
+        return new DefinitionException(errorMessage, cause);
+    }
+
+    public static DefinitionException newDefinitionException(String messagePattern, Throwable cause, Object... args) {
+        String errorMessage = format(messagePattern, args);
+        return newDefinitionException(errorMessage, cause);
+    }
+
+    public static DefinitionException newDefinitionException(String messagePattern, Object... args) {
+        String errorMessage = format(messagePattern, args);
+        return newDefinitionException(errorMessage);
     }
 }

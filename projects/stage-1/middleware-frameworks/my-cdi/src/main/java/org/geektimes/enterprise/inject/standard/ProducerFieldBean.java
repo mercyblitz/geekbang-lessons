@@ -25,7 +25,7 @@ import java.lang.reflect.Field;
 import java.util.Set;
 
 import static java.util.Collections.emptySet;
-import static org.geektimes.enterprise.inject.util.ProducerFields.validateProducerFieldProduces;
+import static org.geektimes.enterprise.inject.util.Producers.validateProducerField;
 
 /**
  * Producer {@link Field} {@link Bean} based on Java Reflection
@@ -41,7 +41,7 @@ public class ProducerFieldBean<T> extends AbstractBean<Field, T> {
 
     @Override
     protected void validateAnnotatedElement(Field producerField) {
-        validateProducerFieldProduces(producerField);
+        validateProducerField(producerField);
     }
 
 

@@ -32,6 +32,8 @@ import static java.util.Collections.*;
 import static org.geektimes.commons.collection.util.CollectionUtils.newLinkedHashSet;
 import static org.geektimes.enterprise.inject.util.Beans.validateManagedBeanSpecializes;
 import static org.geektimes.enterprise.inject.util.Beans.validateManagedBeanType;
+import static org.geektimes.enterprise.inject.util.Producers.resolveProducerFieldBeans;
+import static org.geektimes.enterprise.inject.util.Producers.resolveProducerMethodBeans;
 
 /**
  * Managed {@link Bean} based on Java Reflection.
@@ -51,6 +53,10 @@ public class ManagedBean<T> extends AbstractBean<Class, T> {
     private Set<FieldInjectionPoint> fieldInjectionPoints;
 
     private Map<AnnotatedMethod, List<MethodParameterInjectionPoint>> methodParameterInjectionPointsMap;
+
+    private Set<ProducerMethodBean> producerMethodBeans;
+
+    private Set<ProducerFieldBean> producerFieldBeans;
 
     public ManagedBean(BeanManager beanManager, Class<?> beanClass) {
         super(beanClass, beanClass);
@@ -172,6 +178,20 @@ public class ManagedBean<T> extends AbstractBean<Class, T> {
         injectionPoints.addAll(methodParameterInjectionPoints);
 
         return unmodifiableSet(injectionPoints);
+    }
+
+    public Set<ProducerMethodBean> getProducerMethodBeans() {
+        if (producerMethodBeans == null) {
+            producerMethodBeans = resolveProducerMethodBeans(this);
+        }
+        return producerMethodBeans;
+    }
+
+    public Set<ProducerFieldBean> getProducerFieldBeans() {
+        if (producerFieldBeans == null) {
+            producerFieldBeans = resolveProducerFieldBeans(this);
+        }
+        return producerFieldBeans;
     }
 
     public BeanManager getBeanManager() {

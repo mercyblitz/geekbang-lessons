@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Set;
 
 import static java.util.Collections.unmodifiableSet;
-import static org.geektimes.enterprise.inject.util.ProducerMethods.*;
+import static org.geektimes.enterprise.inject.util.Producers.validateProducerMethod;
 
 /**
  * Producer {@link Method} {@link Bean} based on Java Reflection
@@ -45,10 +45,7 @@ public class ProducerMethodBean<T> extends AbstractBean<Method, T> {
 
     @Override
     protected void validateAnnotatedElement(Method producerMethod) {
-        validateProducerMethodProduces(producerMethod);
-        validateProducerMethodSpecializes(producerMethod);
-        validateProducerMethodDeclaringClass(producerMethod);
-        validateProducerMethodParameters(producerMethod);
+        validateProducerMethod(producerMethod);
     }
 
 

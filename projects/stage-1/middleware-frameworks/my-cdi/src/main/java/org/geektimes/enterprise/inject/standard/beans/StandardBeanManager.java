@@ -507,14 +507,14 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
             AnnotatedType annotatedType = iterator.next();
             Class<?> beanClass = annotatedType.getJavaClass();
             if (isManagedBean(beanClass)) {
-                addManagedBean(annotatedType, beanClass);
+                determineManagedBean(annotatedType, beanClass);
                 iterator.remove();
             }
         }
     }
 
     /**
-     * Add Managed Bean, and fire events as below:
+     * Determine Managed Bean, and fire events as below:
      *
      * <ol>
      *     <li>fire an event of type {@link ProcessInjectionPoint} for each injection point in the class</li>
@@ -531,13 +531,28 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
      * @see ProcessBeanAttributes
      * @see ProcessBeanEvent
      */
-    private void addManagedBean(AnnotatedType annotatedType, Class<?> beanClass) {
+    private void determineManagedBean(AnnotatedType annotatedType, Class<?> beanClass) {
         ManagedBean managedBean = new ManagedBean(this, beanClass);
         this.managedBeans.add(managedBean);
         fireProcessInjectionPointEvents(managedBean);
         fireProcessInjectionTarget(annotatedType, managedBean);
         fireProcessBeanAttributesEvent(annotatedType, managedBean);
         fireProcessBeanEvent(annotatedType, managedBean);
+        determineProducerMethods(managedBean);
+        determineProducerFields(managedBean);
+    }
+
+    private void determineProducerMethods(ManagedBean managedBean) {
+        Set<ProducerMethodBean> producerMethodBeans = managedBean.getProducerMethodBeans();
+        producerMethodBeans.forEach(this::determineProducerMethod);
+    }
+
+    private void determineProducerMethod(ProducerMethodBean producerMethodBean) {
+        Set<InjectionPoint> injectionPoints = producerMethodBean.getInjectionPoints();
+        fireProcessInjectionPointEvents(injectionPoints);
+    }
+
+    private void determineProducerFields(ManagedBean managedBean) {
     }
 
     private void determineInterceptorBeans(List<AnnotatedType> annotatedTypes) {
@@ -620,7 +635,10 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     }
 
     private void fireProcessInjectionPointEvents(ManagedBean managedBean) {
-        Set<InjectionPoint> injectionPoints = managedBean.getInjectionPoints();
+        fireProcessInjectionPointEvents(managedBean.getInjectionPoints());
+    }
+
+    private void fireProcessInjectionPointEvents(Set<InjectionPoint> injectionPoints) {
         injectionPoints.forEach(this::fireProcessInjectionPointEvent);
     }
 
@@ -649,6 +667,10 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         if (managedBeans.contains(bean)) {
             fireEvent(new ProcessBeanEvent<>(type, bean, this));
         }
+    }
+
+    private void fireProcessProducerEvent(){
+
     }
 
     private void fireEvent(Object event) {
