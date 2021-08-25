@@ -167,16 +167,18 @@ public abstract class Producers {
     }
 
     private static void validateGenericArrayType(Method producerMethod, GenericArrayType returnType) {
-        Type genericComponentType = returnType.getGenericComponentType();
-        if (isTypeVariable(genericComponentType)) {
-            throw newDefinitionException(
-                    "The producer method[%s] return type must not be an array type whose component type is a type variable[%s]!",
-                    producerMethod, returnType);
-        }
-        if (isWildcardType(genericComponentType)) {
-            throw newDefinitionException(
-                    "The producer method[%s] return type must not contain an array type whose component type contains a wildcard type parameter[%s]!",
-                    producerMethod, returnType);
+        if(returnType!=null) {
+            Type genericComponentType = returnType.getGenericComponentType();
+            if (isTypeVariable(genericComponentType)) {
+                throw newDefinitionException(
+                        "The producer method[%s] return type must not be an array type whose component type is a type variable[%s]!",
+                        producerMethod, returnType);
+            }
+            if (isWildcardType(genericComponentType)) {
+                throw newDefinitionException(
+                        "The producer method[%s] return type must not contain an array type whose component type contains a wildcard type parameter[%s]!",
+                        producerMethod, returnType);
+            }
         }
     }
 
@@ -261,7 +263,7 @@ public abstract class Producers {
         for (AnnotatedField field : fields) {
             Field javaField = field.getJavaMember();
             if (isProducerField(javaField)) {
-                producerFieldBeans.add(new ProducerFieldBean(javaField));
+                producerFieldBeans.add(new ProducerFieldBean(field));
             }
         }
         return unmodifiableSet(producerFieldBeans);

@@ -548,14 +548,28 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     }
 
     private void determineProducerMethod(ProducerMethodBean producerMethodBean) {
-        Set<InjectionPoint> injectionPoints = producerMethodBean.getInjectionPoints();
-        fireProcessInjectionPointEvents(injectionPoints);
-        fireProcessProducerEvent(producerMethodBean.getMethod(), producerMethodBean);
-        fireProcessBeanAttributesEvent(producerMethodBean.getMethod(), producerMethodBean);
+        determineProducer(producerMethodBean,producerMethodBean.getMethod(),producerMethodBean);
     }
 
     private void determineProducerFields(ManagedBean managedBean) {
+        Set<ProducerFieldBean> producerFieldBeans = managedBean.getProducerFieldBeans();
+        producerFieldBeans.forEach(this::determineProducerField);
     }
+
+    private void determineProducerField(ProducerFieldBean producerFieldBean) {
+        determineProducer(producerFieldBean,producerFieldBean.getProducerField(),producerFieldBean);
+    }
+
+    private void determineProducer(Producer producer,AnnotatedMember annotatedMember, AbstractBean bean) {
+        AnnotatedType annotatedType = bean.getAnnotatedType();
+        addAnnotatedType(annotatedType);
+        Set<InjectionPoint> injectionPoints = producer.getInjectionPoints();
+        fireProcessInjectionPointEvents(injectionPoints);
+        fireProcessProducerEvent(annotatedMember, producer);
+        fireProcessBeanAttributesEvent(annotatedMember, bean);
+        fireProcessBeanEvent(annotatedType, bean);
+    }
+
 
     private void determineInterceptorBeans(List<AnnotatedType> annotatedTypes) {
         // TODO
@@ -663,10 +677,10 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
      * in previous step, fire an event which is a subtype of ProcessBean, as defined in ProcessBean event.
      *
      * @param type {@link AnnotatedType}
-     * @param bean {@link ManagedBean}
+     * @param bean {@link Bean}
      */
-    private void fireProcessBeanEvent(AnnotatedType<?> type, ManagedBean bean) {
-        if (managedBeans.contains(bean)) {
+    private void fireProcessBeanEvent(AnnotatedType<?> type, AbstractBean bean) {
+        if (hasAnnotatedType(type)) {
             fireEvent(new ProcessBeanEvent<>(type, bean, this));
         }
     }
@@ -695,9 +709,19 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
      */
     private StandardBeanManager addAnnotatedType(Class<?> type) {
         AnnotatedType annotatedType = createAnnotatedType(type);
-        addAnnotatedType(type.getName(), annotatedType);
-        fireProcessAnnotatedTypeEvent(annotatedType);
+        addAnnotatedType(annotatedType);
         return this;
+    }
+
+    private void addAnnotatedType(AnnotatedType annotatedType) {
+        if (!hasAnnotatedType(annotatedType)) {
+            addAnnotatedType(annotatedType.getJavaClass().getName(), annotatedType);
+            fireProcessAnnotatedTypeEvent(annotatedType);
+        }
+    }
+
+    private boolean hasAnnotatedType(AnnotatedType annotatedType){
+        return this.annotatedTypes.containsValue(annotatedType);
     }
 
     public void removeAnnotatedType(AnnotatedType<?> annotatedType) {

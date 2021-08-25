@@ -19,6 +19,7 @@ package org.geektimes.enterprise.inject;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.Dependent;
+import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
 
@@ -32,6 +33,8 @@ public class BookShop extends Business implements Shop<Book> {
     @Inject
     private BeanManager beanManager;
 
+    @Produces
+    private Book myBook = new Book();
 
     @PostConstruct
     public void init() {
@@ -44,5 +47,10 @@ public class BookShop extends Business implements Shop<Book> {
 
     @Inject
     public void init(Shop<Book> bookShop) {
+    }
+
+    @Produces
+    public Book book() {
+        return new Book();
     }
 }

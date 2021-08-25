@@ -18,6 +18,7 @@ package org.geektimes.enterprise.inject.standard;
 
 import org.geektimes.enterprise.inject.util.Beans;
 
+import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.BeanAttributes;
 
 /**
@@ -41,5 +42,10 @@ public class GenericBeanAttributes<T> extends AbstractBeanAttributes<Class, T> {
     @Override
     protected void validateAnnotatedElement(Class beanClass) {
         // DO NOTING
+    }
+
+    @Override
+    public Annotated getAnnotated() {
+        return new ReflectiveAnnotatedType<>(getBeanClass());
     }
 }

@@ -94,4 +94,9 @@ public class ProducerMethodBean<T> extends AbstractBean<Method, T> implements Pr
     public AnnotatedMethod<T> getMethod() {
         return method;
     }
+
+    @Override
+    public AnnotatedMethod<T> getAnnotated() {
+        return method;
+    }
 }

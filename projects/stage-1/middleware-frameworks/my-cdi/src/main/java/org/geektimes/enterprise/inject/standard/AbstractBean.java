@@ -16,23 +16,11 @@
  */
 package org.geektimes.enterprise.inject.standard;
 
-import org.geektimes.commons.lang.util.AnnotationUtils;
-import org.geektimes.commons.reflect.util.ReflectionUtils;
-import org.geektimes.enterprise.inject.util.Qualifiers;
-
-import javax.enterprise.inject.Alternative;
+import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.Bean;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.util.Set;
-
-import static java.util.Objects.requireNonNull;
-import static org.geektimes.enterprise.inject.util.Beans.getBeanTypes;
-import static org.geektimes.enterprise.inject.util.Scopes.getScopeType;
-import static org.geektimes.enterprise.inject.util.Stereotypes.getStereotypeTypes;
 
 /**
  * The Standard abstract implementation  {@link Bean} based on Java Reflection.

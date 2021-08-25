@@ -19,8 +19,10 @@ package org.geektimes.enterprise.inject.standard;
 import org.geektimes.enterprise.inject.util.Beans;
 
 import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.spi.AnnotatedField;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.InjectionPoint;
+import javax.enterprise.inject.spi.Producer;
 import java.lang.reflect.Field;
 import java.util.Set;
 
@@ -33,10 +35,13 @@ import static org.geektimes.enterprise.inject.util.Producers.validateProducerFie
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class ProducerFieldBean<T> extends AbstractBean<Field, T> {
+public class ProducerFieldBean<T> extends AbstractBean<Field, T> implements Producer<T> {
 
-    public ProducerFieldBean(Field producerField) {
-        super(producerField, producerField.getType());
+    private final AnnotatedField producerField;
+
+    public ProducerFieldBean(AnnotatedField producerField) {
+        super(producerField.getJavaMember(), producerField.getJavaMember().getType());
+        this.producerField = producerField;
     }
 
     @Override
@@ -62,7 +67,26 @@ public class ProducerFieldBean<T> extends AbstractBean<Field, T> {
     }
 
     @Override
+    public T produce(CreationalContext<T> ctx) {
+        return create(ctx);
+    }
+
+    @Override
+    public void dispose(T instance) {
+        destroy(instance, null);
+    }
+
+    @Override
     public Set<InjectionPoint> getInjectionPoints() {
         return emptySet();
+    }
+
+    @Override
+    public AnnotatedField getAnnotated() {
+        return producerField;
+    }
+
+    public AnnotatedField getProducerField() {
+        return producerField;
     }
 }

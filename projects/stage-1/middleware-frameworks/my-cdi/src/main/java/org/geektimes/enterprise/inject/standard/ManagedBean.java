@@ -71,6 +71,11 @@ public class ManagedBean<T> extends AbstractBean<Class, T> {
     }
 
     @Override
+    public Annotated getAnnotated() {
+        return getAnnotatedType();
+    }
+
+    @Override
     protected String getBeanName(Class beanClass) {
         return Beans.getBeanName(beanClass);
     }
@@ -113,10 +118,6 @@ public class ManagedBean<T> extends AbstractBean<Class, T> {
     public void destroy(T instance, CreationalContext<T> creationalContext) {
         // TODO
         creationalContext.release();
-    }
-
-    public AnnotatedType getAnnotatedType() {
-        return annotatedType;
     }
 
     public Map<AnnotatedConstructor, List<ConstructorParameterInjectionPoint>> getConstructorParameterInjectionPointsMap() {
