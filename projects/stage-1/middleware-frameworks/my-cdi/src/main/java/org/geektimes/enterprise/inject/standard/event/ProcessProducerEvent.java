@@ -22,6 +22,7 @@ import javax.enterprise.inject.spi.AnnotatedMember;
 import javax.enterprise.inject.spi.ProcessProducer;
 import javax.enterprise.inject.spi.Producer;
 import javax.enterprise.inject.spi.configurator.ProducerConfigurator;
+import java.util.StringJoiner;
 
 /**
  * {@link ProcessProducer} Event for Producer method or field is fired by container.
@@ -33,34 +34,50 @@ import javax.enterprise.inject.spi.configurator.ProducerConfigurator;
  */
 public class ProcessProducerEvent<T, X> implements ProcessProducer<T, X> {
 
+    private final AnnotatedMember annotatedMember;
+
     private final StandardBeanManager standardBeanManager;
 
-    public ProcessProducerEvent(StandardBeanManager standardBeanManager) {
+    private Producer<X> producer;
+
+    public ProcessProducerEvent(AnnotatedMember annotatedMember, Producer<X> producer,
+                                StandardBeanManager standardBeanManager) {
+        this.annotatedMember = annotatedMember;
         this.standardBeanManager = standardBeanManager;
+        this.producer = producer;
     }
 
     @Override
     public AnnotatedMember<T> getAnnotatedMember() {
-        return null;
+        return annotatedMember;
     }
 
     @Override
     public Producer<X> getProducer() {
-        return null;
+        return producer;
     }
 
     @Override
     public void setProducer(Producer<X> producer) {
-
+        this.producer = producer;
     }
 
     @Override
     public ProducerConfigurator<X> configureProducer() {
+        // TODO
         return null;
     }
 
     @Override
     public void addDefinitionError(Throwable t) {
+        standardBeanManager.addBeanDiscoveryDefinitionError(t);
+    }
 
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", ProcessProducerEvent.class.getSimpleName() + "[", "]")
+                .add("annotatedMember=" + getAnnotatedMember())
+                .add("producer=" + getProducer())
+                .toString();
     }
 }

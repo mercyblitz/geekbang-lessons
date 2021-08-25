@@ -21,6 +21,7 @@ import org.geektimes.enterprise.inject.standard.beans.StandardBeanManager;
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.InjectionTarget;
 import javax.enterprise.inject.spi.ProcessInjectionTarget;
+import java.util.StringJoiner;
 
 /**
  * {@link ProcessInjectionTarget} Event is fired by container for every bean, interceptor or decorator
@@ -62,5 +63,13 @@ public class ProcessInjectionTargetEvent<X> implements ProcessInjectionTarget<X>
     @Override
     public void addDefinitionError(Throwable t) {
         standardBeanManager.addBeanDiscoveryDefinitionError(t);
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", ProcessInjectionTargetEvent.class.getSimpleName() + "[", "]")
+                .add("annotatedType=" + getAnnotatedType())
+                .add("injectionTarget=" + getInjectionTarget())
+                .toString();
     }
 }

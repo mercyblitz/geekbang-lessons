@@ -550,6 +550,8 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     private void determineProducerMethod(ProducerMethodBean producerMethodBean) {
         Set<InjectionPoint> injectionPoints = producerMethodBean.getInjectionPoints();
         fireProcessInjectionPointEvents(injectionPoints);
+        fireProcessProducerEvent(producerMethodBean.getMethod(), producerMethodBean);
+        fireProcessBeanAttributesEvent(producerMethodBean.getMethod(), producerMethodBean);
     }
 
     private void determineProducerFields(ManagedBean managedBean) {
@@ -652,8 +654,8 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         fireEvent(new ProcessInjectionTargetEvent<>(annotatedType, injectionTarget, this));
     }
 
-    private void fireProcessBeanAttributesEvent(AnnotatedType<?> type, ManagedBean bean) {
-        fireEvent(new ProcessBeanAttributesEvent(type, bean, this));
+    private void fireProcessBeanAttributesEvent(Annotated annotated, BeanAttributes beanAttributes) {
+        fireEvent(new ProcessBeanAttributesEvent(annotated, beanAttributes, this));
     }
 
     /**
@@ -669,8 +671,14 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         }
     }
 
-    private void fireProcessProducerEvent(){
-
+    /**
+     * Fire an event of type ProcessProducer, as defined in ProcessProducer event,
+     *
+     * @param annotatedMember {@link AnnotatedMethod} or {@link AnnotatedField}
+     * @param producer        {@link Producer} method of field
+     */
+    private void fireProcessProducerEvent(AnnotatedMember annotatedMember, Producer producer) {
+        fireEvent(new ProcessProducerEvent(annotatedMember, producer, this));
     }
 
     private void fireEvent(Object event) {

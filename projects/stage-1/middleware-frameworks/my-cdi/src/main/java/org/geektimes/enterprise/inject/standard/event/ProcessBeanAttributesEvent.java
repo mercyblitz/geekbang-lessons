@@ -22,6 +22,7 @@ import org.geektimes.enterprise.inject.standard.beans.StandardBeanManager;
 
 import javax.enterprise.inject.spi.*;
 import javax.enterprise.inject.spi.configurator.BeanAttributesConfigurator;
+import java.util.StringJoiner;
 
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
@@ -112,5 +113,14 @@ public class ProcessBeanAttributesEvent<T> implements ProcessBeanAttributes<T> {
     @Override
     public void ignoreFinalMethods() {
         // TODO
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", ProcessBeanAttributesEvent.class.getSimpleName() + "[", "]")
+                .add("annotated=" + getAnnotated())
+                .add("beanClass=" + beanClass)
+                .add("beanAttributes=" + getBeanAttributes())
+                .toString();
     }
 }

@@ -21,6 +21,7 @@ import org.geektimes.enterprise.inject.standard.beans.StandardBeanManager;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.inject.spi.ProcessInjectionPoint;
 import javax.enterprise.inject.spi.configurator.InjectionPointConfigurator;
+import java.util.StringJoiner;
 
 /**
  * {@link ProcessInjectionPoint} Event is fired by container for every injection point of every bean, interceptor
@@ -61,5 +62,12 @@ public class ProcessInjectionPointEvent<T, X> implements ProcessInjectionPoint<T
     @Override
     public void addDefinitionError(Throwable t) {
         standardBeanManager.addBeanDiscoveryDefinitionError(t);
+    }
+
+    @Override
+    public String toString() {
+        return new StringJoiner(", ", ProcessInjectionPointEvent.class.getSimpleName() + "[", "]")
+                .add("injectionPoint=" + getInjectionPoint())
+                .toString();
     }
 }

@@ -58,7 +58,7 @@ public abstract class Producers {
         for (AnnotatedMethod method : methods) {
             Method javaMethod = method.getJavaMember();
             if (isProduceMethod(javaMethod)) {
-                ProducerMethodBean producerMethodBean = new ProducerMethodBean(javaMethod);
+                ProducerMethodBean producerMethodBean = new ProducerMethodBean(method);
                 producerMethodBeans.add(producerMethodBean);
             }
         }

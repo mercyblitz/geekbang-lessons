@@ -16,7 +16,6 @@
  */
 package org.geektimes.enterprise.inject.standard;
 
-import org.geektimes.commons.reflect.util.ReflectionUtils;
 import org.geektimes.enterprise.inject.util.Qualifiers;
 
 import javax.decorator.Delegate;
@@ -24,14 +23,12 @@ import javax.enterprise.inject.spi.Annotated;
 import javax.enterprise.inject.spi.AnnotatedMember;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.InjectionPoint;
-import java.beans.BeanInfo;
-import java.beans.IntrospectionException;
-import java.beans.Introspector;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Member;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.Set;
+import java.util.StringJoiner;
 
 import static java.util.Objects.requireNonNull;
 
@@ -95,6 +92,14 @@ public abstract class AbstractInjectionPoint<A extends Annotated, AM extends Ann
 
     @Override
     public String toString() {
-        return ReflectionUtils.toString(this);
+        return new StringJoiner(", ", AbstractInjectionPoint.class.getSimpleName() + "[", "]")
+                .add("type=" + getType())
+                .add("beanName=" + getBean().getName())
+                .add("member=" + getMember())
+                .add("qualifiers=" + getQualifiers())
+                .add("annotated=" + getAnnotated())
+                .add("isDelegate=" + isDelegate())
+                .add("isTransient=" + isTransient())
+                .toString();
     }
 }

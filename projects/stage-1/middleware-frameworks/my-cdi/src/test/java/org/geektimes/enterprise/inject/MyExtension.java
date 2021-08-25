@@ -17,8 +17,6 @@
 package org.geektimes.enterprise.inject;
 
 import org.geektimes.enterprise.inject.standard.ReflectiveAnnotatedType;
-import org.geektimes.enterprise.inject.standard.event.ProcessBeanAttributesEvent;
-import org.geektimes.enterprise.inject.standard.event.ProcessBeanEvent;
 
 import javax.enterprise.event.Observes;
 import javax.enterprise.event.ObservesAsync;
@@ -74,6 +72,9 @@ public class MyExtension implements Extension {
         System.out.println(processBean);
     }
 
+    public void processProducerEvent(@Observes ProcessProducer processProducer) {
+        System.out.println(processProducer);
+    }
 
     public void onAnyEvent(@ObservesAsync Object event) {
         System.out.println(event);
