@@ -16,6 +16,8 @@
  */
 package org.geektimes.enterprise.inject.util;
 
+import org.geektimes.enterprise.inject.standard.ManagedBean;
+
 import javax.enterprise.event.Observes;
 import javax.enterprise.event.ObservesAsync;
 import javax.enterprise.inject.Disposes;
@@ -26,12 +28,11 @@ import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.DefinitionException;
 import javax.inject.Inject;
 import java.lang.annotation.Annotation;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.lang.reflect.Type;
+import java.util.*;
 
 import static java.util.Arrays.asList;
-import static java.util.Collections.unmodifiableSet;
+import static java.util.Collections.unmodifiableMap;
 import static org.geektimes.enterprise.inject.util.Exceptions.newDefinitionException;
 
 /**
@@ -55,9 +56,16 @@ public abstract class Disposers {
      * <p>
      * Each disposer method must have exactly one disposed parameter, of the same type as the corresponding
      * producer method return type or producer field type.
+     * <p>
+     * A disposer method is bound to a producer method or producer field if:
+     * <ul>
+     *     <li>the producer method or producer field is declared by the same bean class as the disposer method, and</li>
+     *     <li>the producer method or producer field is assignable to the disposed parameter, according to the rules of
+     *     typesafe resolution defined in Typesafe resolution</li>
+     * </ul>
      *
-     * @param annotatedType the {@link AnnotatedType} of enabled bean
-     * @return
+     * @param managedBean the {@link ManagedBean}
+     * @return Unmodifiable {@link Map} represents the key is Disposer Method Type, and the value is {@link AnnotatedMethod}
      * @throws DefinitionException If the disposer method violate these rules :
      *                             <ul>
      *                                 <li>a method has more than one parameter annotated {@link Disposes @Disposes}</li>
@@ -65,31 +73,47 @@ public abstract class Disposers {
      *                                 {@link Inject @Inject} has a parameter annotated
      *                                 {@link Observes @Observes} or has a parameter annotated {@link ObservesAsync @ObservesAsync}</li>
      *                                 <li>an interceptor or decorator has a method annotated {@link Disposes @Disposes}</li>
+     *                                 <li>If there are multiple disposer methods for a single producer method or producer field</li>
+     *                                 <li>If there is no producer method or producer field declared by the bean class
+     *                                 that is assignable to the disposed parameter of a disposer method</li>
      *                             </ul>
      */
-    public static Set<AnnotatedMethod> resolveDisposerMethods(AnnotatedType annotatedType) throws DefinitionException {
-        Set<AnnotatedMethod> disposerMethods = new LinkedHashSet<>();
-
+    public static Map<Type, AnnotatedMethod> resolveAndValidateDisposerMethods(ManagedBean managedBean) throws DefinitionException {
+        Map<Type, AnnotatedMethod> disposerMethodsMap = new LinkedHashMap<>();
+        AnnotatedType annotatedType = managedBean.getAnnotatedType();
+        Set<Type> producerTypes = managedBean.getProducerTypes();
         Set<AnnotatedMethod> methods = annotatedType.getMethods();
+        // records the defined types from disposer method
+        Set<Type> definedDisposerMethodTypes = new LinkedHashSet<>();
         methods.forEach(method -> {
             List<AnnotatedParameter> parameters = method.getParameters();
             int disposesParamCount = 0;
             for (AnnotatedParameter parameter : parameters) {
                 if (parameter.isAnnotationPresent(Disposes.class)) {
+                    Type parameterType = parameter.getBaseType();
+
+                    if (definedDisposerMethodTypes.contains(parameterType)) {
+                        throw newDefinitionException("There are multiple disposer methods in bean type[%s] for " +
+                                "a single producer method or producer field!", managedBean.getBeanClass().getName());
+                    }
+                    if (!producerTypes.contains(parameterType)) {
+                        throw newDefinitionException("No producer method or producer field declared by the bean class[name : %s]" +
+                                        " that is assignable to the disposed parameter[type : %s] of a disposer method[%s]!",
+                                managedBean.getBeanClass().getName(), parameterType.getTypeName(), method.getJavaMember());
+                    }
+                    definedDisposerMethodTypes.addAll(parameter.getTypeClosure());
                     disposesParamCount++;
+                    disposerMethodsMap.put(parameterType, method);
+                    validateDisposerMethod(method);
                 }
             }
-            if (disposesParamCount == 1) {
-                disposerMethods.add(method);
-            } else if (disposesParamCount > 1) {
+            if (disposesParamCount > 1) {
                 throw newDefinitionException("The method[%s] has more than one parameter annotated @%s",
                         method.getJavaMember(), Disposes.class);
             }
         });
 
-        disposerMethods.forEach(Disposers::validateDisposerMethod);
-
-        return unmodifiableSet(disposerMethods);
+        return unmodifiableMap(disposerMethodsMap);
     }
 
     private static void validateDisposerMethod(AnnotatedMethod disposerMethod) {
@@ -109,4 +133,5 @@ public abstract class Disposers {
             }
         }
     }
+
 }

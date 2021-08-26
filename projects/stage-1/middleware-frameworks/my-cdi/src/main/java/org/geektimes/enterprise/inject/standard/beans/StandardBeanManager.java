@@ -18,6 +18,7 @@ package org.geektimes.enterprise.inject.standard.beans;
 
 import org.geektimes.commons.lang.util.ClassLoaderUtils;
 import org.geektimes.enterprise.inject.standard.*;
+import org.geektimes.enterprise.inject.standard.disposer.DisposerMethodManager;
 import org.geektimes.enterprise.inject.standard.event.*;
 import org.geektimes.enterprise.inject.standard.producer.ProducerFieldBeanAttributes;
 import org.geektimes.enterprise.inject.standard.producer.ProducerFieldFactory;
@@ -49,7 +50,6 @@ import static java.util.ServiceLoader.load;
 import static org.geektimes.commons.lang.util.ArrayUtils.iterate;
 import static org.geektimes.enterprise.inject.util.Beans.isAnnotatedVetoed;
 import static org.geektimes.enterprise.inject.util.Beans.isManagedBean;
-import static org.geektimes.enterprise.inject.util.Disposers.resolveDisposerMethods;
 import static org.geektimes.enterprise.inject.util.Exceptions.newDefinitionException;
 import static org.geektimes.enterprise.inject.util.Injections.validateForbiddenAnnotation;
 import static org.geektimes.enterprise.inject.util.Parameters.isConstructorParameter;
@@ -95,7 +95,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     private final List<ManagedBean> managedBeans;
 
-    private final Set<Type> producerTypes;
+    private final DisposerMethodManager disposerMethodManager;
 
     public StandardBeanManager() {
         this.classLoader = ClassLoaderUtils.getClassLoader(getClass());
@@ -107,7 +107,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         this.beanArchiveManager = new BeanArchiveManager(classLoader);
         this.annotatedTypes = new LinkedHashMap<>();
         this.managedBeans = new LinkedList<>();
-        this.producerTypes = new LinkedHashSet<>();
+        this.disposerMethodManager = new DisposerMethodManager(this);
     }
 
     @Override
@@ -568,17 +568,6 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         determineProducer(producerFieldBean, producerFieldBean.getProducerField(), producerFieldBean);
     }
 
-    /**
-     * For each enabled bean, the container must search for disposer methods as defined in Disposer methods,
-     * and for each disposer method
-     *
-     * @param managedBean {@link ManagedBean}
-     */
-    private void determineDisposerMethods(ManagedBean managedBean) {
-        AnnotatedType managedBeanType = managedBean.getAnnotatedType();
-        Set<AnnotatedMethod> disposerMethods = resolveDisposerMethods(managedBeanType);
-    }
-
     private void determineProducer(Producer producer, AnnotatedMember annotatedMember, AbstractBean bean) {
         AnnotatedType annotatedType = bean.getAnnotatedType();
         addAnnotatedType(annotatedType);
@@ -587,22 +576,17 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         fireProcessProducerEvent(annotatedMember, producer);
         fireProcessBeanAttributesEvent(annotatedMember, bean);
         fireProcessBeanEvent(annotatedType, bean);
-        registerProducerTypes(annotatedMember);
     }
 
     /**
-     * Register all types from a Producer Method or Producer Field
-     * <p>
-     * See Spec :
-     * If a producer method or producer field declared by the same bean class is assignable to the disposed parameter,
-     * according to the rules of typesafe resolution defined in Typesafe resolution
+     * For each enabled bean, the container must search for disposer methods as defined in Disposer methods,
+     * and for each disposer method
      *
-     * @param annotatedMember Producer Method or Producer Field
+     * @param managedBean {@link ManagedBean}
      */
-    private void registerProducerTypes(AnnotatedMember annotatedMember) {
-        this.producerTypes.addAll(annotatedMember.getTypeClosure());
+    private void determineDisposerMethods(ManagedBean managedBean) {
+        disposerMethodManager.registerDisposerMethods(managedBean);
     }
-
 
     private void determineInterceptorBeans(List<AnnotatedType> annotatedTypes) {
         // TODO
@@ -845,4 +829,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         return Boolean.TRUE.equals(getScanImplicitProperty());
     }
 
+    public DisposerMethodManager getDisposerMethodManager() {
+        return disposerMethodManager;
+    }
 }

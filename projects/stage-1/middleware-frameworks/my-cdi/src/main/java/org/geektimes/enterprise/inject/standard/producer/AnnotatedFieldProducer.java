@@ -16,9 +16,15 @@
  */
 package org.geektimes.enterprise.inject.standard.producer;
 
+import org.geektimes.enterprise.inject.standard.beans.StandardBeanManager;
+import org.geektimes.enterprise.inject.standard.disposer.DisposerMethodManager;
+
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.CreationException;
-import javax.enterprise.inject.spi.*;
+import javax.enterprise.inject.spi.AnnotatedField;
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.InjectionPoint;
+import javax.enterprise.inject.spi.Producer;
 import java.lang.reflect.Field;
 import java.util.Set;
 
@@ -38,14 +44,14 @@ public class AnnotatedFieldProducer<T, X> implements Producer<T> {
 
     private final Bean<X> declaringBean;
 
-    private final BeanManager beanManager;
+    private final StandardBeanManager standardBeanManager;
 
     private Set<InjectionPoint> injectionPoints;
 
-    public AnnotatedFieldProducer(AnnotatedField<T> producerField, Bean<X> declaringBean, BeanManager beanManager) {
+    public AnnotatedFieldProducer(AnnotatedField<T> producerField, Bean<X> declaringBean, StandardBeanManager standardBeanManager) {
         this.producerField = producerField;
         this.declaringBean = declaringBean;
-        this.beanManager = beanManager;
+        this.standardBeanManager = standardBeanManager;
     }
 
     @Override
@@ -57,7 +63,7 @@ public class AnnotatedFieldProducer<T, X> implements Producer<T> {
         final T beanInstance;
         try {
             if (!isStatic(field)) {
-                instance = beanManager.getReference(declaringBean, declaringBean.getBeanClass(), ctx);
+                instance = standardBeanManager.getReference(declaringBean, declaringBean.getBeanClass(), ctx);
             }
             beanInstance = (T) field.get(instance);
         } catch (Throwable e) {
@@ -68,7 +74,8 @@ public class AnnotatedFieldProducer<T, X> implements Producer<T> {
 
     @Override
     public void dispose(T instance) {
-        // TODO
+        DisposerMethodManager disposerMethodManager = standardBeanManager.getDisposerMethodManager();
+        disposerMethodManager.invokeDisposerMethod(instance);
     }
 
     @Override

@@ -19,6 +19,7 @@ package org.geektimes.enterprise.inject;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.Dependent;
+import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.BeanManager;
 import javax.inject.Inject;
@@ -52,5 +53,8 @@ public class BookShop extends Business implements Shop<Book> {
     @Produces
     public Book book() {
         return new Book();
+    }
+
+    public void dispose(@Disposes Book book) {
     }
 }

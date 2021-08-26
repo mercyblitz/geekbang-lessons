@@ -802,7 +802,7 @@ public abstract class ClassUtils {
      * @return all class names in class path
      */
     public static Set<String> findClassNamesInClassPath(File archiveFile, boolean recursive) {
-        if (!archiveFile.exists()) {
+        if (archiveFile==null || !archiveFile.exists()) {
             return emptySet();
         }
         if (archiveFile.isDirectory()) { // Directory

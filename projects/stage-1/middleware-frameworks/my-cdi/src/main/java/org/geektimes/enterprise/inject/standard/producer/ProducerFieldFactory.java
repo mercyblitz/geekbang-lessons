@@ -16,6 +16,8 @@
  */
 package org.geektimes.enterprise.inject.standard.producer;
 
+import org.geektimes.enterprise.inject.standard.beans.StandardBeanManager;
+
 import javax.enterprise.inject.spi.*;
 import java.lang.reflect.Method;
 
@@ -30,18 +32,18 @@ public class ProducerFieldFactory<X> implements ProducerFactory<X> {
 
     private final AnnotatedField<X> producerField;
 
-    private final BeanManager beanManager;
+    private final StandardBeanManager standardBeanManager;
 
     private final Bean<X> declaringBean;
 
-    public ProducerFieldFactory(AnnotatedField<X> producerField, Bean<X> declaringBean, BeanManager beanManager) {
+    public ProducerFieldFactory(AnnotatedField<X> producerField, Bean<X> declaringBean, StandardBeanManager standardBeanManager) {
         this.producerField = producerField;
-        this.beanManager = beanManager;
+        this.standardBeanManager = standardBeanManager;
         this.declaringBean = declaringBean;
     }
 
     @Override
     public Producer createProducer(Bean bean) {
-        return new AnnotatedFieldProducer(producerField, declaringBean, beanManager);
+        return new AnnotatedFieldProducer(producerField, declaringBean, standardBeanManager);
     }
 }

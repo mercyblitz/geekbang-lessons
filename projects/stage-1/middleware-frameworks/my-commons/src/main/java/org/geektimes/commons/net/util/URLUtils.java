@@ -4,7 +4,9 @@
 package org.geektimes.commons.net.util;
 
 import org.geektimes.commons.collection.util.MapUtils;
-import org.geektimes.commons.constants.*;
+import org.geektimes.commons.constants.Constants;
+import org.geektimes.commons.constants.PathConstants;
+import org.geektimes.commons.constants.SeparatorConstants;
 import org.geektimes.commons.jar.util.JarUtils;
 import org.geektimes.commons.lang.util.ClassPathUtils;
 import org.geektimes.commons.lang.util.StringUtils;
@@ -22,7 +24,8 @@ import java.util.jar.JarFile;
 
 import static org.geektimes.commons.collection.util.CollectionUtils.newLinkedList;
 import static org.geektimes.commons.constants.Constants.DOT;
-import static org.geektimes.commons.constants.ProtocolConstants.*;
+import static org.geektimes.commons.constants.ProtocolConstants.FILE;
+import static org.geektimes.commons.constants.ProtocolConstants.JAR;
 import static org.geektimes.commons.lang.util.ArrayUtils.length;
 
 /**
@@ -98,7 +101,7 @@ public abstract class URLUtils {
     }
 
     private static File resolveArchiveDirectory(URL resourceURL) {
-        String resourcePath = resourceURL.getPath();
+        String resourcePath = new File(resourceURL.getFile()).toString();
         Set<String> classPaths = ClassPathUtils.getClassPaths();
         File archiveDirectory = null;
         for (String classPath : classPaths) {
