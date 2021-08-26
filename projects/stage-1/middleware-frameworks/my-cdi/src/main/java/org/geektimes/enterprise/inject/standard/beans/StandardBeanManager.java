@@ -543,6 +543,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         fireProcessBeanEvent(annotatedType, managedBean);
         determineProducerMethods(managedBean);
         determineProducerFields(managedBean);
+        determineDisposerMethods(managedBean);
     }
 
     private void determineProducerMethods(ManagedBean managedBean) {
@@ -561,6 +562,15 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     private void determineProducerField(ProducerFieldBean producerFieldBean) {
         determineProducer(producerFieldBean, producerFieldBean.getProducerField(), producerFieldBean);
+    }
+
+    /**
+     * For each enabled bean, the container must search for disposer methods as defined in Disposer methods,
+     * and for each disposer method
+     * @param managedBean {@link ManagedBean}
+     */
+    private void determineDisposerMethods(ManagedBean managedBean) {
+
     }
 
     private void determineProducer(Producer producer, AnnotatedMember annotatedMember, AbstractBean bean) {
