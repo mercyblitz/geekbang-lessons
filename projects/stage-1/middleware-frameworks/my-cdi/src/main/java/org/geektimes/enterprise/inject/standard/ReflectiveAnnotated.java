@@ -40,14 +40,22 @@ public abstract class ReflectiveAnnotated<A extends AnnotatedElement> implements
 
     private final A annotatedElement;
 
+    private Set<Annotation> annotations;
+
+    private Set<Type> beanTypes;
+
+    private int hashCode;
+
     public ReflectiveAnnotated(A annotatedElement) {
         this.annotatedElement = annotatedElement;
     }
 
     @Override
     public Set<Type> getTypeClosure() {
-        Class<?> baseClass = asClass(getBaseType());
-        return getBeanTypes(baseClass);
+        if (beanTypes == null) {
+            beanTypes = getBeanTypes(asClass(getBaseType()));
+        }
+        return beanTypes;
     }
 
     @Override
@@ -62,7 +70,10 @@ public abstract class ReflectiveAnnotated<A extends AnnotatedElement> implements
 
     @Override
     public Set<Annotation> getAnnotations() {
-        return ofSet(annotatedElement.getAnnotations());
+        if (annotations == null) {
+            annotations = ofSet(annotatedElement.getAnnotations());
+        }
+        return annotations;
     }
 
     @Override
@@ -84,7 +95,10 @@ public abstract class ReflectiveAnnotated<A extends AnnotatedElement> implements
 
     @Override
     public int hashCode() {
-        return hash(getAnnotatedElement());
+        if (hashCode == 0) {
+            hashCode = hash(getAnnotatedElement());
+        }
+        return hashCode;
     }
 
     @Override

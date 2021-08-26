@@ -25,6 +25,7 @@ import javax.enterprise.inject.spi.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,7 @@ import static org.geektimes.commons.collection.util.CollectionUtils.newLinkedHas
 import static org.geektimes.commons.reflect.util.FieldUtils.setFieldValue;
 import static org.geektimes.commons.reflect.util.MemberUtils.isStatic;
 import static org.geektimes.commons.reflect.util.MethodUtils.invokeMethod;
+import static org.geektimes.enterprise.inject.util.Beans.getBeanTypes;
 
 /**
  * {@link AnnotatedType} {@link InjectionTarget}
@@ -70,7 +72,8 @@ public class AnnotatedTypeInjectionTarget<T> implements InjectionTarget<T> {
 
     @Override
     public void dispose(T instance) {
-
+        Class<?> beanClass = instance.getClass();
+        Set<Type> beanTypes = getBeanTypes(beanClass);
     }
 
     @Override

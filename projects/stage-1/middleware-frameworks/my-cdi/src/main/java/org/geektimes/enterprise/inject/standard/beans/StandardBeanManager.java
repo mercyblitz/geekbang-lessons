@@ -49,6 +49,7 @@ import static java.util.ServiceLoader.load;
 import static org.geektimes.commons.lang.util.ArrayUtils.iterate;
 import static org.geektimes.enterprise.inject.util.Beans.isAnnotatedVetoed;
 import static org.geektimes.enterprise.inject.util.Beans.isManagedBean;
+import static org.geektimes.enterprise.inject.util.Disposers.resolveDisposerMethods;
 import static org.geektimes.enterprise.inject.util.Exceptions.newDefinitionException;
 import static org.geektimes.enterprise.inject.util.Injections.validateForbiddenAnnotation;
 import static org.geektimes.enterprise.inject.util.Parameters.isConstructorParameter;
@@ -94,6 +95,8 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     private final List<ManagedBean> managedBeans;
 
+    private final Set<Type> producerTypes;
+
     public StandardBeanManager() {
         this.classLoader = ClassLoaderUtils.getClassLoader(getClass());
         this.properties = new HashMap<>();
@@ -104,6 +107,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         this.beanArchiveManager = new BeanArchiveManager(classLoader);
         this.annotatedTypes = new LinkedHashMap<>();
         this.managedBeans = new LinkedList<>();
+        this.producerTypes = new LinkedHashSet<>();
     }
 
     @Override
@@ -313,17 +317,17 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     @Override
     public <T> InjectionTargetFactory<T> getInjectionTargetFactory(AnnotatedType<T> annotatedType) {
-        return new AnnotatedTypeInjectionTargetFactory<>(annotatedType,this);
+        return new AnnotatedTypeInjectionTargetFactory<>(annotatedType, this);
     }
 
     @Override
     public <X> ProducerFactory<X> getProducerFactory(AnnotatedField<? super X> field, Bean<X> declaringBean) {
-        return new ProducerFieldFactory(field,declaringBean,this);
+        return new ProducerFieldFactory(field, declaringBean, this);
     }
 
     @Override
     public <X> ProducerFactory<X> getProducerFactory(AnnotatedMethod<? super X> method, Bean<X> declaringBean) {
-        return new ProducerMethodFactory(method,declaringBean,this);
+        return new ProducerMethodFactory(method, declaringBean, this);
     }
 
     @Override
@@ -567,10 +571,12 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     /**
      * For each enabled bean, the container must search for disposer methods as defined in Disposer methods,
      * and for each disposer method
+     *
      * @param managedBean {@link ManagedBean}
      */
     private void determineDisposerMethods(ManagedBean managedBean) {
-
+        AnnotatedType managedBeanType = managedBean.getAnnotatedType();
+        Set<AnnotatedMethod> disposerMethods = resolveDisposerMethods(managedBeanType);
     }
 
     private void determineProducer(Producer producer, AnnotatedMember annotatedMember, AbstractBean bean) {
@@ -581,6 +587,20 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         fireProcessProducerEvent(annotatedMember, producer);
         fireProcessBeanAttributesEvent(annotatedMember, bean);
         fireProcessBeanEvent(annotatedType, bean);
+        registerProducerTypes(annotatedMember);
+    }
+
+    /**
+     * Register all types from a Producer Method or Producer Field
+     * <p>
+     * See Spec :
+     * If a producer method or producer field declared by the same bean class is assignable to the disposed parameter,
+     * according to the rules of typesafe resolution defined in Typesafe resolution
+     *
+     * @param annotatedMember Producer Method or Producer Field
+     */
+    private void registerProducerTypes(AnnotatedMember annotatedMember) {
+        this.producerTypes.addAll(annotatedMember.getTypeClosure());
     }
 
 
