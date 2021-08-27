@@ -16,6 +16,7 @@
  */
 package org.geektimes.enterprise.inject.standard.event;
 
+import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.ObserverMethod;
 import java.util.List;
 
@@ -30,11 +31,11 @@ public interface ObserverMethodDiscoverer {
     /**
      * Get the all {@link ObserverMethod observer methods} from the specified bean type
      *
-     * @param beanInstance the beanInstance that {@link ObserverMethod observer methods} are belongs to
-     *                     if beanInstance is <code>null</code>, the {@link ObserverMethod observer methods}
-     *                     should be static
-     * @param beanType     the specified bean type
+     * @param bean     the bean instance or {@link Bean} , if it's bean instance that {@link ObserverMethod observer methods} are belongs to
+     *                 if bean is <code>null</code>, the {@link ObserverMethod observer methods}
+     *                 should be static
+     * @param beanType the specified bean type
      * @return non-null read-only {@link List}
      */
-    <T> List<ObserverMethod<T>> getObserverMethods(T beanInstance, Class<? extends T> beanType);
+    List<ObserverMethod> getObserverMethods(Object bean, Class<?> beanType);
 }

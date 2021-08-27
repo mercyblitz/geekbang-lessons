@@ -16,7 +16,6 @@
  */
 package org.geektimes.enterprise.inject.standard.disposer;
 
-import org.geektimes.enterprise.inject.standard.ManagedBean;
 import org.geektimes.enterprise.inject.standard.MethodParameterInjectionPoint;
 import org.geektimes.enterprise.inject.standard.beans.StandardBeanManager;
 
@@ -32,7 +31,6 @@ import java.util.Set;
 
 import static org.geektimes.commons.function.ThrowableAction.execute;
 import static org.geektimes.enterprise.inject.util.Beans.getBeanTypes;
-import static org.geektimes.enterprise.inject.util.Disposers.resolveAndValidateDisposerMethods;
 
 /**
  * Disposer {@link Method} Mananger
@@ -51,8 +49,7 @@ public class DisposerMethodManager {
         this.standardBeanManager = standardBeanManager;
     }
 
-    public void registerDisposerMethods(ManagedBean managedBean) throws DefinitionException {
-        Map<Type, AnnotatedMethod> disposerMethods = resolveAndValidateDisposerMethods(managedBean);
+    public void registerDisposerMethods(Map<Type, AnnotatedMethod> disposerMethods) throws DefinitionException {
         storage.putAll(disposerMethods);
     }
 

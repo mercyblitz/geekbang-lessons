@@ -17,16 +17,13 @@
 package org.geektimes.enterprise.inject.standard;
 
 import org.geektimes.enterprise.inject.standard.event.ObserverMethodParameter;
+import org.geektimes.enterprise.inject.util.Events;
 
 import javax.enterprise.event.Observes;
 import javax.enterprise.event.ObservesAsync;
 import javax.enterprise.event.Reception;
 import javax.enterprise.event.TransactionPhase;
-import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.UnsatisfiedResolutionException;
-import javax.enterprise.inject.spi.DefinitionException;
-import javax.enterprise.inject.spi.EventContext;
-import javax.enterprise.inject.spi.ObserverMethod;
+import javax.enterprise.inject.spi.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -35,10 +32,8 @@ import java.util.Set;
 
 import static java.lang.String.format;
 import static org.geektimes.commons.function.ThrowableAction.execute;
-import static org.geektimes.commons.lang.util.ArrayUtils.asArray;
 import static org.geektimes.commons.reflect.util.MemberUtils.isStatic;
-import static org.geektimes.enterprise.inject.util.Events.getObservedParameter;
-import static org.geektimes.enterprise.inject.util.Events.getObserverMethodParameters;
+import static org.geektimes.enterprise.inject.util.Injections.createMethodParameterInjectionPoint;
 import static org.geektimes.enterprise.inject.util.Qualifiers.getQualifiers;
 
 /**
@@ -51,11 +46,14 @@ public class ReflectiveObserverMethod<T> implements ObserverMethod<T> {
 
     private static final ThreadLocal<Object> beanInstanceThreadLocal = new ThreadLocal<>();
 
-    private final Object beanInstance;
+    /**
+     * Bean instance or {@link Bean}
+     */
+    private final Object bean;
 
     private final Method method;
 
-    private final Instance<Object> instance;
+    private final BeanManager beanManager;
 
     private final List<ObserverMethodParameter> observerMethodParameters;
 
@@ -67,12 +65,13 @@ public class ReflectiveObserverMethod<T> implements ObserverMethod<T> {
 
     private final boolean async;
 
-    public ReflectiveObserverMethod(Object beanInstance, Method method, Instance<Object> instance) {
-        this.beanInstance = beanInstance;
+
+    public ReflectiveObserverMethod(Object bean, Method method, BeanManager beanManager) {
+        this.bean = bean;
         this.method = method;
-        this.instance = instance;
-        this.observerMethodParameters = getObserverMethodParameters(method);
-        this.observedParameter = getObservedParameter(observerMethodParameters);
+        this.beanManager = beanManager;
+        this.observerMethodParameters = Events.getObserverMethodParameters(method);
+        this.observedParameter = Events.getObservedParameter(observerMethodParameters);
         Observes observes = observedParameter.getAnnotation(Observes.class);
         if (observes != null) {
             async = false;
@@ -124,6 +123,9 @@ public class ReflectiveObserverMethod<T> implements ObserverMethod<T> {
             ObserverMethodParameter parameter = observerMethodParameters.get(i);
             parameterValues[i] = resolveParameterValue(eventContext, parameter);
         }
+
+        Object beanInstance = resolveBeanInstance();
+
         Object object = isStatic(method) ? null : beanInstance;
         // set the bean instance into ThreadLocal
         setBeanInstance(beanInstance);
@@ -135,21 +137,30 @@ public class ReflectiveObserverMethod<T> implements ObserverMethod<T> {
         }
     }
 
+    protected Object resolveBeanInstance() {
+        Object beanInstance = null;
+        if (this.bean instanceof Bean) {
+            Bean bean = (Bean) this.bean;
+            beanInstance = beanManager.getReference(bean, bean.getBeanClass(), null);
+        } else {
+            beanInstance = this.bean;
+        }
+        return beanInstance;
+    }
+
+    protected Bean getBean() {
+        return bean instanceof Bean ? (Bean) this.bean : null;
+    }
+
     private Object resolveParameterValue(EventContext<T> eventContext, ObserverMethodParameter parameter) {
         if (parameter.isObserved()) {
             return eventContext.getEvent();
         } else if (parameter.isMetadata()) {
             return eventContext.getMetadata();
         } else if (parameter.isInjected()) {
-            Class<?> parameterType = parameter.getType();
-            Set<Annotation> qualifiers = getQualifiers(parameter);
-            Instance<?> targetInstance = instance.select(parameterType, asArray(qualifiers, Annotation.class));
-            if (targetInstance.isUnsatisfied()) {
-                String message = format("The injected instance can't be resolved from parameter[%s] with qualifiers[%s]",
-                        parameter.getParameter(), qualifiers);
-                throw new UnsatisfiedResolutionException(message);
-            }
-            return targetInstance.get();
+            InjectionPoint injectionPoint = createMethodParameterInjectionPoint(
+                    parameter.getParameter(), parameter.getIndex(), getMethod(), getBean());
+            return beanManager.getInjectableReference(injectionPoint, null);
         }
         String message = format("The observer method[%s] can't resolve the parameter[%s]",
                 method, parameter.getParameter());
@@ -164,13 +175,25 @@ public class ReflectiveObserverMethod<T> implements ObserverMethod<T> {
     @Override
     public String toString() {
         return "ReflectiveObserverMethod{" +
-                "instance=" + beanInstance +
+                "instance=" + bean +
                 ", method=" + method +
                 ", parameters=" + observerMethodParameters +
                 ", reception=" + reception +
                 ", transactionPhase=" + transactionPhase +
                 ", async=" + async +
                 '}';
+    }
+
+    public Method getMethod() {
+        return method;
+    }
+
+    public List<ObserverMethodParameter> getObserverMethodParameters() {
+        return observerMethodParameters;
+    }
+
+    public ObserverMethodParameter getObservedParameter() {
+        return observedParameter;
     }
 
     /**
@@ -189,4 +212,5 @@ public class ReflectiveObserverMethod<T> implements ObserverMethod<T> {
     private static void clearBeanInstance() {
         beanInstanceThreadLocal.remove();
     }
+
 }

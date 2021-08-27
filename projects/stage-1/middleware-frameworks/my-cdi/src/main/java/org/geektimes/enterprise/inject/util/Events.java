@@ -143,6 +143,10 @@ public abstract class Events {
         return observerMethodParametersCache.containsKey(method);
     }
 
+    public static ObserverMethodParameter getObservedParameter(Method method) {
+        return getObservedParameter(getObserverMethodParameters(method));
+    }
+
     public static ObserverMethodParameter getObservedParameter(List<ObserverMethodParameter> observerMethodParameters) {
         return observerMethodParameters.stream()
                 .filter(ObserverMethodParameter::isObserved)

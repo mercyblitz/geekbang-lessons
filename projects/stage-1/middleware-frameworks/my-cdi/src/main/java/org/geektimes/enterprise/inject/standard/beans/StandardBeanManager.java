@@ -50,7 +50,9 @@ import static java.util.ServiceLoader.load;
 import static org.geektimes.commons.lang.util.ArrayUtils.iterate;
 import static org.geektimes.enterprise.inject.util.Beans.isAnnotatedVetoed;
 import static org.geektimes.enterprise.inject.util.Beans.isManagedBean;
+import static org.geektimes.enterprise.inject.util.Disposers.resolveAndValidateDisposerMethods;
 import static org.geektimes.enterprise.inject.util.Exceptions.newDefinitionException;
+import static org.geektimes.enterprise.inject.util.Injections.getMethodParameterInjectionPoints;
 import static org.geektimes.enterprise.inject.util.Injections.validateForbiddenAnnotation;
 import static org.geektimes.enterprise.inject.util.Parameters.isConstructorParameter;
 import static org.geektimes.enterprise.inject.util.Parameters.isMethodParameter;
@@ -83,11 +85,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     private final BeanArchiveManager beanArchiveManager;
 
-    private final ObserverMethodDiscoverer observerMethodDiscoverer;
-
-    private final ObserverMethodRepository observerMethodsRepository;
-
-    private final EventDispatcher eventDispatcher;
+    private final ObserverMethodManager observerMethodsManager;
 
     private ClassLoader classLoader;
 
@@ -101,9 +99,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         this.classLoader = ClassLoaderUtils.getClassLoader(getClass());
         this.properties = new HashMap<>();
         this.extensions = new LinkedHashMap<>();
-        this.observerMethodDiscoverer = new ReflectiveObserverMethodDiscoverer(this);
-        this.observerMethodsRepository = new ObserverMethodRepository();
-        this.eventDispatcher = new EventDispatcher(observerMethodsRepository);
+        this.observerMethodsManager = new ObserverMethodManager(this);
         this.beanArchiveManager = new BeanArchiveManager(classLoader);
         this.annotatedTypes = new LinkedHashMap<>();
         this.managedBeans = new LinkedList<>();
@@ -210,7 +206,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     @Override
     public <T> Set<ObserverMethod<? super T>> resolveObserverMethods(T event, Annotation... qualifiers) {
-        return (Set) observerMethodsRepository.resolveObserverMethods(event, qualifiers);
+        return (Set) observerMethodsManager.resolveObserverMethods(event, qualifiers);
     }
 
     @Override
@@ -383,7 +379,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     @Override
     public Event<Object> getEvent() {
-        return eventDispatcher;
+        return observerMethodsManager;
     }
 
     @Override
@@ -464,7 +460,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
      */
     private void initializeExtensions() {
         discoverExtensions();
-        discoverObserverMethods();
+        discoverExtensionObserverMethods();
     }
 
     /**
@@ -540,7 +536,6 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
      */
     private void determineManagedBean(AnnotatedType annotatedType, Class<?> beanClass) {
         ManagedBean managedBean = new ManagedBean(this, beanClass);
-        this.managedBeans.add(managedBean);
         fireProcessInjectionPointEvents(managedBean);
         fireProcessInjectionTarget(annotatedType, managedBean);
         fireProcessBeanAttributesEvent(annotatedType, managedBean);
@@ -548,6 +543,8 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         determineProducerMethods(managedBean);
         determineProducerFields(managedBean);
         determineDisposerMethods(managedBean);
+        determineObserverMethods(managedBean);
+        registerManagerBean(managedBean);
     }
 
     private void determineProducerMethods(ManagedBean managedBean) {
@@ -581,12 +578,38 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     /**
      * For each enabled bean, the container must search for disposer methods as defined in Disposer methods,
      * and for each disposer method
+     * <p>
+     * and then fire an event of type ProcessInjectionPoint for each injection point in the method parameters
      *
      * @param managedBean {@link ManagedBean}
      */
     private void determineDisposerMethods(ManagedBean managedBean) {
-        disposerMethodManager.registerDisposerMethods(managedBean);
+        Map<Type, AnnotatedMethod> disposerMethods = resolveAndValidateDisposerMethods(managedBean);
+        disposerMethodManager.registerDisposerMethods(disposerMethods);
+        for (AnnotatedMethod disposerMethod : disposerMethods.values()) {
+            List<MethodParameterInjectionPoint> injectionPoints = getMethodParameterInjectionPoints(disposerMethod, managedBean);
+            fireProcessInjectionPointEvents(injectionPoints);
+        }
     }
+
+
+    /**
+     * For each enabled bean, the container must search the class for observer methods, and for each observer method:
+     * <ul>
+     *     <li>fire an event of type ProcessInjectionPoint for each injection point in the method parameters</li>
+     *     <li>fire an event of type ProcessObserverMethod</li>
+     * </ul>
+     *
+     * @param managedBean {@link ManagedBean}
+     */
+    private void determineObserverMethods(ManagedBean managedBean) {
+    }
+
+
+    private void registerManagerBean(ManagedBean managedBean) {
+        this.managedBeans.add(managedBean);
+    }
+
 
     private void determineInterceptorBeans(List<AnnotatedType> annotatedTypes) {
         // TODO
@@ -626,26 +649,11 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         return this;
     }
 
-    private StandardBeanManager discoverObserverMethods() {
-        extensions.forEach(this::addObserverMethods);
+    private StandardBeanManager discoverExtensionObserverMethods() {
+        extensions.values().forEach(this::registerObserverMethods);
         return this;
     }
 
-    private StandardBeanManager addObserverMethods(Object beanInstance) {
-        return addObserverMethods(beanInstance.getClass(), beanInstance);
-    }
-
-    private StandardBeanManager addObserverMethods(Class<?> beanClass, Object beanInstance) {
-        observerMethodDiscoverer.getObserverMethods(beanInstance, beanClass)
-                .forEach(this::addObserverMethod);
-
-        return this;
-    }
-
-    public StandardBeanManager addObserverMethod(ObserverMethod observerMethod) {
-        observerMethodsRepository.addObserverMethod(observerMethod);
-        return this;
-    }
 
     // Event Methods
 
@@ -671,7 +679,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         fireProcessInjectionPointEvents(managedBean.getInjectionPoints());
     }
 
-    private void fireProcessInjectionPointEvents(Set<InjectionPoint> injectionPoints) {
+    private void fireProcessInjectionPointEvents(Collection<? extends InjectionPoint> injectionPoints) {
         injectionPoints.forEach(this::fireProcessInjectionPointEvent);
     }
 
@@ -713,7 +721,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     }
 
     private void fireEvent(Object event) {
-        eventDispatcher.fire(event);
+        observerMethodsManager.fire(event);
     }
 
     /**
@@ -759,6 +767,10 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         addAnnotatedType(id, type);
         fireProcessSyntheticAnnotatedTypeEvent(type, source);
         return this;
+    }
+
+    private void registerObserverMethods(Object beanInstance) {
+        observerMethodsManager.registerObserverMethods(beanInstance);
     }
 
     public StandardBeanManager extensions(Extension... extensions) {

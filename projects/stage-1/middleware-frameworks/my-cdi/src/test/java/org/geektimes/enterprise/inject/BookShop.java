@@ -19,9 +19,11 @@ package org.geektimes.enterprise.inject;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.enterprise.context.Dependent;
+import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Produces;
 import javax.enterprise.inject.spi.BeanManager;
+import javax.enterprise.inject.spi.ProcessObserverMethod;
 import javax.inject.Inject;
 
 /**
@@ -56,5 +58,9 @@ public class BookShop extends Business implements Shop<Book> {
     }
 
     public void dispose(@Disposes Book book) {
+    }
+
+    public void onEvent(@Observes ProcessObserverMethod event) {
+        System.out.println(event);
     }
 }
