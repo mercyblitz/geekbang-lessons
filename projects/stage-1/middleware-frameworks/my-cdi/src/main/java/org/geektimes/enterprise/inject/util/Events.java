@@ -28,12 +28,11 @@ import javax.inject.Inject;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static java.lang.String.format;
+import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.geektimes.commons.lang.util.AnnotationUtils.isAnnotationPresent;
 import static org.geektimes.enterprise.inject.standard.event.ObserverMethodParameter.*;
@@ -71,8 +70,10 @@ public abstract class Events {
             return true;
         }
 
-        validateObserverMethodAnnotations(method, Produces.class, Inject.class);
-        return validateObserverMethodParameters(method);
+        if (validateObserverMethodParameters(method)) {
+            validateObserverMethodAnnotations(method, Produces.class, Inject.class);
+        }
+        return hasObservedParameter(method);
     }
 
     /**
@@ -93,46 +94,58 @@ public abstract class Events {
 
     /**
      * @param method
-     * @return
+     * @return <code>true</code> if <code>method</code> is the Observer method
      * @throws DefinitionException If a method has more than one parameter annotated @Observes or @ObservesAsync
      *                             or has a parameter annotated @Disposes
      */
     private static boolean validateObserverMethodParameters(Method method) throws DefinitionException {
 
-        Parameter[] parameters = method.getParameters();
+        List<Parameter> parameters = new LinkedList<>(asList(method.getParameters()));
 
-        List<ObserverMethodParameter> observerMethodParameters = new ArrayList<>(parameters.length);
+        List<ObserverMethodParameter> observerMethodParameters = new ArrayList<>(parameters.size());
+
+        ListIterator<Parameter> iterator = parameters.listIterator();
 
         int observedParameterCount = 0;
-        for (int i = 0; i < parameters.length; i++) {
 
-            Parameter parameter = parameters[i];
+
+        while (iterator.hasNext()) {
+            int index = iterator.nextIndex();
+            Parameter parameter = iterator.next();
 
             if (observedParameterCount > 1) {
                 String message = format("An observer method must not have more than one parameter annotated @%s or @%s",
                         Observes.class.getName(), ObservesAsync.class.getName());
                 throw new DefinitionException(message);
-            } else if (parameter.isAnnotationPresent(Disposes.class)) {
-                String message = format("An observer method must not annotate @%s!", Disposes.class.getName());
-                throw new DefinitionException(message);
             } else if (isObservedParameter(parameter)) {
                 observedParameterCount++;
-                observerMethodParameters.add(observedParameter(parameter, i));
+                observerMethodParameters.add(observedParameter(parameter, index));
+                iterator.remove();
             } else if (isEventMetadata(parameter)) {
-                observerMethodParameters.add(eventMetadataParameter(parameter, i));
-            } else {
-                observerMethodParameters.add(injectedParameter(parameter, i));
+                observerMethodParameters.add(eventMetadataParameter(parameter, index));
+                iterator.remove();
             }
-
         }
 
         if (observedParameterCount == 1) {
+            // remaining
+            for (int i = 0; i < parameters.size(); i++) {
+                Parameter parameter = parameters.get(i);
+                if (parameter.isAnnotationPresent(Disposes.class)) {
+                    String message = format("An observer method must not annotate @%s!", Disposes.class.getName());
+                    throw new DefinitionException(message);
+                } else {
+                    observerMethodParameters.add(injectedParameter(parameter, i));
+                }
+            }
             observerMethodParametersCache.put(method, observerMethodParameters);
             return true;
         }
 
+        // else
         observerMethodParameters.clear();
         return false;
+
     }
 
     public static List<ObserverMethodParameter> getObserverMethodParameters(Method method) {

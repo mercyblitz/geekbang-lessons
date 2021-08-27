@@ -544,7 +544,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         determineProducerFields(managedBean);
         determineDisposerMethods(managedBean);
         determineObserverMethods(managedBean);
-        registerManagerBean(managedBean);
+        registerManagedBean(managedBean);
     }
 
     private void determineProducerMethods(ManagedBean managedBean) {
@@ -603,13 +603,12 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
      * @param managedBean {@link ManagedBean}
      */
     private void determineObserverMethods(ManagedBean managedBean) {
+        observerMethodsManager.registerObserverMethods(managedBean);
     }
 
-
-    private void registerManagerBean(ManagedBean managedBean) {
+    private void registerManagedBean(ManagedBean managedBean) {
         this.managedBeans.add(managedBean);
     }
-
 
     private void determineInterceptorBeans(List<AnnotatedType> annotatedTypes) {
         // TODO

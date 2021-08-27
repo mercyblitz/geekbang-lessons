@@ -74,6 +74,11 @@ public class ObserverMethodManager implements Event<Object> {
                 .forEach(this::registerObserverMethod);
     }
 
+    public void registerObserverMethods(Bean bean) {
+        observerMethodDiscoverer.getObserverMethods(bean, bean.getBeanClass())
+                .forEach(this::registerObserverMethod);
+    }
+
     public void registerObserverMethod(ObserverMethod observerMethod) {
         Type observerType = observerMethod.getObservedType();
         Set<Type> eventTypes = getAllTypes(observerType);
