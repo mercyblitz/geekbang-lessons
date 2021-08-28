@@ -14,30 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.salesmanager.test.event.observer;
-
-import java.util.EventObject;
-import java.util.Observable;
-import java.util.Observer;
+package org.geektimes.commons.event;
 
 /**
- * {@link EventListener} Adapter
+ * MyEvent
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-class ListenerObserverAdapter implements Observer {
+public class MyEvent extends Event {
 
-    private final EventListener listener;
-
-    public ListenerObserverAdapter(EventListener listener) {
-        this.listener = listener;
-    }
-
-    @Override
-    public void update(Observable o, Object arg) {
-        if (arg instanceof EventObject) { // arg always is EventObject
-            listener.onEvent((EventObject) arg);
-        }
+    /**
+     * Constructs a prototypical Event.
+     *
+     * @param source The object on which the Event initially occurred.
+     * @throws IllegalArgumentException if source is null.
+     */
+    public MyEvent(Object source) {
+        super(source);
     }
 }

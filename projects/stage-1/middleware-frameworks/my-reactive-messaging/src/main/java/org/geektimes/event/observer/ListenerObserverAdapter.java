@@ -14,42 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.salesmanager.test.event.observer;
+package org.geektimes.event.observer;
+
+import org.geektimes.event.EventListener;
 
 import java.util.EventObject;
+import java.util.Observable;
+import java.util.Observer;
 
 /**
- * {@link EventObject} Emitter
+ * {@link EventListener} Adapter
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class EventEmitter {
+class ListenerObserverAdapter implements Observer {
 
-    private EventObservable observable;
+    private final EventListener listener;
 
-    public EventEmitter() {
-        this.observable = new EventObservable();
+    public ListenerObserverAdapter(EventListener listener) {
+        this.listener = listener;
     }
 
-    public void emit(Object event) {
-        observable.notifyObservers(event);
-    }
-
-    public void addListener(EventListener listener) {
-        // EventObjectListener adapts to be an Observer
-        observable.addObserver(new ListenerObserverAdapter(listener));
-    }
-
-    public static void main(String[] args) {
-        EventEmitter emitter = new EventEmitter();
-        emitter.addListener(event -> {
-            System.out.println(event);
-        });
-
-        emitter.addListener(event -> {
-            System.out.println(event.getSource());
-        });
-        emitter.emit("Hello,World");
+    @Override
+    public void update(Observable o, Object arg) {
+        if (arg instanceof EventObject) { // arg always is EventObject
+            listener.onEvent((EventObject) arg);
+        }
     }
 }

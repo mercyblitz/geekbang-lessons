@@ -38,7 +38,7 @@ public interface EventDispatcher extends Listenable<EventListener<?>> {
     Executor DIRECT_EXECUTOR = Runnable::run;
 
     /**
-     * Dispatch a event to the registered {@link EventListener event listeners}
+     * Dispatch an event to the registered {@link EventListener event listeners}
      *
      * @param event a {@link Event event}
      */

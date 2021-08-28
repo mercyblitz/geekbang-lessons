@@ -14,22 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.salesmanager.test.event.observer;
-
-import java.util.EventObject;
-import java.util.Observable;
+package org.geektimes.commons.event;
 
 /**
- * {@link EventObject} {@link Observable}
+ * String Event
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-class EventObservable extends Observable {
+public class StringEvent extends Event {
 
-    @Override
-    public void notifyObservers(Object eventSource) {
-        setChanged();
-        super.notifyObservers(new EventObject(eventSource));
+    /**
+     * Constructs a prototypical Event.
+     *
+     * @param source The object on which the Event initially occurred.
+     * @throws IllegalArgumentException if source is null.
+     */
+    public StringEvent(String source) {
+        super(source);
     }
 }

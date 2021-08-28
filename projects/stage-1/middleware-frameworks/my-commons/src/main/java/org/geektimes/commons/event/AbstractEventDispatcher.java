@@ -42,7 +42,7 @@ public abstract class AbstractEventDispatcher implements EventDispatcher {
 
     private final Object mutex = new Object();
 
-    private final ConcurrentMap<Class<? extends org.geektimes.commons.event.Event>, List<EventListener>> listenersCache = new ConcurrentHashMap<>();
+    private final ConcurrentMap<Class<? extends Event>, List<EventListener>> listenersCache = new ConcurrentHashMap<>();
 
     private final Executor executor;
 

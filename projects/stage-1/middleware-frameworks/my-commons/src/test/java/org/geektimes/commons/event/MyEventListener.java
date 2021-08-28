@@ -14,17 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.salesmanager.test.event.observer;
+package org.geektimes.commons.event;
 
-import java.util.EventObject;
+import java.util.Date;
 
 /**
- * {@link EventObject} {@link java.util.EventListener}
+ * {@link MyEvent} Listener
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public interface EventListener extends java.util.EventListener {
+public class MyEventListener implements EventListener<MyEvent> {
 
-    void onEvent(EventObject event);
+    @Override
+    public void onEvent(MyEvent event) {
+        System.out.printf("[Thread : %s] %s Handles %s[Source : %s] at %s\n",
+                Thread.currentThread().getName(),
+                getClass().getSimpleName(),
+                event.getClass().getSimpleName(),
+                event.getSource(),
+                new Date(event.getTimestamp()));
+    }
 }
