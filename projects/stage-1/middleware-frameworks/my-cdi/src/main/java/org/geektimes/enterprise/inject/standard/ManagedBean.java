@@ -40,10 +40,9 @@ import static org.geektimes.enterprise.inject.util.Producers.resolveProducerMeth
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class ManagedBean<T> extends AbstractBean<Class, T> {
+public class ManagedBean<T> extends AbstractAnnotatedTypeBean<T> {
 
     private final BeanManager beanManager;
-
 
     private Map<AnnotatedConstructor, List<ConstructorParameterInjectionPoint>> constructorParameterInjectionPointsMap;
 
@@ -57,9 +56,13 @@ public class ManagedBean<T> extends AbstractBean<Class, T> {
 
     private Set<Type> producerTypes;
 
-    public ManagedBean(BeanManager beanManager, Class<?> beanClass) {
-        super(beanClass, beanClass);
+    public ManagedBean(AnnotatedType<T> beanType, BeanManager beanManager) {
+        super(beanType);
         this.beanManager = beanManager;
+    }
+
+    protected ManagedBean(Class<?> beanClass, BeanManager beanManager) {
+        this(new ReflectiveAnnotatedType<>(beanClass),beanManager);
     }
 
     @Override

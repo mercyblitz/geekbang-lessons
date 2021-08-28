@@ -45,7 +45,6 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 import static java.lang.System.getProperty;
-import static java.lang.System.in;
 import static java.util.Objects.requireNonNull;
 import static java.util.ServiceLoader.load;
 import static org.geektimes.commons.lang.util.ArrayUtils.iterate;
@@ -98,6 +97,8 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     private final Map<String, AnnotatedType<?>> decoratorTypes;
 
+    private final Map<String, AnnotatedType<?>> syntheticTypes;
+
     private final List<ManagedBean<?>> managedBeans;
 
     private final DisposerMethodManager disposerMethodManager;
@@ -112,6 +113,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         this.alternativeTypes = new LinkedHashMap<>();
         this.interceptorTypes = new LinkedHashMap<>();
         this.decoratorTypes = new LinkedHashMap<>();
+        this.syntheticTypes = new LinkedHashMap<>();
         this.managedBeans = new LinkedList<>();
         this.disposerMethodManager = new DisposerMethodManager(this);
     }
@@ -522,10 +524,10 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     }
 
     private void determineManagedBeans() {
-        for(AnnotatedType<?> beanType : beanTypes.values()){
+        for (AnnotatedType<?> beanType : beanTypes.values()) {
             Class<?> beanClass = beanType.getJavaClass();
             if (isManagedBean(beanClass)) {
-                determineManagedBean(beanType, beanClass);
+                determineManagedBean(beanType);
             }
         }
     }
@@ -541,24 +543,25 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
      *     wasn’t called in previous step</li>
      * </ol>
      *
-     * @param annotatedType
-     * @param beanClass
+     * @param beanType
      * @see ProcessInjectionPoint
      * @see ProcessInjectionTarget
      * @see ProcessBeanAttributes
      * @see ProcessBeanEvent
      */
-    private void determineManagedBean(AnnotatedType annotatedType, Class<?> beanClass) {
-        ManagedBean managedBean = new ManagedBean(this, beanClass);
+    private void determineManagedBean(AnnotatedType beanType) {
+        ManagedBean managedBean = new ManagedBean(beanType, this);
         fireProcessInjectionPointEvents(managedBean);
-        fireProcessInjectionTarget(annotatedType, managedBean);
-        fireProcessBeanAttributesEvent(annotatedType, managedBean);
-        fireProcessBeanEvent(annotatedType, managedBean);
-        determineProducerMethods(managedBean);
-        determineProducerFields(managedBean);
-        determineDisposerMethods(managedBean);
-        determineObserverMethods(managedBean);
-        registerManagedBean(managedBean);
+        fireProcessInjectionTarget(beanType, managedBean);
+        fireProcessBeanAttributesEvent(beanType, managedBean);
+        if(!managedBean.isVetoed()){ // vetoed if ProcessBeanAttributes.veto() method was invoked
+            fireProcessBeanEvent(beanType, managedBean);
+            determineProducerMethods(managedBean);
+            determineProducerFields(managedBean);
+            determineDisposerMethods(managedBean);
+            determineObserverMethods(managedBean);
+            registerManagedBean(managedBean);
+        }
     }
 
     private void determineProducerMethods(ManagedBean managedBean) {
@@ -625,7 +628,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     }
 
     private void determineAlternativeBeans() {
-        for(AnnotatedType<?> alternativeType : alternativeTypes.values()){
+        for (AnnotatedType<?> alternativeType : alternativeTypes.values()) {
             determineAlternativeBean(alternativeType);
         }
     }
@@ -639,20 +642,19 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
      * <p>
      * the ability to override the interceptor order using the portable extension SPI,
      * defined in {@link AfterTypeDiscovery} event.
-     *
      */
     private void determineInterceptorBeans() {
-        for(AnnotatedType<?> interceptorType : interceptorTypes.values()){
+        for (AnnotatedType<?> interceptorType : interceptorTypes.values()) {
             determineInterceptorBean(interceptorType);
         }
     }
 
-    private void determineInterceptorBean(AnnotatedType annotatedType) {
+    private void determineInterceptorBean(AnnotatedType<?> interceptorType) {
         // TODO
     }
 
     private void determineDecoratorBeans() {
-        for(AnnotatedType<?> decoratorType : decoratorTypes.values()){
+        for (AnnotatedType<?> decoratorType : decoratorTypes.values()) {
             determineDecoratorBean(decoratorType);
         }
     }
@@ -735,7 +737,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         fireEvent(new ProcessInjectionTargetEvent<>(annotatedType, injectionTarget, this));
     }
 
-    private void fireProcessBeanAttributesEvent(Annotated annotated, BeanAttributes beanAttributes) {
+    private void fireProcessBeanAttributesEvent(Annotated annotated, AbstractBean beanAttributes) {
         fireEvent(new ProcessBeanAttributesEvent(annotated, beanAttributes, this));
     }
 
@@ -747,7 +749,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
      * @param bean {@link Bean}
      */
     private void fireProcessBeanEvent(AnnotatedType<?> type, AbstractBean bean) {
-        if (hasAnnotatedType(type)) {
+        if (hasBeanType(type)) {
             fireEvent(new ProcessBeanEvent<>(type, bean, this));
         }
     }
@@ -782,7 +784,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     }
 
     private void registerDecoratorType(AnnotatedType<?> decoratorType) {
-        registerAnnotatedType(decoratorType,decoratorTypes);
+        registerAnnotatedType(decoratorType, decoratorTypes);
     }
 
     private void registerAnnotatedType(AnnotatedType<?> annotatedType, Map<String, AnnotatedType<?>> typesToRegister) {
@@ -792,8 +794,9 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     /**
      * {@link AnnotatedType}s discovered by the container use the fully qualified class name of
      * {@link AnnotatedType#getJavaClass()} to identify the type
-     * @param annotatedType {@link AnnotatedType}
-     * @param id ID
+     *
+     * @param annotatedType   {@link AnnotatedType}
+     * @param id              ID
      * @param typesToRegister the collection types to register
      */
     private void registerAnnotatedType(AnnotatedType<?> annotatedType, String id, Map<String, AnnotatedType<?>> typesToRegister) {
@@ -801,49 +804,35 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         fireProcessAnnotatedTypeEvent(annotatedType);
     }
 
-    /**
-
-     *
-     * @param type {@link AnnotatedType}
-     * @return self
-     */
-    private StandardBeanManager addAnnotatedType(Class<?> type) {
-        AnnotatedType annotatedType = createAnnotatedType(type);
-        addAnnotatedType(annotatedType);
-        return this;
-    }
-
-    private void addAnnotatedType(AnnotatedType annotatedType) {
-        if (!hasAnnotatedType(annotatedType)) {
-            addAnnotatedType(annotatedType.getJavaClass().getName(), annotatedType);
-            fireProcessAnnotatedTypeEvent(annotatedType);
-        }
-    }
-
-    private boolean hasAnnotatedType(AnnotatedType annotatedType) {
+    private boolean hasBeanType(AnnotatedType annotatedType) {
         return this.beanTypes.containsValue(annotatedType);
     }
 
-    public void removeAnnotatedType(AnnotatedType<?> annotatedType) {
-        // TODO
+    public void removeType(AnnotatedType<?> annotatedType) {
+        removeType(annotatedType, beanTypes);
+        removeType(annotatedType, alternativeTypes);
+        removeType(annotatedType, interceptorTypes);
+        removeType(annotatedType, decoratorTypes);
+        removeType(annotatedType, syntheticTypes);
+    }
+
+    private static void removeType(AnnotatedType<?> annotatedType, Map<String, AnnotatedType<?>> typesMap) {
         Set<String> keysToRemove = new LinkedHashSet<>();
-        for (Map.Entry<String, AnnotatedType<?>> entry : beanTypes.entrySet()) {
+        for (Map.Entry<String, AnnotatedType<?>> entry : typesMap.entrySet()) {
             if (Objects.equals(entry.getValue().getJavaClass(), annotatedType.getJavaClass())) {
                 keysToRemove.add(entry.getKey());
             }
         }
-        keysToRemove.forEach(beanTypes::remove);
+        keysToRemove.forEach(typesMap::remove);
     }
 
-    private void addAnnotatedType(String id, AnnotatedType<?> type) {
-        // TODO
-        beanTypes.put(id, type);
+    private void registerSyntheticType(String id, AnnotatedType<?> type) {
+        syntheticTypes.put(id, type);
     }
 
-    public StandardBeanManager addSyntheticAnnotatedType(String id, AnnotatedType<?> type, Extension source) {
-        addAnnotatedType(id, type);
+    public void addSyntheticAnnotatedType(String id, AnnotatedType<?> type, Extension source) {
+        registerSyntheticType(id, type);
         fireProcessSyntheticAnnotatedTypeEvent(type, source);
-        return this;
     }
 
     private void registerObserverMethods(Object beanInstance) {

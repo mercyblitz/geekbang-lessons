@@ -42,7 +42,7 @@ public class ManagedBeanTest {
 
     @Test
     public void test() {
-        ManagedBean bean = new ManagedBean(new StandardBeanManager(), BookShop.class);
+        ManagedBean bean = new ManagedBean(BookShop.class, new StandardBeanManager());
         assertEquals(BookShop.class, bean.getBeanClass());
         assertFalse(bean.isNullable());
         assertEquals(4, bean.getTypes().size());

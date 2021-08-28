@@ -16,8 +16,8 @@
  */
 package org.geektimes.enterprise.inject.standard.event;
 
+import org.geektimes.enterprise.inject.standard.AbstractBeanAttributes;
 import org.geektimes.enterprise.inject.standard.GenericBeanAttributes;
-import org.geektimes.enterprise.inject.standard.ReflectiveAnnotatedType;
 import org.geektimes.enterprise.inject.standard.beans.StandardBeanManager;
 
 import javax.enterprise.inject.spi.*;
@@ -45,11 +45,13 @@ public class ProcessBeanAttributesEvent<T> implements ProcessBeanAttributes<T> {
 
     private final Class<?> beanClass;
 
+    private AbstractBeanAttributes beanAttributes;
+
     public ProcessBeanAttributesEvent(Annotated annotated, StandardBeanManager standardBeanManager) {
         this(annotated, new GenericBeanAttributes<>(resolveBeanClass(annotated)), standardBeanManager);
     }
 
-    public ProcessBeanAttributesEvent(Annotated annotated, BeanAttributes<T> beanAttributes,
+    public ProcessBeanAttributesEvent(Annotated annotated, AbstractBeanAttributes beanAttributes,
                                       StandardBeanManager standardBeanManager) {
         requireNonNull(annotated, "The 'annotated' argument must not be null!");
         requireNonNull(beanAttributes, "The 'beanAttributes' argument must not be null!");
@@ -59,8 +61,6 @@ public class ProcessBeanAttributesEvent<T> implements ProcessBeanAttributes<T> {
         this.beanClass = resolveBeanClass(annotated);
         this.beanAttributes = beanAttributes;
     }
-
-    private BeanAttributes<T> beanAttributes;
 
     private static Class<?> resolveBeanClass(Annotated annotated) {
         if (annotated instanceof AnnotatedType) {
@@ -91,7 +91,7 @@ public class ProcessBeanAttributesEvent<T> implements ProcessBeanAttributes<T> {
 
     @Override
     public void setBeanAttributes(BeanAttributes<T> beanAttributes) {
-        this.beanAttributes = beanAttributes;
+        this.beanAttributes.setBeanAttributes(beanAttributes);
     }
 
     @Override
@@ -107,7 +107,7 @@ public class ProcessBeanAttributesEvent<T> implements ProcessBeanAttributes<T> {
 
     @Override
     public void veto() {
-        standardBeanManager.removeAnnotatedType(new ReflectiveAnnotatedType<>(beanClass));
+        beanAttributes.veto();
     }
 
     @Override

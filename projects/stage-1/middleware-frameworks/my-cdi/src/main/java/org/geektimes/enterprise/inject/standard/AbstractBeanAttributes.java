@@ -48,19 +48,21 @@ public abstract class AbstractBeanAttributes<A extends AnnotatedElement, T> impl
 
     private final Class<?> beanClass;
 
-    private final Set<Type> beanTypes;
+    private Set<Type> beanTypes;
 
-    private final Set<Annotation> qualifiers;
+    private Set<Annotation> qualifiers;
 
-    private final String beanName;
+    private String beanName;
 
-    private final Class<? extends Annotation> scopeType;
+    private Class<? extends Annotation> scopeType;
 
-    private final Set<Class<? extends Annotation>> stereotypeTypes;
+    private Set<Class<? extends Annotation>> stereotypeTypes;
 
-    private final boolean alternative;
+    private boolean alternative;
 
     private final AnnotatedType<T> annotatedType;
+
+    private boolean vetoed;
 
     public AbstractBeanAttributes(A annotatedElement, Class<?> beanClass) {
         requireNonNull(annotatedElement, "The 'annotatedElement' argument must not be null!");
@@ -70,11 +72,21 @@ public abstract class AbstractBeanAttributes<A extends AnnotatedElement, T> impl
         this.beanClass = beanClass;
         this.beanTypes = getBeanTypes(beanClass);
         this.qualifiers = Qualifiers.getQualifiers(annotatedElement);
-        this.beanName = getBeanName(annotatedElement);
         this.scopeType = getScopeType(annotatedElement);
+        this.beanName = getBeanName(annotatedElement);
         this.stereotypeTypes = getStereotypeTypes(annotatedElement);
         this.alternative = isAnnotationPresent(annotatedElement, Alternative.class);
         this.annotatedType = new ReflectiveAnnotatedType<>(beanClass);
+        this.vetoed = false;
+    }
+
+    public void setBeanAttributes(BeanAttributes<T> beanAttributes) {
+        this.beanTypes = beanAttributes.getTypes();
+        this.qualifiers = beanAttributes.getQualifiers();
+        this.scopeType = beanAttributes.getScope();
+        this.beanName = beanAttributes.getName();
+        this.stereotypeTypes = beanAttributes.getStereotypes();
+        this.alternative = beanAttributes.isAlternative();
     }
 
     public Class<?> getBeanClass() {
@@ -131,6 +143,14 @@ public abstract class AbstractBeanAttributes<A extends AnnotatedElement, T> impl
                 .add("stereotypeTypes=" + getStereotypes())
                 .add("alternative=" + isAlternative())
                 .toString();
+    }
+
+    public final void veto() {
+        vetoed = true;
+    }
+
+    public final boolean isVetoed() {
+        return vetoed;
     }
 
     // Abstract methods
