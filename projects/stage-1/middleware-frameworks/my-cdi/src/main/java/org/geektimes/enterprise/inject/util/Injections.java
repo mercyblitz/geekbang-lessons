@@ -114,19 +114,19 @@ public abstract class Injections {
         return injectionPoints;
     }
 
-    public static List<MethodParameterInjectionPoint> getMethodParameterInjectionPoints(AnnotatedMethod method, Bean<?> bean) {
+    public static Set<MethodParameterInjectionPoint> getMethodParameterInjectionPoints(AnnotatedMethod method, Bean<?> bean) {
         List<AnnotatedParameter> annotatedParameters = method.getParameters();
         int size = annotatedParameters.size();
         if (size < 1) {
-            return emptyList();
+            return emptySet();
         }
 
-        List<MethodParameterInjectionPoint> injectionPoints = new ArrayList<>(size);
+        Set<MethodParameterInjectionPoint> injectionPoints = new LinkedHashSet<>(size);
         for (int i = 0; i < size; i++) {
             injectionPoints.add(createMethodParameterInjectionPoint(annotatedParameters.get(i), method, bean));
         }
 
-        return unmodifiableList(injectionPoints);
+        return unmodifiableSet(injectionPoints);
     }
 
     public static MethodParameterInjectionPoint createMethodParameterInjectionPoint(Parameter parameter, int index, Method method, Bean<?> bean) {
@@ -142,7 +142,7 @@ public abstract class Injections {
         return new MethodParameterInjectionPoint(parameter, method, bean);
     }
 
-    public static Map<AnnotatedMethod, List<MethodParameterInjectionPoint>> getMethodParameterInjectionPoints(AnnotatedType annotatedType, Bean<?> bean) {
+    public static Map<AnnotatedMethod, Set<MethodParameterInjectionPoint>> getMethodParameterInjectionPoints(AnnotatedType annotatedType, Bean<?> bean) {
         if (annotatedType == null) {
             return emptyMap();
         }
@@ -153,12 +153,12 @@ public abstract class Injections {
             return emptyMap();
         }
 
-        Map<AnnotatedMethod, List<MethodParameterInjectionPoint>> injectionPointsMap =
+        Map<AnnotatedMethod, Set<MethodParameterInjectionPoint>> injectionPointsMap =
                 new LinkedHashMap<>(annotatedMethods.size());
 
         for (AnnotatedMethod annotatedMethod : annotatedMethods) {
             if (annotatedMethod.isAnnotationPresent(Inject.class)) {
-                List<MethodParameterInjectionPoint> injectionPoints = getMethodParameterInjectionPoints(annotatedMethod, bean);
+                Set<MethodParameterInjectionPoint> injectionPoints = getMethodParameterInjectionPoints(annotatedMethod, bean);
                 injectionPointsMap.put(annotatedMethod, injectionPoints);
             }
         }

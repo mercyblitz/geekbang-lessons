@@ -92,7 +92,7 @@ public abstract class AbstractInjectionPoint<A extends Annotated, AM extends Ann
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", AbstractInjectionPoint.class.getSimpleName() + "[", "]")
+        return new StringJoiner(", ", getClass().getSimpleName() + "[", "]")
                 .add("type=" + getType())
                 .add("bean=" + getBean())
                 .add("member=" + getMember())

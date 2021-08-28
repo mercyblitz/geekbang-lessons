@@ -121,7 +121,7 @@ public abstract class AbstractBeanAttributes<A extends AnnotatedElement, T> impl
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", AbstractBeanAttributes.class.getSimpleName() + "[", "]")
+        return new StringJoiner(", ", getClass().getSimpleName() + "[", "]")
                 .add("annotatedElement=" + getAnnotatedElement())
                 .add("beanClass=" + getBeanClass())
                 .add("types=" + getTypes())

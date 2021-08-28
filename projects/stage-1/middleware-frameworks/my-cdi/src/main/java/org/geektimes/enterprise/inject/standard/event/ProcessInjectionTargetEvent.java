@@ -67,7 +67,7 @@ public class ProcessInjectionTargetEvent<X> implements ProcessInjectionTarget<X>
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", ProcessInjectionTargetEvent.class.getSimpleName() + "[", "]")
+        return new StringJoiner(", ", getClass().getSimpleName() + "[", "]")
                 .add("annotatedType=" + getAnnotatedType())
                 .add("injectionTarget=" + getInjectionTarget())
                 .toString();

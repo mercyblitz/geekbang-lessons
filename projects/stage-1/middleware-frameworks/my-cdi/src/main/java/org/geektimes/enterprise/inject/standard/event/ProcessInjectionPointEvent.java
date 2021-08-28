@@ -66,7 +66,7 @@ public class ProcessInjectionPointEvent<T, X> implements ProcessInjectionPoint<T
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", ProcessInjectionPointEvent.class.getSimpleName() + "[", "]")
+        return new StringJoiner(", ", getClass().getSimpleName() + "[", "]")
                 .add("injectionPoint=" + getInjectionPoint())
                 .toString();
     }

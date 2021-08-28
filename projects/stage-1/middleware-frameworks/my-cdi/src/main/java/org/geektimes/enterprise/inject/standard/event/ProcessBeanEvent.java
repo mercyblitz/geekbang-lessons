@@ -62,7 +62,7 @@ public class ProcessBeanEvent<X> implements ProcessBean<X> {
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", ProcessBeanEvent.class.getSimpleName() + "[", "]")
+        return new StringJoiner(", ", getClass().getSimpleName() + "[", "]")
                 .add("annotated=" + annotated)
                 .add("bean=" + bean)
                 .toString();

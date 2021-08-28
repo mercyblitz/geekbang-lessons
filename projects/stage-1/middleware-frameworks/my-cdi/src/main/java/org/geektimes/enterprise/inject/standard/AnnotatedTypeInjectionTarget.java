@@ -57,7 +57,7 @@ public class AnnotatedTypeInjectionTarget<T> implements InjectionTarget<T> {
 
     private Set<FieldInjectionPoint> fieldInjectionPoints;
 
-    private Map<AnnotatedMethod, List<MethodParameterInjectionPoint>> methodParameterInjectionPointsMap;
+    private Map<AnnotatedMethod, Set<MethodParameterInjectionPoint>> methodParameterInjectionPointsMap;
 
     public AnnotatedTypeInjectionTarget(AnnotatedType<T> annotatedType, Bean<T> bean, BeanManager beanManager) {
         this.annotatedType = annotatedType;
@@ -104,14 +104,14 @@ public class AnnotatedTypeInjectionTarget<T> implements InjectionTarget<T> {
     }
 
     private void injectInitializerMethod(AnnotatedMethod annotatedMethod,
-                                         List<MethodParameterInjectionPoint> methodParameterInjectionPoints,
+                                         Set<MethodParameterInjectionPoint> methodParameterInjectionPoints,
                                          T instance, CreationalContext<T> ctx) {
         Method method = annotatedMethod.getJavaMember();
         int size = methodParameterInjectionPoints.size();
         Object[] arguments = new Object[size];
-        for (int i = 0; i < size; i++) {
-            MethodParameterInjectionPoint injectionPoint = methodParameterInjectionPoints.get(i);
-            arguments[i] = beanManager.getInjectableReference(injectionPoint, ctx);
+        for (MethodParameterInjectionPoint injectionPoint : methodParameterInjectionPoints) {
+            AnnotatedParameter parameter = injectionPoint.getAnnotated();
+            arguments[parameter.getPosition()] = beanManager.getInjectableReference(injectionPoint, ctx);
         }
         invokeMethod(instance, method, arguments);
     }
@@ -181,7 +181,7 @@ public class AnnotatedTypeInjectionTarget<T> implements InjectionTarget<T> {
         return fieldInjectionPoints;
     }
 
-    public Map<AnnotatedMethod, List<MethodParameterInjectionPoint>> getMethodParameterInjectionPointsMap() {
+    public Map<AnnotatedMethod, Set<MethodParameterInjectionPoint>> getMethodParameterInjectionPointsMap() {
         if (methodParameterInjectionPointsMap == null) {
             methodParameterInjectionPointsMap = Injections.getMethodParameterInjectionPoints(getAnnotatedType(), bean);
         }

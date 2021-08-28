@@ -75,7 +75,7 @@ public class ProcessProducerEvent<T, X> implements ProcessProducer<T, X> {
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", ProcessProducerEvent.class.getSimpleName() + "[", "]")
+        return new StringJoiner(", ", getClass().getSimpleName() + "[", "]")
                 .add("annotatedMember=" + getAnnotatedMember())
                 .add("producer=" + getProducer())
                 .toString();

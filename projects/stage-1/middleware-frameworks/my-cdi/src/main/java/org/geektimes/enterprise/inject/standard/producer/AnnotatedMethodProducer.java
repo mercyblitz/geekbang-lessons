@@ -24,12 +24,10 @@ import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.CreationException;
 import javax.enterprise.inject.spi.*;
 import java.lang.reflect.Method;
-import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Set;
 
-import static java.util.Collections.unmodifiableSet;
 import static org.geektimes.commons.reflect.util.MemberUtils.isStatic;
+import static org.geektimes.enterprise.inject.util.Injections.getMethodParameterInjectionPoints;
 
 /**
  * {@link Producer} implementation for Producer {@link AnnotatedMethod Method}
@@ -97,13 +95,7 @@ public class AnnotatedMethodProducer<T, X> implements Producer<T> {
     @Override
     public Set<InjectionPoint> getInjectionPoints() {
         if (injectionPoints == null) {
-            List<AnnotatedParameter<T>> annotatedParameters = producerMethod.getParameters();
-            Set<InjectionPoint> injectionPoints = new LinkedHashSet<>();
-
-            for (AnnotatedParameter annotatedParameter : annotatedParameters) {
-                injectionPoints.add(new MethodParameterInjectionPoint(annotatedParameter, producerMethod, declaringBean));
-            }
-            this.injectionPoints = unmodifiableSet(injectionPoints);
+            this.injectionPoints = (Set) getMethodParameterInjectionPoints(producerMethod, declaringBean);
         }
         return injectionPoints;
     }

@@ -103,7 +103,7 @@ public abstract class ReflectiveAnnotated<A extends AnnotatedElement> implements
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", ReflectiveAnnotated.class.getSimpleName() + "[", "]")
+        return new StringJoiner(", ", getClass().getSimpleName() + "[", "]")
                 .add("annotatedElement=" + getAnnotatedElement())
                 .add("baseType=" + getBaseType())
                 .add("types=" + getTypeClosure())

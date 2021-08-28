@@ -117,7 +117,7 @@ public class ProcessBeanAttributesEvent<T> implements ProcessBeanAttributes<T> {
 
     @Override
     public String toString() {
-        return new StringJoiner(", ", ProcessBeanAttributesEvent.class.getSimpleName() + "[", "]")
+        return new StringJoiner(", ", getClass().getSimpleName() + "[", "]")
                 .add("annotated=" + getAnnotated())
                 .add("beanClass=" + beanClass)
                 .add("beanAttributes=" + getBeanAttributes())

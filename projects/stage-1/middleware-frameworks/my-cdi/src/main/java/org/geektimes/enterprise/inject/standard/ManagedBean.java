@@ -49,7 +49,7 @@ public class ManagedBean<T> extends AbstractBean<Class, T> {
 
     private Set<FieldInjectionPoint> fieldInjectionPoints;
 
-    private Map<AnnotatedMethod, List<MethodParameterInjectionPoint>> methodParameterInjectionPointsMap;
+    private Map<AnnotatedMethod, Set<MethodParameterInjectionPoint>> methodParameterInjectionPointsMap;
 
     private Set<ProducerMethodBean> producerMethodBeans;
 
@@ -143,7 +143,7 @@ public class ManagedBean<T> extends AbstractBean<Class, T> {
         return fieldInjectionPoints;
     }
 
-    public Map<AnnotatedMethod, List<MethodParameterInjectionPoint>> getMethodParameterInjectionPointsMap() {
+    public Map<AnnotatedMethod, Set<MethodParameterInjectionPoint>> getMethodParameterInjectionPointsMap() {
         if (methodParameterInjectionPointsMap == null) {
             methodParameterInjectionPointsMap = Injections.getMethodParameterInjectionPoints(getAnnotatedType(), this);
         }

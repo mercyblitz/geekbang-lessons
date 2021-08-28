@@ -601,7 +601,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         Map<Type, AnnotatedMethod> disposerMethods = resolveAndValidateDisposerMethods(managedBean);
         disposerMethodManager.registerDisposerMethods(disposerMethods);
         for (AnnotatedMethod disposerMethod : disposerMethods.values()) {
-            List<MethodParameterInjectionPoint> injectionPoints = getMethodParameterInjectionPoints(disposerMethod, managedBean);
+            Set<MethodParameterInjectionPoint> injectionPoints = getMethodParameterInjectionPoints(disposerMethod, managedBean);
             fireProcessInjectionPointEvents(injectionPoints);
         }
     }
