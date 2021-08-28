@@ -72,17 +72,17 @@ public class InterceptorBean<T> extends AbstractAnnotatedTypeBean<T> implements 
     }
 
     @Override
-    protected String getBeanName(Class annotatedElement) {
+    protected String getBeanName(Class interceptorClass) {
         return null;
     }
 
     @Override
-    protected void validateAnnotatedElement(Class annotatedElement) {
+    protected void validateAnnotatedElement(Class interceptorClass) {
 
     }
 
     @Override
     public Annotated getAnnotated() {
-        return null;
+        return interceptorType;
     }
 }
