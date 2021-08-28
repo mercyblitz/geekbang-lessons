@@ -385,14 +385,13 @@ public class BeanArchiveManager {
     /**
      * @return an unmodifiable view of discovered types
      */
-    public Set<Class<?>> discoverTypes() {
+    public void discoverTypes() {
         if (!discovered) {
             discoverTypesInBeanArchives();
             discoverTypesInNonBeanArchivesAsImplicit();
             discoverTypesInSyntheticBeanArchives();
             discovered = true;
         }
-        return getDiscoveredTypes();
     }
 
     private void discoverTypesInBeanArchives() {
@@ -820,13 +819,21 @@ public class BeanArchiveManager {
      * @return an unmodifiable view of discovered types
      */
     public Set<Class<?>> getDiscoveredTypes() {
+        Set<Class<?>> beanClasses = getBeanClasses();
+        List<Class<?>> alternativeClasses = getAlternativeClasses();
+        List<Class<?>> interceptorClasses = getInterceptorClasses();
+        List<Class<?>> decoratorClasses = getDecoratorClasses();
+
         int size = beanClasses.size() + alternativeClasses.size()
                 + interceptorClasses.size() + decoratorClasses.size();
+
         Set<Class<?>> discoveredTypes = newLinkedHashSet(size);
+
         discoveredTypes.addAll(beanClasses);
         discoveredTypes.addAll(alternativeClasses);
         discoveredTypes.addAll(interceptorClasses);
         discoveredTypes.addAll(decoratorClasses);
+
         return unmodifiableSet(discoveredTypes);
     }
 
@@ -835,10 +842,14 @@ public class BeanArchiveManager {
     }
 
     public List<Class<?>> getInterceptorClasses() {
+        // Interceptors enabled using @Priority are called before interceptors enabled using beans.xml.
+        sort(this.interceptorClasses, PriorityComparator.INSTANCE);
         return interceptorClasses;
     }
 
     public List<Class<?>> getDecoratorClasses() {
+        // The decorator will only be executed once based on the @Priority annotation’s invocation chain.
+        sort(this.decoratorClasses, PriorityComparator.INSTANCE);
         return decoratorClasses;
     }
 
