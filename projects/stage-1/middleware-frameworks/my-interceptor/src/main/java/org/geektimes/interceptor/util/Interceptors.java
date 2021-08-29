@@ -37,7 +37,8 @@ import static org.geektimes.commons.reflect.util.ConstructorUtils.hasPublicNoArg
 public abstract class Interceptors {
 
     public static boolean isInterceptorClass(Class<?> interceptorClass) {
-
+        // TODO
+        return false;
     }
 
     /**
