@@ -16,6 +16,9 @@
  */
 package org.geektimes.interceptor;
 
+import java.lang.annotation.Annotation;
+import java.util.Set;
+
 /**
  * Default {@link InterceptorRegistry}
  *
@@ -31,6 +34,16 @@ public class DefaultInterceptorRegistry implements InterceptorRegistry {
 
     @Override
     public void registerInterceptor(Object interceptor) {
+
+    }
+
+    @Override
+    public Set<Annotation> getInterceptorBindings(Class<?> interceptorClass) {
+        return null;
+    }
+
+    @Override
+    public void registerSyntheticInterceptorBinding(Class<? extends Annotation> interceptorBindingType) {
 
     }
 }

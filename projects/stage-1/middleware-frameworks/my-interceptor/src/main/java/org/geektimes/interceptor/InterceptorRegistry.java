@@ -16,7 +16,10 @@
  */
 package org.geektimes.interceptor;
 
+import javax.interceptor.InterceptorBinding;
+import java.lang.annotation.Annotation;
 import java.util.ServiceLoader;
+import java.util.Set;
 
 import static java.util.Arrays.asList;
 
@@ -61,4 +64,13 @@ public interface InterceptorRegistry {
     default void registerDiscoveredInterceptors() {
         registerInterceptors(ServiceLoader.load(Interceptor.class));
     }
+
+    /**
+     * Gets the {@linkplain InterceptorBinding interceptor bindings} of the interceptor.
+     *
+     * @return the set of {@linkplain InterceptorBinding interceptor bindings}
+     */
+    Set<Annotation> getInterceptorBindings(Class<?> interceptorClass);
+
+    void registerSyntheticInterceptorBinding(Class<? extends Annotation> interceptorBindingType);
 }
