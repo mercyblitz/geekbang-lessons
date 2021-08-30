@@ -46,8 +46,8 @@ import static org.geektimes.commons.reflect.util.ClassUtils.*;
 import static org.geektimes.commons.reflect.util.FieldUtils.getAllFields;
 import static org.geektimes.commons.reflect.util.TypeUtils.*;
 import static org.geektimes.enterprise.inject.util.Decorators.isDecorator;
-import static org.geektimes.enterprise.inject.util.Interceptors.isInterceptor;
 import static org.geektimes.enterprise.inject.util.Qualifiers.findQualifier;
+import static org.geektimes.interceptor.util.Interceptors.isInterceptor;
 
 /**
  * Bean Utilities class

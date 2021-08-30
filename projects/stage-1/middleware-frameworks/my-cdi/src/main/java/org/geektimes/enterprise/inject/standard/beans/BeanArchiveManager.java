@@ -25,7 +25,11 @@ import org.geektimes.enterprise.inject.standard.beans.xml.BeansReader;
 import org.geektimes.enterprise.inject.standard.beans.xml.bind.Alternatives;
 import org.geektimes.enterprise.inject.standard.beans.xml.bind.Beans;
 import org.geektimes.enterprise.inject.standard.beans.xml.bind.Scan;
-import org.geektimes.enterprise.inject.util.*;
+import org.geektimes.enterprise.inject.util.Decorators;
+import org.geektimes.enterprise.inject.util.Qualifiers;
+import org.geektimes.enterprise.inject.util.Scopes;
+import org.geektimes.enterprise.inject.util.Stereotypes;
+import org.geektimes.interceptor.util.Interceptors;
 
 import javax.enterprise.context.*;
 import javax.enterprise.inject.Stereotype;
@@ -55,7 +59,7 @@ import static org.geektimes.enterprise.inject.standard.beans.BeanDiscoveryMode.A
 import static org.geektimes.enterprise.inject.standard.beans.BeanDiscoveryMode.NONE;
 import static org.geektimes.enterprise.inject.standard.beans.xml.BeansReader.BEANS_XML_RESOURCE_NAME;
 import static org.geektimes.enterprise.inject.util.Decorators.isDecorator;
-import static org.geektimes.enterprise.inject.util.Interceptors.isInterceptor;
+import static org.geektimes.interceptor.util.Interceptors.isInterceptor;
 
 /**
  * Bean archives Manager

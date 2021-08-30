@@ -120,7 +120,7 @@ public class MethodUtils {
      * @return non-null read-only {@link Set}
      * @see #getMethods(Class, boolean, boolean, Predicate[])
      */
-    static Set<Method> getAllMethods(Class<?> declaringClass, Predicate<Method>... methodsToFilter) {
+    public static Set<Method> getAllMethods(Class<?> declaringClass, Predicate<Method>... methodsToFilter) {
         return getMethods(declaringClass, true, true, methodsToFilter);
     }
 

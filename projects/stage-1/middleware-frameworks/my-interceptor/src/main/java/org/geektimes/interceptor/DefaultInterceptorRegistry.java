@@ -14,28 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.util;
-
-import org.geektimes.commons.lang.util.AnnotationUtils;
-
-import javax.interceptor.Interceptor;
-import javax.interceptor.InterceptorBinding;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
+package org.geektimes.interceptor;
 
 /**
- * The utilties class for {@link Interceptor}
+ * Default {@link InterceptorRegistry}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public abstract class Interceptors {
+public class DefaultInterceptorRegistry implements InterceptorRegistry {
 
-    public static boolean isInterceptorBinding(Class<? extends Annotation> annotationType) {
-        return annotationType.isAnnotationPresent(InterceptorBinding.class);
+    @Override
+    public void registerInterceptorClass(Class<?> interceptorClass) {
+
     }
 
-    public static boolean isInterceptor(AnnotatedElement annotatedElement) {
-        return AnnotationUtils.isAnnotationPresent(annotatedElement, Interceptor.class);
+    @Override
+    public void registerInterceptor(Object interceptor) {
+
     }
 }

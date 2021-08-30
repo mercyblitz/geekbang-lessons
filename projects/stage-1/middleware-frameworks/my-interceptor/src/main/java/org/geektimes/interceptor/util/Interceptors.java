@@ -16,16 +16,17 @@
  */
 package org.geektimes.interceptor.util;
 
-import org.geektimes.commons.lang.util.AnnotationUtils;
-
-import javax.interceptor.Interceptor;
-import javax.interceptor.InterceptorBinding;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.interceptor.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.Method;
 
 import static java.lang.String.format;
+import static java.lang.reflect.Modifier.*;
 import static java.util.Objects.requireNonNull;
+import static org.geektimes.commons.lang.util.AnnotationUtils.isAnnotationPresent;
 import static org.geektimes.commons.reflect.util.ConstructorUtils.hasPublicNoArgConstructor;
 
 /**
@@ -42,6 +43,129 @@ public abstract class Interceptors {
     }
 
     /**
+     * @param method the target {@link Method method}
+     * @return <code>true</code> if the given method that annotated {@link AroundInvoke} is any non-final,
+     * non-static method with a single parameter of type {@link InvocationContext} and return type {@link Object},
+     * <code>false</code> otherwise
+     * @throws IllegalStateException If an around-invoke method must not be declared as abstract, final or static,
+     *                               or if the count of method arguments is not only one or the argument type is not
+     *                               {@link InvocationContext},
+     *                               or if the return type of method is not <code>Object</code> or its derived type.
+     */
+    public static boolean isAroundInvokeMethod(Method method) {
+        return isInterceptionMethod(method, AroundInvoke.class, Object.class);
+    }
+
+    /**
+     * @param method the target {@link Method method}
+     * @return <code>true</code> if the given method that annotated {@link AroundTimeout} is any non-final,
+     * non-static method with a single parameter of type {@link InvocationContext} and return type {@link Object},
+     * <code>false</code> otherwise
+     * @throws IllegalStateException If an around-timeout method must not be declared as abstract, final or static,
+     *                               or if the count of method arguments is not only one or the argument type is not
+     *                               {@link InvocationContext},
+     *                               or if the return type of method is not <code>Object</code> or its derived type.
+     */
+    public static boolean isAroundTimeoutMethod(Method method) {
+        return isInterceptionMethod(method, AroundTimeout.class, Object.class);
+    }
+
+    /**
+     * @param method the target {@link Method method}
+     * @return <code>true</code> if the given method that annotated {@link AroundConstruct} is any non-final,
+     * non-static method with a single parameter of type {@link InvocationContext} and return type {@link Object},
+     * <code>false</code> otherwise
+     * @throws IllegalStateException If an around-construct method must not be declared as abstract, final or static,
+     *                               or if the count of method arguments is not only one or the argument type is not
+     *                               {@link InvocationContext},
+     *                               or if the return type of method is not <code>void</code>
+     */
+    public static boolean isAroundConstructMethod(Method method) {
+        return isInterceptionMethod(method, AroundConstruct.class, void.class);
+    }
+
+    /**
+     * @param method the target {@link Method method}
+     * @return <code>true</code> if the given method that annotated {@link PostConstruct} is any non-final,
+     * non-static method with a single parameter of type {@link InvocationContext} and return type {@link Object},
+     * <code>false</code> otherwise
+     * @throws IllegalStateException If a post-construct method must not be declared as abstract, final or static,
+     *                               or if the count of method arguments is not only one or the argument type is not
+     *                               {@link InvocationContext}
+     *                               or if the return type of method is not <code>void</code>
+     */
+    public static boolean isPostConstructMethod(Method method) {
+        return isInterceptionMethod(method, PostConstruct.class, void.class);
+    }
+
+    /**
+     * @param method the target {@link Method method}
+     * @return <code>true</code> if the given method that annotated {@link PreDestroy} is any non-final,
+     * non-static method with a single parameter of type {@link InvocationContext} and return type {@link Object},
+     * <code>false</code> otherwise
+     * @throws IllegalStateException If a pre-destroy method must not be declared as abstract, final or static,
+     *                               or if the count of method arguments is not only one or the argument type is not
+     *                               {@link InvocationContext},
+     *                               or if the return type of method is not <code>void</code>
+     */
+    public static boolean isPreDestroyMethod(Method method) {
+        return isInterceptionMethod(method, PreDestroy.class, void.class);
+    }
+
+    static boolean isInterceptionMethod(Method method, Class<? extends Annotation> annotationType,
+                                        Class<?> validReturnType) {
+        if (isAnnotationPresent(method, annotationType)) {
+            validateMethodModifiers(method, annotationType);
+            validateMethodReturnType(method, annotationType, validReturnType);
+            validateMethodArguments(method, annotationType);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @param method         the given {@link Method method}
+     * @param annotationType the given {@link Annotation annotation} {@link Class type}
+     * @throws IllegalStateException If the given method is abstract, final or static
+     */
+    static void validateMethodModifiers(Method method, Class<? extends Annotation> annotationType)
+            throws IllegalStateException {
+        int modifiers = method.getModifiers();
+        if (isAbstract(modifiers) || isFinal(modifiers) || isStatic(modifiers)) {
+            throw new IllegalStateException(format("@s Method[%s] must not be abstract or final or static!",
+                    annotationType.getName(), method.toString()));
+        }
+    }
+
+    private static void validateMethodReturnType(Method method, Class<? extends Annotation> annotationType, Class<?> validReturnType) {
+        if (!validReturnType.isAssignableFrom(method.getReturnType())) {
+            throw new IllegalStateException(
+                    format("The return type of @s Method[%s] must be %s or its derived type , actual type %s!",
+                            annotationType.getName(), method.toString(), validReturnType.getName(),
+                            method.getReturnType().getName()));
+        }
+    }
+
+    /**
+     * @param method         the given {@link Method method}
+     * @param annotationType
+     * @throws IllegalStateException If the count of method arguments is not only one or
+     *                               the argument type is not {@link InvocationContext}
+     */
+    static void validateMethodArguments(Method method, Class<? extends Annotation> annotationType) throws IllegalStateException {
+        Class[] parameterTypes = method.getParameterTypes();
+        if (parameterTypes.length != 1) {
+            throw new IllegalStateException(format("@s Method[%s] must have only one argument!",
+                    annotationType.getName(), method.toString()));
+        }
+
+        if (!InvocationContext.class.equals(parameterTypes[0])) {
+            throw new IllegalStateException(format("There is only one argument must be an %s instance is declared in the @%s method[%s]!",
+                    annotationType.getName(), InvocationContext.class.getName(), method.toString()));
+        }
+    }
+
+    /**
      * An interceptor class must not be abstract and must have a public no-arg constructor.
      *
      * @param interceptorClass the class of interceptor
@@ -51,7 +175,7 @@ public abstract class Interceptors {
     public static void validatorInterceptorClass(Class<?> interceptorClass) throws NullPointerException, IllegalStateException {
         requireNonNull(interceptorClass, "The argument 'interceptorClass' must not be null!");
         int modifies = interceptorClass.getModifiers();
-        if (Modifier.isAbstract(modifies)) {
+        if (isAbstract(modifies)) {
             throw new IllegalStateException(format("The Interceptor class[%s] must not be abstract!",
                     interceptorClass.getName()));
         }
@@ -62,10 +186,10 @@ public abstract class Interceptors {
     }
 
     public static boolean isInterceptorBinding(Class<? extends Annotation> annotationType) {
-        return annotationType.isAnnotationPresent(InterceptorBinding.class);
+        return isAnnotationPresent(annotationType, InterceptorBinding.class);
     }
 
     public static boolean isInterceptor(AnnotatedElement annotatedElement) {
-        return AnnotationUtils.isAnnotationPresent(annotatedElement, Interceptor.class);
+        return isAnnotationPresent(annotatedElement, Interceptor.class);
     }
 }

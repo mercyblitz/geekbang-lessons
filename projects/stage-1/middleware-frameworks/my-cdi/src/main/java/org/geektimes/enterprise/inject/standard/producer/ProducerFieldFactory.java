@@ -18,7 +18,10 @@ package org.geektimes.enterprise.inject.standard.producer;
 
 import org.geektimes.enterprise.inject.standard.beans.StandardBeanManager;
 
-import javax.enterprise.inject.spi.*;
+import javax.enterprise.inject.spi.AnnotatedField;
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.Producer;
+import javax.enterprise.inject.spi.ProducerFactory;
 import java.lang.reflect.Method;
 
 /**
