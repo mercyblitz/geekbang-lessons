@@ -48,6 +48,7 @@ import static org.geektimes.commons.reflect.util.TypeUtils.*;
 import static org.geektimes.enterprise.inject.util.Decorators.isDecorator;
 import static org.geektimes.enterprise.inject.util.Qualifiers.findQualifier;
 import static org.geektimes.interceptor.util.Interceptors.isInterceptor;
+import static org.geektimes.interceptor.util.Interceptors.isInterceptorClass;
 
 /**
  * Bean Utilities class
@@ -228,7 +229,7 @@ public abstract class Beans {
      * @throws DefinitionException if the bean class does not meet above conditions
      */
     public static void validateManagedBeanType(Class<?> managedBeanClass) throws DefinitionException {
-        if (isInterceptor(managedBeanClass) && isDecorator(managedBeanClass)) {
+        if (isInterceptorClass(managedBeanClass) && isDecorator(managedBeanClass)) {
             throwDefinitionException("The managed bean [class : %s] must not annotate with both %s and %s",
                     managedBeanClass.getName(), Interceptor.class.getName(), Decorator.class.getName());
         }

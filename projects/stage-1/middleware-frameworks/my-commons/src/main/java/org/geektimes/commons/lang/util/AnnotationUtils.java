@@ -96,11 +96,21 @@ public abstract class AnnotationUtils extends BaseUtils {
 
     public static boolean isMetaAnnotation(Annotation annotation,
                                            Class<? extends Annotation>... metaAnnotationTypes) {
+        return isMetaAnnotation(annotation,asList(metaAnnotationTypes));
+    }
+
+    public static boolean isMetaAnnotation(Annotation annotation,
+                                           Iterable<Class<? extends Annotation>> metaAnnotationTypes) {
         return isMetaAnnotation(annotation.annotationType(), metaAnnotationTypes);
     }
 
     public static boolean isMetaAnnotation(Class<? extends Annotation> annotationType,
                                            Class<? extends Annotation>... metaAnnotationTypes) {
+        return isMetaAnnotation(annotationType,asList(metaAnnotationTypes));
+    }
+
+    public static boolean isMetaAnnotation(Class<? extends Annotation> annotationType,
+                                           Iterable<Class<? extends Annotation>> metaAnnotationTypes) {
         boolean annotated = true;
         for (Class<? extends Annotation> metaAnnotationType : metaAnnotationTypes) {
             annotated &= isAnnotationPresent(annotationType, metaAnnotationType);

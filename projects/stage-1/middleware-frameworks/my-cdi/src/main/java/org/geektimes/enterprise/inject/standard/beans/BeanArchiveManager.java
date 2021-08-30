@@ -60,6 +60,7 @@ import static org.geektimes.enterprise.inject.standard.beans.BeanDiscoveryMode.N
 import static org.geektimes.enterprise.inject.standard.beans.xml.BeansReader.BEANS_XML_RESOURCE_NAME;
 import static org.geektimes.enterprise.inject.util.Decorators.isDecorator;
 import static org.geektimes.interceptor.util.Interceptors.isInterceptor;
+import static org.geektimes.interceptor.util.Interceptors.isInterceptorClass;
 
 /**
  * Bean archives Manager
@@ -260,7 +261,7 @@ public class BeanArchiveManager {
 
     private void discoverInterceptorClasses(Set<Class<?>> discoveredTypes) {
         filterAndHandleDiscoveredTypes(discoveredTypes,
-                Interceptors::isInterceptor,
+                Interceptors::isInterceptorClass,
                 this::addInterceptorClass);
     }
 
@@ -771,7 +772,7 @@ public class BeanArchiveManager {
      */
     public boolean isDefiningAnnotationType(Class<?> type, boolean includedInterceptor, boolean includedDecorator) {
 
-        if (includedInterceptor && isInterceptor(type)) {
+        if (includedInterceptor && isInterceptorClass(type)) {
             return true;
         }
         if (includedDecorator && isDecorator(type)) {

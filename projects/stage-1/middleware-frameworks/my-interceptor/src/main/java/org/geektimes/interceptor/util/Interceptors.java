@@ -38,7 +38,9 @@ import static org.geektimes.commons.reflect.util.ConstructorUtils.hasPublicNoArg
 public abstract class Interceptors {
 
     public static boolean isInterceptorClass(Class<?> interceptorClass) {
-        // TODO
+        if (isAnnotationPresent(interceptorClass, Interceptor.class)) {
+            validatorInterceptorClass(interceptorClass);
+        }
         return false;
     }
 
@@ -187,9 +189,5 @@ public abstract class Interceptors {
 
     public static boolean isInterceptorBinding(Class<? extends Annotation> annotationType) {
         return isAnnotationPresent(annotationType, InterceptorBinding.class);
-    }
-
-    public static boolean isInterceptor(AnnotatedElement annotatedElement) {
-        return isAnnotationPresent(annotatedElement, Interceptor.class);
     }
 }

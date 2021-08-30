@@ -18,6 +18,7 @@ package org.geektimes.interceptor;
 
 import javax.interceptor.InterceptorBinding;
 import java.lang.annotation.Annotation;
+import java.util.List;
 import java.util.ServiceLoader;
 import java.util.Set;
 
@@ -72,5 +73,13 @@ public interface InterceptorRegistry {
      */
     Set<Annotation> getInterceptorBindings(Class<?> interceptorClass);
 
-    void registerSyntheticInterceptorBinding(Class<? extends Annotation> interceptorBindingType);
+    /**
+     * Gets the sorted {@link List list} of {@link javax.interceptor.Interceptor @Interceptor} instances
+     *
+     * @param interceptorBindingType the annotation type of {@linkplain InterceptorBinding interceptor binding}
+     * @return a non-null read-only sorted {@link List list}
+     */
+    List<Object> getInterceptors(Class<? extends Annotation> interceptorBindingType);
+
+    void registerInterceptorBindingType(Class<? extends Annotation> interceptorBindingType);
 }
