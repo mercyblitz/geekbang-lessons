@@ -17,7 +17,7 @@
 package org.geektimes.interceptor;
 
 import org.geektimes.commons.lang.util.ClassLoaderUtils;
-import org.geektimes.commons.util.ServiceLoaders;
+import org.geektimes.interceptor.util.Interceptors;
 
 import javax.interceptor.InterceptorBinding;
 import java.lang.annotation.Annotation;
@@ -74,8 +74,20 @@ public interface InterceptorRegistry {
      * Gets the {@linkplain InterceptorBinding interceptor bindings} of the interceptor.
      *
      * @return the set of {@linkplain InterceptorBinding interceptor bindings}
+     * @throws IllegalStateException See exception details on {@link Interceptors#isInterceptorClass(Class)}
      */
-    Set<Annotation> getInterceptorBindings(Class<?> interceptorClass);
+    default Set<Annotation> getInterceptorBindings(Class<?> interceptorClass) throws IllegalStateException {
+        return getInterceptorInfo(interceptorClass).getInterceptorBindings();
+    }
+
+    /**
+     * Get the instance of {@link InterceptorInfo} from the given interceptor class
+     *
+     * @param interceptorClass the given interceptor class
+     * @return non-null if <code>interceptorClass</code> is a valid interceptor class
+     * @throws IllegalStateException See exception details on {@link Interceptors#isInterceptorClass(Class)}
+     */
+    InterceptorInfo getInterceptorInfo(Class<?> interceptorClass) throws IllegalStateException;
 
     /**
      * Gets the sorted {@link List list} of {@link javax.interceptor.Interceptor @Interceptor} instances
@@ -86,6 +98,8 @@ public interface InterceptorRegistry {
     List<Object> getInterceptors(Class<? extends Annotation> interceptorBindingType);
 
     void registerInterceptorBindingType(Class<? extends Annotation> interceptorBindingType);
+
+    boolean isInterceptorBinding(Annotation annotation);
 
     static InterceptorRegistry getInstance(ClassLoader classLoader) {
         return loadSpi(InterceptorRegistry.class, classLoader);

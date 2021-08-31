@@ -24,8 +24,6 @@ import java.lang.annotation.Annotation;
 import java.util.*;
 
 import static java.util.Collections.*;
-import static org.geektimes.commons.collection.util.CollectionUtils.ofSet;
-import static org.geektimes.commons.lang.util.AnnotationUtils.getAllDeclaredAnnotations;
 import static org.geektimes.commons.lang.util.AnnotationUtils.isMetaAnnotation;
 
 /**
@@ -42,9 +40,9 @@ public class DefaultInterceptorRegistry implements InterceptorRegistry {
     private final Set<Class<? extends Annotation>> interceptorBindingTypes;
 
     /**
-     * The interceptors map interceptor bindings
+     * The {@link InterceptorInfo} Repository
      */
-    private final Map<Class<?>, Set<Annotation>> interceptorBindingsMapping;
+    private final Map<Class<?>, InterceptorInfo> interceptorInfoRepository;
 
     /**
      * The interceptor binding types map the sorted {@link Interceptor @Interceptor} instances
@@ -53,14 +51,14 @@ public class DefaultInterceptorRegistry implements InterceptorRegistry {
 
     public DefaultInterceptorRegistry() {
         this.interceptorBindingTypes = new LinkedHashSet<>();
-        this.interceptorBindingsMapping = new LinkedHashMap<>();
+        this.interceptorInfoRepository = new LinkedHashMap<>();
         this.bindingInterceptors = new LinkedHashMap<>();
         registerDefaultInterceptorBindingType();
     }
 
     @Override
     public void registerInterceptorClass(Class<?> interceptorClass) {
-        interceptorBindingsMapping.computeIfAbsent(interceptorClass, this::resolveInterceptorBindings);
+        interceptorInfoRepository.computeIfAbsent(interceptorClass, InterceptorInfo::new);
     }
 
     @Override
@@ -81,8 +79,8 @@ public class DefaultInterceptorRegistry implements InterceptorRegistry {
     }
 
     @Override
-    public Set<Annotation> getInterceptorBindings(Class<?> interceptorClass) {
-        return interceptorBindingsMapping.getOrDefault(interceptorClass, emptySet());
+    public InterceptorInfo getInterceptorInfo(Class<?> interceptorClass) throws IllegalStateException {
+        return interceptorInfoRepository.get(interceptorClass);
     }
 
     @Override
@@ -99,11 +97,11 @@ public class DefaultInterceptorRegistry implements InterceptorRegistry {
         registerInterceptorBindingType(InterceptorBinding.class);
     }
 
-    private Set<Annotation> resolveInterceptorBindings(Class<?> interceptorClass) {
-        return ofSet(getAllDeclaredAnnotations(interceptorClass, this::isInterceptorBinding));
+    public boolean isInterceptorBinding(Annotation annotation) {
+        return isMetaAnnotation(annotation, interceptorBindingTypes);
     }
 
-    private boolean isInterceptorBinding(Annotation annotation) {
-        return isMetaAnnotation(annotation, interceptorBindingTypes);
+    public Set<Class<? extends Annotation>> getInterceptorBindingTypes() {
+        return unmodifiableSet(interceptorBindingTypes);
     }
 }
