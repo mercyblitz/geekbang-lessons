@@ -16,6 +16,9 @@
  */
 package org.geektimes.interceptor;
 
+import org.geektimes.commons.lang.util.ClassLoaderUtils;
+import org.geektimes.commons.util.ServiceLoaders;
+
 import javax.interceptor.InterceptorBinding;
 import java.lang.annotation.Annotation;
 import java.util.List;
@@ -23,6 +26,7 @@ import java.util.ServiceLoader;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
+import static org.geektimes.commons.util.ServiceLoaders.loadSpi;
 
 /**
  * The registry of {@link Interceptor}
@@ -82,4 +86,12 @@ public interface InterceptorRegistry {
     List<Object> getInterceptors(Class<? extends Annotation> interceptorBindingType);
 
     void registerInterceptorBindingType(Class<? extends Annotation> interceptorBindingType);
+
+    static InterceptorRegistry getInstance(ClassLoader classLoader) {
+        return loadSpi(InterceptorRegistry.class, classLoader);
+    }
+
+    static InterceptorRegistry getInstance() {
+        return getInstance(ClassLoaderUtils.getClassLoader(InterceptorRegistry.class));
+    }
 }

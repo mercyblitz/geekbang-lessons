@@ -59,7 +59,6 @@ import static org.geektimes.enterprise.inject.standard.beans.BeanDiscoveryMode.A
 import static org.geektimes.enterprise.inject.standard.beans.BeanDiscoveryMode.NONE;
 import static org.geektimes.enterprise.inject.standard.beans.xml.BeansReader.BEANS_XML_RESOURCE_NAME;
 import static org.geektimes.enterprise.inject.util.Decorators.isDecorator;
-import static org.geektimes.interceptor.util.Interceptors.isInterceptor;
 import static org.geektimes.interceptor.util.Interceptors.isInterceptorClass;
 
 /**
