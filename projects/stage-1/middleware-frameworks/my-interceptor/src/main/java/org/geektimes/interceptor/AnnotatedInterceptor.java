@@ -28,16 +28,13 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
-import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static java.lang.String.format;
 import static java.util.ServiceLoader.load;
-import static java.util.stream.Collectors.toList;
 import static org.geektimes.commons.function.Streams.stream;
 import static org.geektimes.commons.lang.util.AnnotationUtils.findAnnotation;
-import static org.geektimes.commons.lang.util.AnnotationUtils.getDeclaredAnnotations;
 import static org.geektimes.commons.reflect.util.TypeUtils.resolveTypeArguments;
 import static org.geektimes.interceptor.InterceptorRegistry.getInstance;
 import static org.geektimes.interceptor.util.Interceptors.INTERCEPTOR_ANNOTATION_TYPE;
@@ -69,7 +66,6 @@ public abstract class AnnotatedInterceptor<A extends Annotation> implements Inte
         this.interceptorRegistry = getInstance(interceptorClass.getClassLoader());
         this.interceptorRegistry.registerInterceptorClass(interceptorClass);
         this.interceptorBindingType = resolveInterceptorBindingType(interceptorClass);
-        validateInterceptorBindingType(interceptorBindingType);
         this.interceptorRegistry.registerInterceptor(this);
     }
 
@@ -97,9 +93,9 @@ public abstract class AnnotatedInterceptor<A extends Annotation> implements Inte
     @AroundConstruct
     public void interceptConstruct(InvocationContext context) throws Throwable {
         A interceptorBinding = findInterceptorBinding(context.getConstructor());
-        if(interceptorBinding == null){
+        if (interceptorBinding == null) {
             context.proceed();
-        }else {
+        } else {
             interceptConstruct(context, interceptorBinding);
         }
     }
@@ -197,33 +193,40 @@ public abstract class AnnotatedInterceptor<A extends Annotation> implements Inte
      * @return non-null
      */
     protected Class<A> resolveInterceptorBindingType(Class<?> interceptorClass) {
-        List<Annotation> interceptorBindings = getDeclaredAnnotations(interceptorClass, this::excludeInterceptorAnnotation);
-        List<Class<? extends Annotation>> interceptorBindingTypes = interceptorBindings.stream().map(Annotation::annotationType).collect(toList());
-        Class<A> annotationType = null;
 
-        for (Class<?> typeArgument : resolveTypeArguments(getClass())) {
-            if (typeArgument.isAnnotation() && typeArgument.isAnnotationPresent(InterceptorBinding.class)) {
-                annotationType = (Class<A>) typeArgument;
-            } else if (interceptorBindingTypes.contains(typeArgument)) {
-                annotationType = (Class<A>) typeArgument;
-                if (shouldRegisterSyntheticInterceptorBindingType()) {
-                    interceptorRegistry.registerInterceptorBindingType(annotationType);
-                }
-                if (logger.isLoggable(Level.SEVERE)) {
-                    logger.severe(format("The annotationType[%s] should annotate %s",
-                            typeArgument.getName(),
-                            InterceptorBinding.class.getName()));
+        Class<A> interceptorBindingType = null;
+
+        for (Class<?> typeArgument : resolveTypeArguments(interceptorClass)) {
+            if (typeArgument.isAnnotation()) {
+                Class<A> annotationType = (Class<A>) typeArgument;
+                if (isInterceptorBindingType(annotationType)) {
+                    interceptorBindingType = annotationType;
+                    break;
+                } else if (shouldRegisterSyntheticInterceptorBindingType()) {
+                    registerSyntheticInterceptorBindingType(annotationType);
+                    interceptorBindingType = annotationType;
+                    break;
+                } else {
+                    if (logger.isLoggable(Level.SEVERE)) {
+                        logger.severe(format("The annotationType[%s] should annotate %s",
+                                typeArgument.getName(),
+                                InterceptorBinding.class.getName()));
+                    }
                 }
             }
         }
 
-        if (annotationType == null) {
-            throw new IllegalArgumentException(format("There is no interceptor binding annotation found in the " +
-                            "@%s Class[%s], whose type should be same as the generic argument type!",
-                    INTERCEPTOR_ANNOTATION_TYPE.getName(), interceptorClass.getName()));
-        }
+        validateInterceptorBindingType(interceptorBindingType);
 
-        return annotationType;
+        return interceptorBindingType;
+    }
+
+    private boolean isInterceptorBindingType(Class<? extends Annotation> annotationType) {
+        return interceptorRegistry.isInterceptorBindingType(annotationType);
+    }
+
+    private void registerSyntheticInterceptorBindingType(Class<A> annotationType) {
+        interceptorRegistry.registerInterceptorBindingType(annotationType);
     }
 
     protected boolean shouldRegisterSyntheticInterceptorBindingType() {
@@ -231,8 +234,8 @@ public abstract class AnnotatedInterceptor<A extends Annotation> implements Inte
     }
 
     protected void validateInterceptorBindingType(Class<A> annotationType) {
-        if (!interceptorRegistry.isInterceptorBindingType(annotationType)) {
-            String message = format("There interceptor binding annotation is invalid in the Interceptor class[%s]! " +
+        if (annotationType == null) {
+            String message = format("The interceptor binding annotation is invalid in the Interceptor class[%s]! " +
                             "Please check it that should annotate @%s or be registered as a synthetic interceptor " +
                             "binding type by InterceptorRegistry#registerInterceptorBindingType method!",
                     getClass().getName(), INTERCEPTOR_ANNOTATION_TYPE.getName());
