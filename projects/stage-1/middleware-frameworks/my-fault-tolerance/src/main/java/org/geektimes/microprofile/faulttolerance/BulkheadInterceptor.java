@@ -50,7 +50,7 @@ public class BulkheadInterceptor extends AnnotatedInterceptor<Bulkhead> {
     }
 
     @Override
-    protected Object execute(InvocationContext context, Bulkhead bulkhead) throws Exception {
+    protected Object intercept(InvocationContext context, Bulkhead bulkhead) throws Exception {
         Method method = context.getMethod();
         if (isThreadIsolation(method)) {
             return executeInThreadIsolation(context, bulkhead);

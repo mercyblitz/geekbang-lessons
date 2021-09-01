@@ -37,7 +37,7 @@ public class BulkheadInterceptorTest {
         Method method = EchoService.class.getMethod("echo", Object.class);
         ReflectiveMethodInvocationContext context = new ReflectiveMethodInvocationContext
                 (echoService, method, "Hello,World");
-        interceptor.execute(context);
+        interceptor.intercept(context);
     }
 
     @Test
@@ -46,7 +46,7 @@ public class BulkheadInterceptorTest {
         Method method = EchoService.class.getMethod("echo", String.class);
         ReflectiveMethodInvocationContext context = new ReflectiveMethodInvocationContext
                 (echoService, method, "Hello,World");
-        interceptor.execute(context);
+        interceptor.intercept(context);
     }
 
 }

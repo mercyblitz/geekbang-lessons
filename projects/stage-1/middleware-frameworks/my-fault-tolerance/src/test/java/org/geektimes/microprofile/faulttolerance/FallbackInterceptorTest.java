@@ -51,7 +51,7 @@ public class FallbackInterceptorTest {
         EchoService echoService = new EchoService();
         Method method = EchoService.class.getMethod("echo", Long.class);
         InvocationContext context = new ReflectiveMethodInvocationContext(echoService, method, new Long(1L));
-        assertEquals("1", interceptor.execute(context));
+        assertEquals("1", interceptor.intercept(context));
     }
 
     @Test
@@ -59,7 +59,7 @@ public class FallbackInterceptorTest {
     public void testFallbackHandler() throws Throwable {
         Method method = getClass().getMethod("handlerException");
         InvocationContext context = new ReflectiveMethodInvocationContext(this, method);
-        assertEquals("Fallback", interceptor.execute(context));
+        assertEquals("Fallback", interceptor.intercept(context));
     }
 
     @Test(expected = FaultToleranceDefinitionException.class)
@@ -67,7 +67,7 @@ public class FallbackInterceptorTest {
     public void testFallbackMethodNotFound() throws Throwable {
         Method method = getClass().getMethod(currentThread().getStackTrace()[1].getMethodName());
         InvocationContext context = new ReflectiveMethodInvocationContext(this, method, new Long(1L));
-        interceptor.execute(context);
+        interceptor.intercept(context);
     }
 
     @Test(expected = FaultToleranceDefinitionException.class)
@@ -75,14 +75,14 @@ public class FallbackInterceptorTest {
     public void testFallbackMethodNotMatch() throws Throwable {
         Method method = getClass().getMethod(currentThread().getStackTrace()[1].getMethodName());
         InvocationContext context = new ReflectiveMethodInvocationContext(this, method, new Long(1L));
-        interceptor.execute(context);
+        interceptor.intercept(context);
     }
 
     @Test(expected = IllegalStateException.class)
     public void testSkipOn() throws Throwable {
         Method method = getClass().getMethod("skip");
         InvocationContext context = new ReflectiveMethodInvocationContext(this, method);
-        interceptor.execute(context);
+        interceptor.intercept(context);
     }
 
     public String fallback() {

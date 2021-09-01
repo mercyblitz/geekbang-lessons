@@ -37,7 +37,7 @@ public class RetryInterceptorTest {
         Method method = EchoService.class.getMethod("echo", Long.class);
         ReflectiveMethodInvocationContext context = new ReflectiveMethodInvocationContext
                 (echoService, method, new Long(1L));
-        interceptor.execute(context);
+        interceptor.intercept(context);
     }
 
 }

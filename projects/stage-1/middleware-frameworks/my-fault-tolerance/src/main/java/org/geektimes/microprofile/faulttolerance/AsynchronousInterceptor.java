@@ -48,7 +48,7 @@ public class AsynchronousInterceptor extends AnnotatedInterceptor<Asynchronous> 
     }
 
     @Override
-    protected Object execute(InvocationContext context, Asynchronous bindingAnnotation) throws Throwable {
+    protected Object intercept(InvocationContext context, Asynchronous bindingAnnotation) throws Throwable {
         Method method = context.getMethod();
         if (validateMethod(method, Future.class)) {
             return executeFuture(context);

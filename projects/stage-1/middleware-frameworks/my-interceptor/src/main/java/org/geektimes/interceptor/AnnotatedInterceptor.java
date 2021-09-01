@@ -17,11 +17,10 @@
 package org.geektimes.interceptor;
 
 import org.geektimes.commons.lang.Prioritized;
-import org.geektimes.commons.reflect.util.TypeUtils;
 
-import javax.interceptor.AroundInvoke;
-import javax.interceptor.InterceptorBinding;
-import javax.interceptor.InvocationContext;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
+import javax.interceptor.*;
 import java.lang.annotation.Annotation;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Target;
@@ -35,8 +34,13 @@ import java.util.logging.Logger;
 
 import static java.lang.String.format;
 import static java.util.ServiceLoader.load;
+import static java.util.stream.Collectors.toList;
 import static org.geektimes.commons.function.Streams.stream;
 import static org.geektimes.commons.lang.util.AnnotationUtils.findAnnotation;
+import static org.geektimes.commons.lang.util.AnnotationUtils.getDeclaredAnnotations;
+import static org.geektimes.commons.reflect.util.TypeUtils.resolveTypeArguments;
+import static org.geektimes.interceptor.InterceptorRegistry.getInstance;
+import static org.geektimes.interceptor.util.Interceptors.INTERCEPTOR_ANNOTATION_TYPE;
 
 /**
  * The abstract annotated {@link javax.interceptor.Interceptor @Interceptor} class
@@ -47,11 +51,12 @@ import static org.geektimes.commons.lang.util.AnnotationUtils.findAnnotation;
  */
 public abstract class AnnotatedInterceptor<A extends Annotation> implements Interceptor, Prioritized {
 
-    private static final Class<? extends Annotation> INTERCEPTOR_ANNOTATION_TYPE = javax.interceptor.Interceptor.class;
 
     private final Logger logger = Logger.getLogger(getClass().getName());
 
-    private final Class<A> bindingAnnotationType;
+    private final InterceptorRegistry interceptorRegistry;
+
+    private final Class<A> interceptorBindingType;
 
     private int priority = Prioritized.NORMAL_PRIORITY;
 
@@ -60,11 +65,12 @@ public abstract class AnnotatedInterceptor<A extends Annotation> implements Inte
      *                                  the generic parameter type does not be specified.
      */
     public AnnotatedInterceptor() throws IllegalArgumentException {
-        if (!getClass().isAnnotationPresent(INTERCEPTOR_ANNOTATION_TYPE)) {
-            throw new IllegalArgumentException(
-                    format("The Interceptor class[%s] must annotate %s", getClass(), INTERCEPTOR_ANNOTATION_TYPE));
-        }
-        this.bindingAnnotationType = resolveInterceptorBindingAnnotationType();
+        Class<?> interceptorClass = getClass();
+        this.interceptorRegistry = getInstance(interceptorClass.getClassLoader());
+        this.interceptorRegistry.registerInterceptorClass(interceptorClass);
+        this.interceptorBindingType = resolveInterceptorBindingType(interceptorClass);
+        validateInterceptorBindingType(interceptorBindingType);
+        this.interceptorRegistry.registerInterceptor(this);
     }
 
     @Override
@@ -77,38 +83,121 @@ public abstract class AnnotatedInterceptor<A extends Annotation> implements Inte
     }
 
     @AroundInvoke
-    public final Object execute(InvocationContext context) throws Throwable {
-        A bindingAnnotation = findInterceptorBindingAnnotation(context.getMethod());
-        if (bindingAnnotation == null) { // try to find the Constructor
-            bindingAnnotation = findInterceptorBindingAnnotation(context.getConstructor());
-        }
-        if (bindingAnnotation == null) { // bindingAnnotation not found
-            return context.proceed();
-        } else {
-            return execute(context, bindingAnnotation);
-        }
+    public Object intercept(InvocationContext context) throws Throwable {
+        A interceptorBinding = findInterceptorBinding(context.getMethod());
+        return intercept(context, interceptorBinding);
+    }
+
+    @AroundTimeout
+    public Object interceptTimeout(InvocationContext context) throws Throwable {
+        A interceptorBinding = findInterceptorBinding(context.getMethod());
+        return interceptTimeout(context, interceptorBinding);
+    }
+
+    @AroundConstruct
+    public void interceptConstruct(InvocationContext context) throws Throwable {
+        A interceptorBinding = findInterceptorBinding(context.getConstructor());
+        interceptConstruct(context, interceptorBinding);
+    }
+
+    @PostConstruct
+    public void interceptPostConstruct(InvocationContext context) throws Throwable {
+        beforePostConstruct(context.getTarget(), context.getMethod());
+        context.proceed();
+        afterPostConstruct(context.getTarget(), context.getMethod());
+    }
+
+    @PreDestroy
+    public void interceptPreDestroy(InvocationContext context) throws Throwable {
+        beforePreDestroy(context.getTarget(), context.getMethod());
+        context.proceed();
+        afterPreDestroy(context.getTarget(), context.getMethod());
     }
 
     /**
-     * Executes
+     * Executes {@link AroundInvoke @AroundInvoke} method
      *
-     * @param context           {@link InvocationContext}
-     * @param bindingAnnotation the instance of {@link Annotation} annotated by {@link InterceptorBinding}
+     * @param context            {@link InvocationContext}
+     * @param interceptorBinding the instance of {@link Annotation} annotated by {@link InterceptorBinding}
      * @return the result of {@link InvocationContext#proceed()} method
-     * @throws Throwable any exception if found
+     * @throws Throwable any exception if occurs
      */
-    protected abstract Object execute(InvocationContext context, A bindingAnnotation) throws Throwable;
+    protected abstract Object intercept(InvocationContext context, A interceptorBinding) throws Throwable;
+
+    /**
+     * Executes {@link AroundTimeout @AroundTimeout} method
+     *
+     * @param context            {@link InvocationContext}
+     * @param interceptorBinding the instance of {@link Annotation} annotated by {@link InterceptorBinding}
+     * @return the result of {@link InvocationContext#proceed()} method
+     * @throws Throwable any exception if occurs
+     */
+    protected Object interceptTimeout(InvocationContext context, A interceptorBinding) throws Throwable {
+        return null;
+    }
+
+    /**
+     * Executes {@link AroundConstruct @AroundConstruct} method
+     *
+     * @param context            {@link InvocationContext}
+     * @param interceptorBinding the instance of {@link Annotation} annotated by {@link InterceptorBinding}
+     * @throws Throwable any exception if occurs
+     */
+    protected void interceptConstruct(InvocationContext context, A interceptorBinding) throws Throwable {
+    }
+
+    /**
+     * Before {@link PostConstruct @PostConstruct} interception
+     *
+     * @param target the intercepted target object
+     * @param method the intercepted {@link Method}
+     * @throws Throwable any exception if occurs
+     */
+    protected void beforePostConstruct(Object target, Method method) throws Throwable {
+    }
+
+    /**
+     * After {@link PostConstruct @PostConstruct} interception
+     *
+     * @param target the intercepted target object
+     * @param method the intercepted {@link Method}
+     * @throws Throwable any exception if occurs
+     */
+    protected void afterPostConstruct(Object target, Method method) throws Throwable {
+    }
+
+    /**
+     * Before {@link PreDestroy @PreDestroy} interception
+     *
+     * @param target the intercepted target object
+     * @param method the intercepted {@link Method}
+     * @throws Throwable any exception if occurs
+     */
+    protected void beforePreDestroy(Object target, Method method) throws Throwable {
+    }
+
+    /**
+     * After {@link PreDestroy @PreDestroy} interception
+     *
+     * @param target the intercepted target object
+     * @param method the intercepted {@link Method}
+     * @throws Throwable any exception if occurs
+     */
+    protected void afterPreDestroy(Object target, Method method) throws Throwable {
+    }
 
     /**
      * Get the type of {@link Annotation} annotated by {@link InterceptorBinding}
      *
+     * @param interceptorClass
      * @return non-null
      */
-    protected Class<A> resolveInterceptorBindingAnnotationType() {
-        List<Class<?>> typeArguments = TypeUtils.resolveTypeArguments(getClass());
+    protected Class<A> resolveInterceptorBindingType(Class<?> interceptorClass) {
+        List<Annotation> interceptorBindings = getDeclaredAnnotations(interceptorClass, this::excludeInterceptorAnnotation);
+        List<Class<? extends Annotation>> interceptorBindingTypes = interceptorBindings.stream().map(Annotation::annotationType).collect(toList());
         Class<A> annotationType = null;
-        for (Class<?> typeArgument : typeArguments) {
-            if (typeArgument.isAnnotation()) {
+        for (Class<?> typeArgument : resolveTypeArguments(getClass())) {
+            if (interceptorBindingTypes.contains(typeArgument)) {
                 annotationType = (Class<A>) typeArgument;
                 if (!annotationType.isAnnotationPresent(InterceptorBinding.class)) {
                     if (logger.isLoggable(Level.SEVERE)) {
@@ -116,21 +205,26 @@ public abstract class AnnotatedInterceptor<A extends Annotation> implements Inte
                                 typeArgument.getName(),
                                 InterceptorBinding.class.getName()));
                     }
-                } else {
-                    annotationType = (Class<A>) typeArgument;
-                    assertInterceptorBindingAnnotationType(annotationType);
                 }
-                break;
             }
+        }
+
+        if (annotationType == null) {
+            throw new IllegalArgumentException(format("There is no interceptor binding annotation found in the " +
+                            "@%s Class[%s], whose type should be same as the generic argument type!",
+                    INTERCEPTOR_ANNOTATION_TYPE.getName(), interceptorClass.getName()));
         }
 
         return annotationType;
     }
 
-    protected void assertInterceptorBindingAnnotationType(Class<A> annotationType) {
-        if (annotationType == null) {
-            throw new IllegalArgumentException(format("There is no @InterceptorBinding annotation type " +
-                    "as the generic parameter argument in the Interceptor class[%s]!", getClass().getName()));
+    protected void validateInterceptorBindingType(Class<A> annotationType) {
+        if (!interceptorRegistry.isInterceptorBindingType(annotationType)) {
+            String message = format("There interceptor binding annotation is invalid in the Interceptor class[%s]! " +
+                            "Please check it that should annotate @%s or be registered as a synthetic interceptor " +
+                            "binding type by InterceptorRegistry#registerInterceptorBindingType method!",
+                    getClass().getName(), INTERCEPTOR_ANNOTATION_TYPE.getName());
+            throw new IllegalArgumentException(message);
         }
 
         Target target = annotationType.getAnnotation(Target.class);
@@ -143,18 +237,18 @@ public abstract class AnnotatedInterceptor<A extends Annotation> implements Inte
         }
     }
 
-    protected A findInterceptorBindingAnnotation(Method method) {
-        A annotation = findAnnotation(method, bindingAnnotationType);
+    protected A findInterceptorBinding(Method method) {
+        A annotation = findAnnotation(method, interceptorBindingType);
         if (annotation == null && method != null) {
-            annotation = method.getDeclaringClass().getAnnotation(bindingAnnotationType);
+            annotation = method.getDeclaringClass().getAnnotation(interceptorBindingType);
         }
         return annotation;
     }
 
-    protected A findInterceptorBindingAnnotation(Constructor<?> constructor) {
-        A annotation = findAnnotation(constructor, bindingAnnotationType);
+    protected A findInterceptorBinding(Constructor<?> constructor) {
+        A annotation = findAnnotation(constructor, interceptorBindingType);
         if (annotation == null && constructor != null) {
-            annotation = constructor.getDeclaringClass().getAnnotation(bindingAnnotationType);
+            annotation = constructor.getDeclaringClass().getAnnotation(interceptorBindingType);
         }
         return annotation;
     }
@@ -176,5 +270,13 @@ public abstract class AnnotatedInterceptor<A extends Annotation> implements Inte
         return stream(load(AnnotatedInterceptor.class))
                 .sorted()
                 .toArray(AnnotatedInterceptor[]::new);
+    }
+
+    public InterceptorRegistry getInterceptorRegistry() {
+        return interceptorRegistry;
+    }
+
+    private boolean excludeInterceptorAnnotation(Annotation annotation) {
+        return !INTERCEPTOR_ANNOTATION_TYPE.equals(annotation.annotationType());
     }
 }

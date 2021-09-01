@@ -50,7 +50,7 @@ public class CircuitBreakerInterceptor extends AnnotatedInterceptor<CircuitBreak
     }
 
     @Override
-    protected Object execute(InvocationContext context, CircuitBreaker circuitBreaker) throws Throwable {
+    protected Object intercept(InvocationContext context, CircuitBreaker circuitBreaker) throws Throwable {
         CountableSlidingWindow slidingWindow = getSlidingWindow(circuitBreaker);
         if (slidingWindow.isOpen()) {
             throw new CircuitBreakerOpenException(slidingWindow.toString());

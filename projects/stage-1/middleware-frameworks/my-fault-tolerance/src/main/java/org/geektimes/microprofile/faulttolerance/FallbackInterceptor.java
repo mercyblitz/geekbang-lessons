@@ -46,7 +46,7 @@ public class FallbackInterceptor extends AnnotatedInterceptor<Fallback> {
     }
 
     @Override
-    protected Object execute(InvocationContext context, Fallback fallback) throws Throwable {
+    protected Object intercept(InvocationContext context, Fallback fallback) throws Throwable {
         Object result = null;
         try {
             result = context.proceed();

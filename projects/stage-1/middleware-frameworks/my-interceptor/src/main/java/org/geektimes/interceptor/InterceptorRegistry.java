@@ -97,9 +97,21 @@ public interface InterceptorRegistry {
      */
     List<Object> getInterceptors(Class<? extends Annotation> interceptorBindingType);
 
+    /**
+     * <p>
+     * Declares an annotation type as an {@linkplain javax.interceptor.Interceptor @Interceptor} binding type if you
+     * wish to make an annotation an interceptor binding type without adding {@link InterceptorBinding} to it.
+     * </p>
+     *
+     * @param interceptorBindingType
+     */
     void registerInterceptorBindingType(Class<? extends Annotation> interceptorBindingType);
 
-    boolean isInterceptorBinding(Annotation annotation);
+    default boolean isInterceptorBinding(Annotation annotation) {
+        return isInterceptorBindingType(annotation.annotationType());
+    }
+
+    boolean isInterceptorBindingType(Class<? extends Annotation> annotationType);
 
     static InterceptorRegistry getInstance(ClassLoader classLoader) {
         return loadSpi(InterceptorRegistry.class, classLoader);

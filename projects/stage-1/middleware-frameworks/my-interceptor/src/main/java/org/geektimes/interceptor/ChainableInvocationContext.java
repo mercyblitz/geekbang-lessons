@@ -16,14 +16,18 @@
  */
 package org.geektimes.interceptor;
 
-import javax.interceptor.AroundInvoke;
+import org.geektimes.commons.util.PriorityComparator;
+
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.interceptor.InvocationContext;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.stream.Stream;
+
+import static java.util.Arrays.copyOf;
+import static java.util.Arrays.sort;
+import static org.geektimes.interceptor.InterceptorRegistry.getInstance;
 
 /**
  * Chainable {@link InvocationContext}
@@ -35,61 +39,28 @@ public class ChainableInvocationContext implements InvocationContext {
 
     private final InvocationContext delegateContext;
 
-    private final Object[] interceptors; // @Interceptor class instances
-
     private final int length;
 
-    private final Map<Integer, Method> indexedAroundInvokeMethods;
+    private final Object[] interceptors; // @Interceptor class instances
+
+    private final InterceptorRegistry interceptorRegistry;
 
     private int pos; // position
 
     public ChainableInvocationContext(InvocationContext delegateContext, Object... interceptors) {
         this.delegateContext = delegateContext;
-        this.interceptors = interceptors;
         this.length = interceptors.length;
-        this.indexedAroundInvokeMethods = initIndexedAroundInvokeMethods();
+        this.interceptors = copyOf(interceptors, length);
+        // sort
+        sort(this.interceptors, PriorityComparator.INSTANCE);
+        this.interceptorRegistry = getInstance(resolveClassLoader(interceptors));
+        this.interceptorRegistry.registerInterceptors(this.interceptors);
         this.pos = 0;
     }
 
-    private Map<Integer, Method> initIndexedAroundInvokeMethods() {
-        Map<Integer, Method> indexedMethods = new HashMap<>();
-        for (int i = 0; i < length; i++) {
-            Object interceptor = interceptors[i];
-            Method aroundInvokeMethod = findAroundInvokeMethod(interceptor);
-            indexedMethods.put(i, aroundInvokeMethod);
-        }
-        return indexedMethods;
-    }
-
-    private Method getAroundInvokeMethod(int index) {
-        return indexedAroundInvokeMethods.get(index);
-    }
-
-
-    private Method findAroundInvokeMethod(Object interceptor) {
-        Class interceptorClass = interceptor.getClass();
-        return Stream.of(interceptorClass.getMethods()) // all public methods
-                .filter(method -> {
-                    int mods = method.getModifiers();
-                    if (Modifier.isStatic(mods)) { // non-static
-                        return false;
-                    }
-
-                    if (method.getParameterCount() != 1) { // only-one argument
-                        return false;
-                    }
-
-                    if (!InvocationContext.class.isAssignableFrom(method.getParameterTypes()[0])) {
-                        return false;
-                    }
-
-                    if (!method.isAnnotationPresent(AroundInvoke.class)) { // @AroundInvoke presents on method
-                        return false;
-                    }
-
-                    return true;
-                }).findFirst().get(); // TODO if null
-
+    private ClassLoader resolveClassLoader(Object[] interceptors) {
+        Object target = interceptors.length > 0 ? interceptors[0] : this;
+        return target.getClass().getClassLoader();
     }
 
     @Override
@@ -132,10 +103,33 @@ public class ChainableInvocationContext implements InvocationContext {
         if (pos < length) {
             int currentPos = pos++;
             Object interceptor = interceptors[currentPos];
-            Method aroundInvokeMethod = getAroundInvokeMethod(currentPos);
-            return aroundInvokeMethod.invoke(interceptor, this);
+            Method interceptionMethod = resolveInterceptionMethod(interceptor);
+            return interceptionMethod.invoke(interceptor, this);
         } else {
             return delegateContext.proceed();
         }
+    }
+
+    private Method resolveInterceptionMethod(Object interceptor) {
+        InterceptorInfo interceptorInfo = interceptorRegistry.getInterceptorInfo(interceptor.getClass());
+
+        final Method interceptionMethod;  // nerver null
+
+        if (getTimer() != null) { // If the "Timer" is present
+            interceptionMethod = interceptorInfo.getAroundTimeoutMethod();
+        } else if (getConstructor() != null) { // If the "Constructor" should be intercepted
+            interceptionMethod = interceptorInfo.getAroundConstructMethod();
+        } else {
+            Method method = getMethod();
+            if (method.isAnnotationPresent(PostConstruct.class)) {
+                interceptionMethod = interceptorInfo.getPostConstructMethod();
+            } else if (method.isAnnotationPresent(PreDestroy.class)) {
+                interceptionMethod = interceptorInfo.getPreDestroyMethod();
+            } else {
+                interceptionMethod = interceptorInfo.getAroundInvokeMethod();
+            }
+        }
+
+        return interceptionMethod;
     }
 }

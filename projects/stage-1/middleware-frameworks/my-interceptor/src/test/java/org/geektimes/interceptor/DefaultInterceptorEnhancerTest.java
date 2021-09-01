@@ -34,6 +34,7 @@ public class DefaultInterceptorEnhancerTest {
     public void testInterface() {
         EchoService echoService = new EchoService();
         echoService = interceptorEnhancer.enhance(echoService, loadInterceptors());
+        echoService.init();
         echoService.echo("Hello,World");
     }
 }

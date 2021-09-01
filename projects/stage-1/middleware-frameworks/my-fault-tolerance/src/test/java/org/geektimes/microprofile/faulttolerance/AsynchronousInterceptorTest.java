@@ -38,7 +38,7 @@ public class AsynchronousInterceptorTest {
         Method method = EchoService.class.getMethod("echo", Object.class);
         ReflectiveMethodInvocationContext context = new ReflectiveMethodInvocationContext
                 (echoService, method, "Hello,World");
-        Future<?> future = (Future) interceptor.execute(context);
+        Future<?> future = (Future) interceptor.intercept(context);
         future.get();
     }
 }

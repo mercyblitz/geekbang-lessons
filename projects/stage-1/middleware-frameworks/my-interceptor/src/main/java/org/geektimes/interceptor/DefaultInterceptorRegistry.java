@@ -18,6 +18,8 @@ package org.geektimes.interceptor;
 
 import org.geektimes.commons.util.PriorityComparator;
 
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InterceptorBinding;
 import java.lang.annotation.Annotation;
@@ -94,11 +96,14 @@ public class DefaultInterceptorRegistry implements InterceptorRegistry {
     }
 
     private void registerDefaultInterceptorBindingType() {
-        registerInterceptorBindingType(InterceptorBinding.class);
+        registerInterceptorBindingType(PostConstruct.class);
+        registerInterceptorBindingType(PreDestroy.class);
     }
 
-    public boolean isInterceptorBinding(Annotation annotation) {
-        return isMetaAnnotation(annotation, interceptorBindingTypes);
+    @Override
+    public boolean isInterceptorBindingType(Class<? extends Annotation> annotationType) {
+        return isMetaAnnotation(annotationType, InterceptorBinding.class) ||
+                interceptorBindingTypes.contains(annotationType);
     }
 
     public Set<Class<? extends Annotation>> getInterceptorBindingTypes() {

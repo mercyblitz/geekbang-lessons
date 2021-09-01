@@ -46,7 +46,7 @@ public class TimeoutInterceptor extends AnnotatedInterceptor<Timeout> {
     }
 
     @Override
-    protected Object execute(InvocationContext context, Timeout timeout) throws Exception {
+    protected Object intercept(InvocationContext context, Timeout timeout) throws Exception {
         ChronoUnit chronoUnit = timeout.unit();
         long timeValue = timeout.value();
         TimeUnit timeUnit = toTimeUnit(chronoUnit);

@@ -20,7 +20,6 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.interceptor.*;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 
 import static java.lang.String.format;
@@ -37,8 +36,11 @@ import static org.geektimes.commons.reflect.util.ConstructorUtils.hasPublicNoArg
  */
 public abstract class Interceptors {
 
+    public static final Class<? extends Annotation> INTERCEPTOR_ANNOTATION_TYPE = javax.interceptor.Interceptor.class;
+
+
     public static boolean isInterceptorClass(Class<?> interceptorClass) {
-        if (isAnnotationPresent(interceptorClass, Interceptor.class)) {
+        if (isAnnotationPresent(interceptorClass, INTERCEPTOR_ANNOTATION_TYPE)) {
             validatorInterceptorClass(interceptorClass);
         }
         return false;
@@ -172,10 +174,15 @@ public abstract class Interceptors {
      *
      * @param interceptorClass the class of interceptor
      * @throws NullPointerException  If <code>interceptorClass</code> is <code>null</code>
-     * @throws IllegalStateException If an interceptor class is abstract or have not a public no-arg constructor
+     * @throws IllegalStateException If an interceptor class does not annotate @Interceptor or
+     *                               is abstract or have not a public no-arg constructor
      */
     public static void validatorInterceptorClass(Class<?> interceptorClass) throws NullPointerException, IllegalStateException {
         requireNonNull(interceptorClass, "The argument 'interceptorClass' must not be null!");
+        if (!interceptorClass.isAnnotationPresent(INTERCEPTOR_ANNOTATION_TYPE)) {
+            throw new IllegalArgumentException(format("The Interceptor class[%s] must annotate %s",
+                    interceptorClass, INTERCEPTOR_ANNOTATION_TYPE));
+        }
         int modifies = interceptorClass.getModifiers();
         if (isAbstract(modifies)) {
             throw new IllegalStateException(format("The Interceptor class[%s] must not be abstract!",

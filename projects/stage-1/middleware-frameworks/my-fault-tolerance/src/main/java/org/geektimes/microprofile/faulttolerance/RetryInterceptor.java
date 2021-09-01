@@ -51,7 +51,7 @@ public class RetryInterceptor extends AnnotatedInterceptor<Retry> {
     }
 
     @Override
-    protected Object execute(InvocationContext context, Retry retry) throws Throwable {
+    protected Object intercept(InvocationContext context, Retry retry) throws Throwable {
 
         long maxRetries = retry.maxRetries();
         if (maxRetries < 1) { // No retry

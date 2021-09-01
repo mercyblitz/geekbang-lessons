@@ -40,18 +40,18 @@ public class CircuitBreakerInterceptorTest {
         Method method = getClass().getMethod("failOn");
         InvocationContext context = new ReflectiveMethodInvocationContext(this, method);
         try {
-            interceptor.execute(context);
+            interceptor.intercept(context);
         } catch (Throwable e) {
 
         }
 
         CircuitBreaker circuitBreaker = method.getAnnotation(CircuitBreaker.class);
         CircuitBreakerInterceptor.CountableSlidingWindow slidingWindow = interceptor.getSlidingWindow(circuitBreaker);
-        Assert.assertTrue(slidingWindow.shouldReset());
+        Assert.assertFalse(slidingWindow.shouldReset());
         Assert.assertTrue(slidingWindow.isOpen());
         Assert.assertFalse(slidingWindow.isClosed());
         Assert.assertFalse(slidingWindow.isHalfOpen());
-        interceptor.execute(context);
+        interceptor.intercept(context);
     }
 
     @CircuitBreaker(failOn = RuntimeException.class, requestVolumeThreshold = 1)
