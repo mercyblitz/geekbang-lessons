@@ -28,7 +28,6 @@ import javax.cache.configuration.Configuration;
 import javax.cache.configuration.MutableConfiguration;
 import javax.cache.spi.CachingProvider;
 import java.net.URI;
-import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -36,7 +35,6 @@ import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 import static java.lang.String.format;
-import static java.util.Collections.emptyMap;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -71,7 +69,7 @@ public abstract class AbstractCacheManager implements CacheManager {
 
     private volatile boolean closed;
 
-    private ConcurrentMap<String, Map<KeyValueTypePair, Cache>> cacheRepository = new ConcurrentHashMap<>();
+    private ConcurrentMap<String, Cache> cacheRepository = new ConcurrentHashMap<>();
 
 
     public AbstractCacheManager(CachingProvider cachingProvider, URI uri, ClassLoader classLoader, Properties properties) {
@@ -119,7 +117,7 @@ public abstract class AbstractCacheManager implements CacheManager {
     @Override
     public <K, V, C extends Configuration<K, V>> Cache<K, V> createCache(String cacheName, C configuration) throws IllegalArgumentException {
         // If a Cache with the specified name is known to the CacheManager, a CacheException is thrown.
-        if (!cacheRepository.getOrDefault(cacheName, emptyMap()).isEmpty()) {
+        if (cacheRepository.containsKey(cacheName)) {
             throw new CacheException(format("The Cache whose name is '%s' is already existed, " +
                     "please try another name to create a new Cache.", cacheName));
         }
@@ -145,18 +143,24 @@ public abstract class AbstractCacheManager implements CacheManager {
 
         Cache<K, V> cache = null;
 
-        KeyValueTypePair keyValueTypePair = new KeyValueTypePair(configuration.getKeyType(), configuration.getValueType());
-
         if (created) {
-            Map<KeyValueTypePair, Cache> cacheMap = cacheRepository.computeIfAbsent(cacheName, n -> new ConcurrentHashMap<>());
-            cache = cacheMap.computeIfAbsent(keyValueTypePair, key -> doCreateCache(cacheName, configuration));
+            cache = cacheRepository.computeIfAbsent(cacheName, n -> doCreateCache(cacheName, configuration));
         } else {
-            Map<KeyValueTypePair, Cache> cacheMap = cacheRepository.get(cacheName);
-            if (cacheMap != null) {
-                cache = cacheMap.get(keyValueTypePair);
+            cache = cacheRepository.get(cacheName);
+            if (cache != null) {
+                C currentConfiguration = (C) cache.getConfiguration(configuration.getClass());
+                if (!currentConfiguration.getKeyType().isAssignableFrom(configuration.getKeyType()) ||
+                        !configuration.getValueType().isAssignableFrom(configuration.getValueType())) {
+                    String message = format("The specified key[%s] and/or value[%s] types are incompatible with " +
+                                    "the configured cache[key : %s , value : %s]",
+                            configuration.getKeyType(),
+                            configuration.getValueType(),
+                            currentConfiguration.getKeyType(),
+                            configuration.getValueType());
+                    throw new ClassCastException(message);
+                }
             }
         }
-
         return cache;
     }
 
@@ -172,9 +176,10 @@ public abstract class AbstractCacheManager implements CacheManager {
     public void destroyCache(String cacheName) throws NullPointerException, IllegalStateException {
         requireNonNull(cacheName, "The 'cacheName' argument must not be null.");
         assertNotClosed();
-        Map<KeyValueTypePair, Cache> cacheMap = cacheRepository.remove(cacheName);
-        if (cacheMap != null) {
-            iterateCaches(cacheMap.values(), CLEAR_CACHE_OPERATION, CLOSE_CACHE_OPERATION);
+        Cache cache = cacheRepository.remove(cacheName);
+        if (cache != null) {
+            cache.clear();
+            cache.close();
         }
     }
 
@@ -204,9 +209,7 @@ public abstract class AbstractCacheManager implements CacheManager {
             logger.warning("The CacheManager has been closed, current close operation will be ignored!");
             return;
         }
-        for (Map<KeyValueTypePair, Cache> cacheMap : cacheRepository.values()) {
-            iterateCaches(cacheMap.values(), CLOSE_CACHE_OPERATION);
-        }
+        iterateCaches(cacheRepository.values(), CLOSE_CACHE_OPERATION);
         doClose();
         this.closed = true;
     }
