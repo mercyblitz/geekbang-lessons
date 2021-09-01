@@ -76,6 +76,9 @@ public interface MultiValueConverter<S> extends Prioritized {
     }
 
     static <T> T convertIfPossible(Object source, Class<?> multiValueType, Class<?> elementType) {
+        if (source == null) {
+            return null;
+        }
         Class<?> sourceType = source.getClass();
         MultiValueConverter converter = find(sourceType, multiValueType);
         if (converter != null) {

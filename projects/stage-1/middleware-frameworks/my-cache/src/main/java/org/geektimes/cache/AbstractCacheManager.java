@@ -143,10 +143,21 @@ public abstract class AbstractCacheManager implements CacheManager {
                                                                                  boolean created) throws IllegalArgumentException, IllegalStateException {
         assertNotClosed();
 
-        Map<KeyValueTypePair, Cache> cacheMap = cacheRepository.computeIfAbsent(cacheName, n -> new ConcurrentHashMap<>());
+        Cache<K, V> cache = null;
 
-        return cacheMap.computeIfAbsent(new KeyValueTypePair(configuration.getKeyType(), configuration.getValueType()),
-                key -> created ? doCreateCache(cacheName, configuration) : null);
+        KeyValueTypePair keyValueTypePair = new KeyValueTypePair(configuration.getKeyType(), configuration.getValueType());
+
+        if (created) {
+            Map<KeyValueTypePair, Cache> cacheMap = cacheRepository.computeIfAbsent(cacheName, n -> new ConcurrentHashMap<>());
+            cache = cacheMap.computeIfAbsent(keyValueTypePair, key -> doCreateCache(cacheName, configuration));
+        } else {
+            Map<KeyValueTypePair, Cache> cacheMap = cacheRepository.get(cacheName);
+            if (cacheMap != null) {
+                cache = cacheMap.get(keyValueTypePair);
+            }
+        }
+
+        return cache;
     }
 
     protected abstract <K, V, C extends Configuration<K, V>> Cache doCreateCache(String cacheName, C configuration);

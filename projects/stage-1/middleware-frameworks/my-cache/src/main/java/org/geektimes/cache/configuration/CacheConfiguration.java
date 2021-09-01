@@ -29,6 +29,7 @@ import javax.cache.integration.CacheWriter;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static java.util.Collections.emptyList;
 import static org.geektimes.commons.convert.Converter.convertIfPossible;
 
 /**
@@ -184,9 +185,10 @@ public interface CacheConfiguration extends CompleteConfiguration {
     default Iterable<CacheEntryListenerConfiguration> getCacheEntryListenerConfigurations() {
         String propertyValue = getProperty(ENTRY_LISTENER_CONFIGURATIONS_PROPERTY_NAME);
         List<Class> configurationClasses = MultiValueConverter.convertIfPossible(propertyValue, List.class, Class.class);
-        return (List<CacheEntryListenerConfiguration>) configurationClasses.stream()
-                .map(this::unwrap)
-                .collect(Collectors.toList());
+        return configurationClasses == null ? emptyList() :
+                (List<CacheEntryListenerConfiguration>) configurationClasses.stream()
+                        .map(this::unwrap)
+                        .collect(Collectors.toList());
     }
 
     @Override

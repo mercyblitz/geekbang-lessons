@@ -29,6 +29,7 @@ import java.util.Optional;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
+@CacheResult
 @Interceptor
 public class CacheResultInterceptor extends CacheOperationInterceptor<CacheResult> {
 

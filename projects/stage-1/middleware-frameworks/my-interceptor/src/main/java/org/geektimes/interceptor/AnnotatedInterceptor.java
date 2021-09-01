@@ -85,19 +85,23 @@ public abstract class AnnotatedInterceptor<A extends Annotation> implements Inte
     @AroundInvoke
     public Object intercept(InvocationContext context) throws Throwable {
         A interceptorBinding = findInterceptorBinding(context.getMethod());
-        return intercept(context, interceptorBinding);
+        return interceptorBinding == null ? context.proceed() : intercept(context, interceptorBinding);
     }
 
     @AroundTimeout
     public Object interceptTimeout(InvocationContext context) throws Throwable {
         A interceptorBinding = findInterceptorBinding(context.getMethod());
-        return interceptTimeout(context, interceptorBinding);
+        return interceptorBinding == null ? context.proceed() : interceptTimeout(context, interceptorBinding);
     }
 
     @AroundConstruct
     public void interceptConstruct(InvocationContext context) throws Throwable {
         A interceptorBinding = findInterceptorBinding(context.getConstructor());
-        interceptConstruct(context, interceptorBinding);
+        if(interceptorBinding == null){
+            context.proceed();
+        }else {
+            interceptConstruct(context, interceptorBinding);
+        }
     }
 
     @PostConstruct
@@ -196,15 +200,19 @@ public abstract class AnnotatedInterceptor<A extends Annotation> implements Inte
         List<Annotation> interceptorBindings = getDeclaredAnnotations(interceptorClass, this::excludeInterceptorAnnotation);
         List<Class<? extends Annotation>> interceptorBindingTypes = interceptorBindings.stream().map(Annotation::annotationType).collect(toList());
         Class<A> annotationType = null;
+
         for (Class<?> typeArgument : resolveTypeArguments(getClass())) {
-            if (interceptorBindingTypes.contains(typeArgument)) {
+            if (typeArgument.isAnnotation() && typeArgument.isAnnotationPresent(InterceptorBinding.class)) {
                 annotationType = (Class<A>) typeArgument;
-                if (!annotationType.isAnnotationPresent(InterceptorBinding.class)) {
-                    if (logger.isLoggable(Level.SEVERE)) {
-                        logger.severe(format("The annotationType[%s] should annotate %s",
-                                typeArgument.getName(),
-                                InterceptorBinding.class.getName()));
-                    }
+            } else if (interceptorBindingTypes.contains(typeArgument)) {
+                annotationType = (Class<A>) typeArgument;
+                if (shouldRegisterSyntheticInterceptorBindingType()) {
+                    interceptorRegistry.registerInterceptorBindingType(annotationType);
+                }
+                if (logger.isLoggable(Level.SEVERE)) {
+                    logger.severe(format("The annotationType[%s] should annotate %s",
+                            typeArgument.getName(),
+                            InterceptorBinding.class.getName()));
                 }
             }
         }
@@ -216,6 +224,10 @@ public abstract class AnnotatedInterceptor<A extends Annotation> implements Inte
         }
 
         return annotationType;
+    }
+
+    protected boolean shouldRegisterSyntheticInterceptorBindingType() {
+        return false;
     }
 
     protected void validateInterceptorBindingType(Class<A> annotationType) {

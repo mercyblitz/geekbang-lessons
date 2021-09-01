@@ -102,6 +102,9 @@ public interface Converter<S, T> extends Function<S, T>, Prioritized {
      * @return <code>null</code> if can't be converted
      */
     static <T> T convertIfPossible(Object source, Class<T> targetType) {
+        if (source == null) {
+            return null;
+        }
         Converter converter = getConverter(source.getClass(), targetType);
         if (converter != null) {
             return (T) converter.convert(source);

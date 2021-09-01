@@ -26,12 +26,14 @@ import javax.cache.annotation.GeneratedCacheKey;
 import javax.interceptor.Interceptor;
 import java.util.Optional;
 
+
 /**
  * The {@link Interceptor @Interceptor} class for Java Caching annotation {@link CacheRemoveAll}.
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
+@CacheRemoveAll
 @Interceptor
 public class CacheRemoveAllInterceptor extends CacheOperationInterceptor<CacheRemoveAll> {
 
