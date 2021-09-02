@@ -37,7 +37,7 @@ import static org.geektimes.commons.function.Streams.stream;
 import static org.geektimes.commons.lang.util.AnnotationUtils.findAnnotation;
 import static org.geektimes.commons.reflect.util.TypeUtils.resolveTypeArguments;
 import static org.geektimes.interceptor.InterceptorRegistry.getInstance;
-import static org.geektimes.interceptor.util.Interceptors.INTERCEPTOR_ANNOTATION_TYPE;
+import static org.geektimes.interceptor.util.InterceptorUtils.INTERCEPTOR_ANNOTATION_TYPE;
 
 /**
  * The abstract annotated {@link javax.interceptor.Interceptor @Interceptor} class

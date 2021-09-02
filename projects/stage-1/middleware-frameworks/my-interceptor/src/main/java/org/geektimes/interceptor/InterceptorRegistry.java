@@ -17,7 +17,7 @@
 package org.geektimes.interceptor;
 
 import org.geektimes.commons.lang.util.ClassLoaderUtils;
-import org.geektimes.interceptor.util.Interceptors;
+import org.geektimes.interceptor.util.InterceptorUtils;
 
 import javax.interceptor.InterceptorBinding;
 import java.lang.annotation.Annotation;
@@ -74,7 +74,7 @@ public interface InterceptorRegistry {
      * Gets the {@linkplain InterceptorBinding interceptor bindings} of the interceptor.
      *
      * @return the set of {@linkplain InterceptorBinding interceptor bindings}
-     * @throws IllegalStateException See exception details on {@link Interceptors#isInterceptorClass(Class)}
+     * @throws IllegalStateException See exception details on {@link InterceptorUtils#isInterceptorClass(Class)}
      */
     default Set<Annotation> getInterceptorBindings(Class<?> interceptorClass) throws IllegalStateException {
         return getInterceptorInfo(interceptorClass).getInterceptorBindings();
@@ -85,7 +85,7 @@ public interface InterceptorRegistry {
      *
      * @param interceptorClass the given interceptor class
      * @return non-null if <code>interceptorClass</code> is a valid interceptor class
-     * @throws IllegalStateException See exception details on {@link Interceptors#isInterceptorClass(Class)}
+     * @throws IllegalStateException See exception details on {@link InterceptorUtils#isInterceptorClass(Class)}
      */
     InterceptorInfo getInterceptorInfo(Class<?> interceptorClass) throws IllegalStateException;
 

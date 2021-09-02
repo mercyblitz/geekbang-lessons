@@ -34,7 +34,7 @@ import static org.geektimes.commons.reflect.util.ConstructorUtils.hasPublicNoArg
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public abstract class Interceptors {
+public abstract class InterceptorUtils {
 
     public static final Class<? extends Annotation> INTERCEPTOR_ANNOTATION_TYPE = javax.interceptor.Interceptor.class;
 

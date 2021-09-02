@@ -29,7 +29,7 @@ import org.geektimes.enterprise.inject.util.Decorators;
 import org.geektimes.enterprise.inject.util.Qualifiers;
 import org.geektimes.enterprise.inject.util.Scopes;
 import org.geektimes.enterprise.inject.util.Stereotypes;
-import org.geektimes.interceptor.util.Interceptors;
+import org.geektimes.interceptor.util.InterceptorUtils;
 
 import javax.enterprise.context.*;
 import javax.enterprise.inject.Stereotype;
@@ -59,7 +59,7 @@ import static org.geektimes.enterprise.inject.standard.beans.BeanDiscoveryMode.A
 import static org.geektimes.enterprise.inject.standard.beans.BeanDiscoveryMode.NONE;
 import static org.geektimes.enterprise.inject.standard.beans.xml.BeansReader.BEANS_XML_RESOURCE_NAME;
 import static org.geektimes.enterprise.inject.util.Decorators.isDecorator;
-import static org.geektimes.interceptor.util.Interceptors.isInterceptorClass;
+import static org.geektimes.interceptor.util.InterceptorUtils.isInterceptorClass;
 
 /**
  * Bean archives Manager
@@ -260,7 +260,7 @@ public class BeanArchiveManager {
 
     private void discoverInterceptorClasses(Set<Class<?>> discoveredTypes) {
         filterAndHandleDiscoveredTypes(discoveredTypes,
-                Interceptors::isInterceptorClass,
+                InterceptorUtils::isInterceptorClass,
                 this::addInterceptorClass);
     }
 
@@ -363,7 +363,7 @@ public class BeanArchiveManager {
     }
 
     public boolean isInterceptorBinding(Class<? extends Annotation> annotationType) {
-        return Interceptors.isInterceptorBinding(annotationType) ||
+        return InterceptorUtils.isInterceptorBinding(annotationType) ||
                 // Extensions
                 syntheticInterceptorBindings.containsKey(annotationType);
     }

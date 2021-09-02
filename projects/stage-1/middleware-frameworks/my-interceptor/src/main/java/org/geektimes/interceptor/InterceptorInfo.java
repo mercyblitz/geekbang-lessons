@@ -16,7 +16,7 @@
  */
 package org.geektimes.interceptor;
 
-import org.geektimes.interceptor.util.Interceptors;
+import org.geektimes.interceptor.util.InterceptorUtils;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -36,7 +36,7 @@ import static java.util.Collections.unmodifiableSet;
 import static org.geektimes.commons.collection.util.CollectionUtils.ofSet;
 import static org.geektimes.commons.lang.util.AnnotationUtils.getAllDeclaredAnnotations;
 import static org.geektimes.commons.reflect.util.MethodUtils.getAllDeclaredMethods;
-import static org.geektimes.interceptor.util.Interceptors.validatorInterceptorClass;
+import static org.geektimes.interceptor.util.InterceptorUtils.validatorInterceptorClass;
 
 /**
  * Interceptor Info Metadata class
@@ -84,11 +84,11 @@ public class InterceptorInfo {
         Map<Class<? extends Annotation>, Method> interceptionMethods = new HashMap<>();
 
         for (Method method : methods) {
-            resolveInterceptionMethod(method, AroundInvoke.class, Interceptors::isAroundInvokeMethod, interceptionMethods);
-            resolveInterceptionMethod(method, AroundTimeout.class, Interceptors::isAroundTimeoutMethod, interceptionMethods);
-            resolveInterceptionMethod(method, AroundConstruct.class, Interceptors::isAroundConstructMethod, interceptionMethods);
-            resolveInterceptionMethod(method, PostConstruct.class, Interceptors::isPostConstructMethod, interceptionMethods);
-            resolveInterceptionMethod(method, PreDestroy.class, Interceptors::isPreDestroyMethod, interceptionMethods);
+            resolveInterceptionMethod(method, AroundInvoke.class, InterceptorUtils::isAroundInvokeMethod, interceptionMethods);
+            resolveInterceptionMethod(method, AroundTimeout.class, InterceptorUtils::isAroundTimeoutMethod, interceptionMethods);
+            resolveInterceptionMethod(method, AroundConstruct.class, InterceptorUtils::isAroundConstructMethod, interceptionMethods);
+            resolveInterceptionMethod(method, PostConstruct.class, InterceptorUtils::isPostConstructMethod, interceptionMethods);
+            resolveInterceptionMethod(method, PreDestroy.class, InterceptorUtils::isPreDestroyMethod, interceptionMethods);
         }
 
         return interceptionMethods;
