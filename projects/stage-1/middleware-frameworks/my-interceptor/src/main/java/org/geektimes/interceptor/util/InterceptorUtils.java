@@ -20,11 +20,13 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.interceptor.*;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
 import static java.lang.String.format;
 import static java.lang.reflect.Modifier.*;
 import static java.util.Objects.requireNonNull;
+import static org.geektimes.commons.lang.util.AnnotationUtils.findAnnotation;
 import static org.geektimes.commons.lang.util.AnnotationUtils.isAnnotationPresent;
 import static org.geektimes.commons.reflect.util.ConstructorUtils.hasPublicNoArgConstructor;
 
@@ -116,6 +118,30 @@ public abstract class InterceptorUtils {
         return isInterceptionMethod(method, PreDestroy.class, void.class);
     }
 
+
+    public static <A extends Annotation> A resolveInterceptorBinding(Method method, Class<A> interceptorBindingType) {
+        if (method == null) {
+            return null;
+        }
+        A annotation = findAnnotation(method, interceptorBindingType);
+        if (annotation == null) {
+            annotation = findAnnotation(method.getDeclaringClass(), interceptorBindingType);
+        }
+        return annotation;
+    }
+
+    public static <A extends Annotation> A resolveInterceptorBinding(Constructor constructor, Class<A> interceptorBindingType) {
+        if (constructor == null) {
+            return null;
+        }
+        A annotation = findAnnotation(constructor, interceptorBindingType);
+        if (annotation == null) {
+            annotation = findAnnotation(constructor.getDeclaringClass(), interceptorBindingType);
+        }
+        return annotation;
+    }
+
+
     static boolean isInterceptionMethod(Method method, Class<? extends Annotation> annotationType,
                                         Class<?> validReturnType) {
         if (isAnnotationPresent(method, annotationType)) {
@@ -180,21 +206,43 @@ public abstract class InterceptorUtils {
     public static void validatorInterceptorClass(Class<?> interceptorClass) throws NullPointerException, IllegalStateException {
         requireNonNull(interceptorClass, "The argument 'interceptorClass' must not be null!");
         if (!interceptorClass.isAnnotationPresent(INTERCEPTOR_ANNOTATION_TYPE)) {
-            throw new IllegalArgumentException(format("The Interceptor class[%s] must annotate %s",
+            throw new IllegalStateException(format("The Interceptor class[%s] must annotate %s",
                     interceptorClass, INTERCEPTOR_ANNOTATION_TYPE));
         }
+
+        validateInterceptorClassModifiers(interceptorClass);
+        validateInterceptorClassConstructors(interceptorClass);
+        validateInterceptorClassMethods(interceptorClass);
+    }
+
+    private static void validateInterceptorClassModifiers(Class<?> interceptorClass) {
         int modifies = interceptorClass.getModifiers();
         if (isAbstract(modifies)) {
-            throw new IllegalStateException(format("The Interceptor class[%s] must not be abstract!",
-                    interceptorClass.getName()));
+            throw newIllegalStateException("The Interceptor class[%s] must not be declared abstract!",
+                    interceptorClass.getName());
         }
+        if (isFinal(modifies)) {
+            throw newIllegalStateException("The Interceptor class[%s] must not be declared final!",
+                    interceptorClass.getName());
+        }
+    }
+
+    private static void validateInterceptorClassConstructors(Class<?> interceptorClass) {
         if (!hasPublicNoArgConstructor(interceptorClass)) {
-            throw new IllegalStateException(format("The Interceptor class[%s] must have a public no-arg constructor!",
-                    interceptorClass.getName()));
+            throw newIllegalStateException("The Interceptor class[%s] must have a public no-arg constructor!",
+                    interceptorClass.getName());
         }
+    }
+
+    private static void validateInterceptorClassMethods(Class<?> interceptorClass) {
     }
 
     public static boolean isInterceptorBinding(Class<? extends Annotation> annotationType) {
         return isAnnotationPresent(annotationType, InterceptorBinding.class);
     }
+
+    private static IllegalStateException newIllegalStateException(String messagePattern, Object... args) {
+        return new IllegalStateException(format(messagePattern, args));
+    }
+
 }
