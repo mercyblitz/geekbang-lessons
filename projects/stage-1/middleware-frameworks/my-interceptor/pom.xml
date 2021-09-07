@@ -28,6 +28,13 @@
             <artifactId>javax.interceptor-api</artifactId>
         </dependency>
 
+        <!-- Java CDI API -->
+        <dependency>
+            <groupId>javax.enterprise</groupId>
+            <artifactId>cdi-api</artifactId>
+            <optional>true</optional>
+        </dependency>
+
         <!-- CGLIB -->
         <dependency>
             <groupId>cglib</groupId>

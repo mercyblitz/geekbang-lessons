@@ -26,8 +26,7 @@ import java.lang.reflect.Method;
 import static java.lang.String.format;
 import static java.lang.reflect.Modifier.*;
 import static java.util.Objects.requireNonNull;
-import static org.geektimes.commons.lang.util.AnnotationUtils.findAnnotation;
-import static org.geektimes.commons.lang.util.AnnotationUtils.isAnnotationPresent;
+import static org.geektimes.commons.lang.util.AnnotationUtils.*;
 import static org.geektimes.commons.reflect.util.ConstructorUtils.hasPublicNoArgConstructor;
 
 /**
@@ -49,6 +48,17 @@ public abstract class InterceptorUtils {
     }
 
     /**
+     * Around-invoke methods may be declared in interceptor classes, in the superclasses of interceptor
+     * classes, in the target class, and/or in superclasses of the target class. However, only one around-invoke
+     * method may be declared in a given class.
+     * <p>
+     * Around-invoke methods can have public, private, protected, or package level access. An
+     * around-invoke method must not be declared as abstract, final or static.
+     * <p>
+     * Around-invoke methods have the following signature:
+     * <p>
+     * Object <METHOD>(InvocationContext)
+     *
      * @param method the target {@link Method method}
      * @return <code>true</code> if the given method that annotated {@link AroundInvoke} is any non-final,
      * non-static method with a single parameter of type {@link InvocationContext} and return type {@link Object},
@@ -63,6 +73,13 @@ public abstract class InterceptorUtils {
     }
 
     /**
+     * Around-timeout methods can have public, private, protected, or package level access. An
+     * around-timeout method must not be declared as abstract, final or static.
+     * <p>
+     * Around-timeout methods have the following signature:
+     * <p>
+     * Object <METHOD>(InvocationContext)
+     *
      * @param method the target {@link Method method}
      * @return <code>true</code> if the given method that annotated {@link AroundTimeout} is any non-final,
      * non-static method with a single parameter of type {@link InvocationContext} and return type {@link Object},
@@ -238,7 +255,7 @@ public abstract class InterceptorUtils {
     }
 
     public static boolean isInterceptorBinding(Class<? extends Annotation> annotationType) {
-        return isAnnotationPresent(annotationType, InterceptorBinding.class);
+        return isMetaAnnotation(annotationType, InterceptorBinding.class);
     }
 
     private static IllegalStateException newIllegalStateException(String messagePattern, Object... args) {

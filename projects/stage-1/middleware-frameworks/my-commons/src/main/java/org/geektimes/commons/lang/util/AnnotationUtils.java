@@ -19,8 +19,7 @@ package org.geektimes.commons.lang.util;
 import org.geektimes.commons.function.Predicates;
 import org.geektimes.commons.util.BaseUtils;
 
-import java.lang.annotation.Annotation;
-import java.lang.annotation.ElementType;
+import java.lang.annotation.*;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -43,6 +42,9 @@ import static org.geektimes.commons.reflect.util.ClassUtils.getAllInheritedTypes
  * @since 1.0.0
  */
 public abstract class AnnotationUtils extends BaseUtils {
+
+    public final static List<Class<? extends Annotation>> NATIVE_ANNOTATION_TYPES = unmodifiableList(asList
+            (Target.class, Retention.class, Documented.class, Inherited.class, Native.class, Repeatable.class));
 
     /**
      * Is the specified type a generic {@link Class type}
@@ -96,25 +98,44 @@ public abstract class AnnotationUtils extends BaseUtils {
 
     public static boolean isMetaAnnotation(Annotation annotation,
                                            Class<? extends Annotation>... metaAnnotationTypes) {
-        return isMetaAnnotation(annotation,asList(metaAnnotationTypes));
+        if (metaAnnotationTypes == null) {
+            return false;
+        }
+        return isMetaAnnotation(annotation, asList(metaAnnotationTypes));
     }
 
     public static boolean isMetaAnnotation(Annotation annotation,
                                            Iterable<Class<? extends Annotation>> metaAnnotationTypes) {
+        if (annotation == null) {
+            return false;
+        }
         return isMetaAnnotation(annotation.annotationType(), metaAnnotationTypes);
     }
 
     public static boolean isMetaAnnotation(Class<? extends Annotation> annotationType,
                                            Class<? extends Annotation>... metaAnnotationTypes) {
-        return isMetaAnnotation(annotationType,asList(metaAnnotationTypes));
+        return isMetaAnnotation(annotationType, asList(metaAnnotationTypes));
     }
 
     public static boolean isMetaAnnotation(Class<? extends Annotation> annotationType,
                                            Iterable<Class<? extends Annotation>> metaAnnotationTypes) {
-        boolean annotated = true;
-        for (Class<? extends Annotation> metaAnnotationType : metaAnnotationTypes) {
-            annotated &= isAnnotationPresent(annotationType, metaAnnotationType);
+
+        if (NATIVE_ANNOTATION_TYPES.contains(annotationType)) {
+            return false;
         }
+
+        if (isAnnotationPresent(annotationType, metaAnnotationTypes)) {
+            return true;
+        }
+
+        boolean annotated = true;
+        for (Annotation annotation : annotationType.getDeclaredAnnotations()) {
+            if (isMetaAnnotation(annotation, metaAnnotationTypes)) {
+                annotated = true;
+                break;
+            }
+        }
+
         return annotated;
     }
 
@@ -174,10 +195,10 @@ public abstract class AnnotationUtils extends BaseUtils {
         allTypes.addAll(getAllInheritedTypes(type, t -> !Object.class.equals(t)));
 
         for (Class<?> t : allTypes) {
-            allAnnotations.addAll(getDeclaredAnnotations(t, annotationsToFilter));
+            allAnnotations.addAll(getDeclaredAnnotations(t));
         }
 
-        return unmodifiableList(allAnnotations);
+        return filterAll(allAnnotations, annotationsToFilter);
     }
 
     /**
@@ -194,7 +215,7 @@ public abstract class AnnotationUtils extends BaseUtils {
             return emptyList();
         }
 
-        return unmodifiableList(filterAll(asList(annotatedElement.getDeclaredAnnotations()), annotationsToFilter));
+        return filterAll(asList(annotatedElement.getAnnotations()), annotationsToFilter);
     }
 
     public static <T> T getAttributeValue(Annotation[] annotations, String attributeName, Class<T> returnType) {
@@ -288,9 +309,40 @@ public abstract class AnnotationUtils extends BaseUtils {
     }
 
     public static boolean isAnnotationPresent(AnnotatedElement annotatedElement, Class<? extends Annotation> annotationType) {
-        return annotatedElement != null &&
-                annotationType != null &&
-                annotatedElement.isAnnotationPresent(annotationType);
+        if (annotatedElement == null || annotationType == null) {
+            return false;
+        }
+        // annotated directly
+        return annotatedElement.isAnnotationPresent(annotationType);
+    }
+
+    public static boolean isAnnotationPresent(Annotation annotation, Class<? extends Annotation> annotationType) {
+        if (annotation == null) {
+            return false;
+        }
+        return isAnnotationPresent(annotation.annotationType(), annotationType);
+    }
+
+    public static boolean isAnnotationPresent(AnnotatedElement annotatedElement, Iterable<Class<? extends Annotation>> annotationTypes) {
+        if (annotatedElement == null || annotationTypes == null) {
+            return false;
+        }
+
+        boolean annotated = true;
+        for (Class<? extends Annotation> annotationType : annotationTypes) {
+            if (!isAnnotationPresent(annotatedElement, annotationType)) {
+                annotated = false;
+                break;
+            }
+        }
+        return annotated;
+    }
+
+    public static boolean isAnnotationPresent(Annotation annotation, Iterable<Class<? extends Annotation>> annotationTypes) {
+        if (annotation == null) {
+            return false;
+        }
+        return isAnnotationPresent(annotation.annotationType(), annotationTypes);
     }
 
     public static Object[] getAttributeValues(Annotation annotation, Predicate<Method>... attributesToFilter) {
