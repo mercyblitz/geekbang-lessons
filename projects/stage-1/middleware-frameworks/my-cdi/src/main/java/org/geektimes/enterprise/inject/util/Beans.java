@@ -39,7 +39,7 @@ import static java.beans.Introspector.decapitalize;
 import static java.lang.Integer.compare;
 import static java.lang.String.format;
 import static java.util.stream.Stream.of;
-import static org.geektimes.commons.collection.util.CollectionUtils.ofSet;
+import static org.geektimes.commons.collection.util.CollectionUtils.asSet;
 import static org.geektimes.commons.lang.util.AnnotationUtils.findAnnotation;
 import static org.geektimes.commons.lang.util.AnnotationUtils.isAnnotationPresent;
 import static org.geektimes.commons.reflect.util.ClassUtils.*;
@@ -114,7 +114,7 @@ public abstract class Beans {
     public static Set<Type> getBeanTypes(Class<?> beanClass) {
         Typed typed = findAnnotation(beanClass, Typed.class);
         if (typed != null) {
-            return ofSet(Object.class, typed.value());
+            return asSet(Object.class, typed.value());
         } else {
             return getAllTypes(beanClass, ILLEGAL_BEAN_TYPE_FILTERS);
         }

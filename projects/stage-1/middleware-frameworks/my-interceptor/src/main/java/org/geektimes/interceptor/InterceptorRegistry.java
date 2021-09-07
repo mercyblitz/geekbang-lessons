@@ -17,13 +17,13 @@
 package org.geektimes.interceptor;
 
 import org.geektimes.commons.lang.util.ClassLoaderUtils;
+import org.geektimes.commons.util.ServiceLoaders;
 import org.geektimes.interceptor.util.InterceptorUtils;
 
 import javax.interceptor.InterceptorBinding;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 import java.util.List;
-import java.util.ServiceLoader;
-import java.util.Set;
 
 import static java.util.Arrays.asList;
 import static org.geektimes.commons.util.ServiceLoaders.loadSpi;
@@ -67,16 +67,16 @@ public interface InterceptorRegistry {
     }
 
     default void registerDiscoveredInterceptors() {
-        registerInterceptors(ServiceLoader.load(Interceptor.class));
+        registerInterceptors(ServiceLoaders.load(Interceptor.class));
     }
 
     /**
      * Gets the {@linkplain InterceptorBinding interceptor bindings} of the interceptor.
      *
-     * @return the set of {@linkplain InterceptorBinding interceptor bindings}
+     * @return the instance of {@linkplain InterceptorBindings interceptor bindings}
      * @throws IllegalStateException See exception details on {@link InterceptorUtils#isInterceptorClass(Class)}
      */
-    default Set<Annotation> getInterceptorBindings(Class<?> interceptorClass) throws IllegalStateException {
+    default InterceptorBindings getInterceptorBindings(Class<?> interceptorClass) throws IllegalStateException {
         return getInterceptorInfo(interceptorClass).getInterceptorBindings();
     }
 
@@ -92,10 +92,10 @@ public interface InterceptorRegistry {
     /**
      * Gets the sorted {@link List list} of {@link javax.interceptor.Interceptor @Interceptor} instances
      *
-     * @param interceptorBindingType the annotation type of {@linkplain InterceptorBinding interceptor binding}
+     * @param interceptedElement the intercepted of {@linkplain AnnotatedElement annotated element}
      * @return a non-null read-only sorted {@link List list}
      */
-    List<Object> getInterceptors(Class<? extends Annotation> interceptorBindingType);
+    List<Object> getInterceptors(AnnotatedElement interceptedElement);
 
     /**
      * <p>

@@ -19,7 +19,12 @@ package org.geektimes.interceptor.cdi;
 import org.geektimes.interceptor.InterceptorBindingAttributeFilter;
 
 import javax.enterprise.util.Nonbinding;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+
+import static org.geektimes.commons.lang.util.ClassLoaderUtils.getClassLoader;
+import static org.geektimes.commons.reflect.util.ClassUtils.isPresent;
+import static org.geektimes.commons.reflect.util.ClassUtils.resolveClass;
 
 /**
  * {@link InterceptorBindingAttributeFilter} for {@link Nonbinding}
@@ -29,8 +34,19 @@ import java.lang.reflect.Method;
  */
 public class NonInterceptorBindingAttributeFilter implements InterceptorBindingAttributeFilter {
 
+    private static final String NON_BINDING_ANNOTATION_CLASS_NAME = "javax.enterprise.util.Nonbinding";
+
+    private static final ClassLoader classLoader = getClassLoader(NonInterceptorBindingAttributeFilter.class);
+
+    private static final boolean NON_BINDING_ANNOTATION_ABSENT = isPresent(NON_BINDING_ANNOTATION_CLASS_NAME, classLoader);
+
     @Override
     public boolean accept(Method attributeMethod) {
-        return !attributeMethod.isAnnotationPresent(Nonbinding.class);
+        if (NON_BINDING_ANNOTATION_ABSENT) {
+            Class<? extends Annotation> nonbindingClass = (Class<? extends Annotation>)
+                    resolveClass(NON_BINDING_ANNOTATION_CLASS_NAME, classLoader);
+            return !attributeMethod.isAnnotationPresent(nonbindingClass);
+        }
+        return true;
     }
 }

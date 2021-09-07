@@ -18,24 +18,15 @@ package org.geektimes.interceptor;
 
 import javax.interceptor.InterceptorBinding;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 import java.util.Map;
+import java.util.Objects;
 
 import static org.geektimes.commons.lang.util.AnnotationUtils.getAttributesMap;
+import static org.geektimes.interceptor.InterceptorBindingAttributeFilter.FILTERS;
 import static org.geektimes.interceptor.util.InterceptorUtils.isInterceptorBinding;
 
 /**
  * The Metadata Info Class for {@link InterceptorBinding}
- *
- * <pre> {@code
- * @Inherited
- * @InterceptorBinding
- * @Target({TYPE, METHOD})
- * @Retention(RUNTIME)
- * @Monitored
- * public @interface DataAccess {}
- * }
- * </pre>
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
@@ -54,12 +45,41 @@ public class InterceptorBindingInfo {
     public InterceptorBindingInfo(Annotation declaredAnnotation) {
         this.declaredAnnotationType = declaredAnnotation.annotationType();
         this.synthetic = !isInterceptorBinding(declaredAnnotationType);
-        this.attributes = getAttributesMap(declaredAnnotation, this::isNonBindingAttribute);
+        this.attributes = getAttributesMap(declaredAnnotation, FILTERS);
     }
 
-    private boolean isNonBindingAttribute(Method method) {
-        return false;
+    public Class<? extends Annotation> getDeclaredAnnotationType() {
+        return declaredAnnotationType;
     }
 
+    public boolean isSynthetic() {
+        return synthetic;
+    }
 
+    public Map<String, Object> getAttributes() {
+        return attributes;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        InterceptorBindingInfo that = (InterceptorBindingInfo) o;
+        return synthetic == that.synthetic && Objects.equals(declaredAnnotationType, that.declaredAnnotationType) && Objects.equals(attributes, that.attributes);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(declaredAnnotationType, synthetic, attributes);
+    }
+
+    /**
+     * New instance of {@link InterceptorBindingInfo}
+     *
+     * @param interceptorBinding the instance of {@linkplain InterceptorBinding interceptor binding}
+     * @return non-null
+     */
+    public static InterceptorBindingInfo newInstance(Annotation interceptorBinding) {
+        return new InterceptorBindingInfo(interceptorBinding);
+    }
 }

@@ -22,7 +22,7 @@ import java.util.jar.JarFile;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.list;
 import static org.geektimes.commons.collection.util.CollectionUtils.newLinkedHashSet;
-import static org.geektimes.commons.collection.util.CollectionUtils.ofSet;
+import static org.geektimes.commons.collection.util.CollectionUtils.asSet;
 import static org.geektimes.commons.collection.util.MapUtils.newLinkedHashMap;
 import static org.geektimes.commons.constants.SystemConstants.JAVA_VENDOR;
 import static org.geektimes.commons.constants.SystemConstants.JAVA_VERSION;
@@ -275,7 +275,7 @@ public abstract class ClassLoaderUtils {
             return emptySet();
         }
         Enumeration<URL> resources = classLoader.getResources(normalizedResourceName);
-        return resources != null && resources.hasMoreElements() ? ofSet(list(resources)) : emptySet();
+        return resources != null && resources.hasMoreElements() ? CollectionUtils.asSet(list(resources)) : emptySet();
     }
 
     /**

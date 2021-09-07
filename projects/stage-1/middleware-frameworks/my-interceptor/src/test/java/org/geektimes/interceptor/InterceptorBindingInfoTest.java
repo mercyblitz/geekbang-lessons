@@ -18,21 +18,32 @@ package org.geektimes.interceptor;
 
 import org.junit.Test;
 
+import static org.junit.Assert.*;
+
 /**
- * {@link DefaultInterceptorEnhancer} Test
+ * {@link InterceptorBindingInfo} Test
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class DefaultInterceptorEnhancerTest {
-
-    private InterceptorEnhancer interceptorEnhancer = new DefaultInterceptorEnhancer();
+@Logging(name = "InterceptorBindingInfoTest")
+public class InterceptorBindingInfoTest {
 
     @Test
-    public void testInterface() {
-        EchoService echoService = new EchoService();
-        echoService = interceptorEnhancer.enhance(echoService);
-        echoService.init();
-        echoService.echo("Hello,World");
+    @Logging(name = "test")
+    public void test() throws Throwable {
+        Logging logging = this.getClass().getAnnotation(Logging.class);
+        InterceptorBindingInfo info = new InterceptorBindingInfo(logging);
+        assertEquals(Logging.class, info.getDeclaredAnnotationType());
+        assertFalse(info.isSynthetic());
+        assertTrue(info.getAttributes().isEmpty());
+
+        InterceptorBindingInfo info2 = new InterceptorBindingInfo(getClass().getMethod("test").getAnnotation(Logging.class));
+        assertEquals(Logging.class, info.getDeclaredAnnotationType());
+        assertEquals(Logging.class, info2.getDeclaredAnnotationType());
+        assertFalse(info2.isSynthetic());
+        assertTrue(info2.getAttributes().isEmpty());
+
+        assertEquals(info, info2);
     }
 }

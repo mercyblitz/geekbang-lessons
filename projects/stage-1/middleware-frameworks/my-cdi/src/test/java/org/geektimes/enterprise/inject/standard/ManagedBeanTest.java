@@ -29,7 +29,7 @@ import java.net.URL;
 import java.util.Enumeration;
 
 import static java.util.Collections.emptySet;
-import static org.geektimes.commons.collection.util.CollectionUtils.ofSet;
+import static org.geektimes.commons.collection.util.CollectionUtils.asSet;
 import static org.junit.Assert.*;
 
 /**
@@ -49,7 +49,7 @@ public class ManagedBeanTest {
         assertTrue(bean.getTypes().contains(BookShop.class));
         assertTrue(bean.getTypes().contains(Business.class));
         assertTrue(bean.getTypes().contains(Object.class));
-        assertEquals(ofSet(Any.Literal.INSTANCE, Default.Literal.INSTANCE), bean.getQualifiers());
+        assertEquals(asSet(Any.Literal.INSTANCE, Default.Literal.INSTANCE), bean.getQualifiers());
         assertEquals(Dependent.class, bean.getScope());
         assertEquals("bookShop", bean.getName());
         assertEquals(emptySet(), bean.getStereotypes());

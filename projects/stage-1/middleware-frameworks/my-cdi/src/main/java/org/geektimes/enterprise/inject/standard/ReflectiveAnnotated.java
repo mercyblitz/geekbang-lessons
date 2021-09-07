@@ -16,6 +16,8 @@
  */
 package org.geektimes.enterprise.inject.standard;
 
+import org.geektimes.commons.collection.util.CollectionUtils;
+
 import javax.enterprise.inject.spi.Annotated;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
@@ -25,7 +27,7 @@ import java.util.Set;
 import java.util.StringJoiner;
 
 import static java.util.Objects.hash;
-import static org.geektimes.commons.collection.util.CollectionUtils.ofSet;
+import static org.geektimes.commons.collection.util.CollectionUtils.asSet;
 import static org.geektimes.commons.reflect.util.TypeUtils.asClass;
 import static org.geektimes.enterprise.inject.util.Beans.getBeanTypes;
 
@@ -65,13 +67,13 @@ public abstract class ReflectiveAnnotated<A extends AnnotatedElement> implements
 
     @Override
     public final <T extends Annotation> Set<T> getAnnotations(Class<T> annotationType) {
-        return ofSet(annotatedElement.getAnnotationsByType(annotationType));
+        return CollectionUtils.asSet(annotatedElement.getAnnotationsByType(annotationType));
     }
 
     @Override
     public Set<Annotation> getAnnotations() {
         if (annotations == null) {
-            annotations = ofSet(annotatedElement.getAnnotations());
+            annotations = CollectionUtils.asSet(annotatedElement.getAnnotations());
         }
         return annotations;
     }

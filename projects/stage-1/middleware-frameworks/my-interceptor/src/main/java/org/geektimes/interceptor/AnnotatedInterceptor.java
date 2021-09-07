@@ -127,7 +127,7 @@ public abstract class AnnotatedInterceptor<A extends Annotation> implements Inte
      * Executes {@link AroundInvoke @AroundInvoke} method
      *
      * @param context            {@link InvocationContext}
-     * @param interceptorBinding the instance of {@link Annotation} annotated by {@link InterceptorBinding}
+     * @param interceptorBinding the instance of {@link Annotation} annotated by {@link InterceptorBindings}
      * @return the result of {@link InvocationContext#proceed()} method
      * @throws Throwable any exception if occurs
      */
@@ -137,7 +137,7 @@ public abstract class AnnotatedInterceptor<A extends Annotation> implements Inte
      * Executes {@link AroundTimeout @AroundTimeout} method
      *
      * @param context            {@link InvocationContext}
-     * @param interceptorBinding the instance of {@link Annotation} annotated by {@link InterceptorBinding}
+     * @param interceptorBinding the instance of {@link Annotation} annotated by {@link InterceptorBindings}
      * @return the result of {@link InvocationContext#proceed()} method
      * @throws Throwable any exception if occurs
      */
@@ -149,7 +149,7 @@ public abstract class AnnotatedInterceptor<A extends Annotation> implements Inte
      * Executes {@link AroundConstruct @AroundConstruct} method
      *
      * @param context            {@link InvocationContext}
-     * @param interceptorBinding the instance of {@link Annotation} annotated by {@link InterceptorBinding}
+     * @param interceptorBinding the instance of {@link Annotation} annotated by {@link InterceptorBindings}
      * @throws Throwable any exception if occurs
      */
     protected void interceptConstruct(InvocationContext context, A interceptorBinding) throws Throwable {
@@ -197,7 +197,7 @@ public abstract class AnnotatedInterceptor<A extends Annotation> implements Inte
     }
 
     /**
-     * Get the type of {@link Annotation} annotated by {@link InterceptorBinding}
+     * Get the type of {@link Annotation} annotated by {@link InterceptorBindings}
      *
      * @param interceptorClass
      * @return non-null
@@ -220,7 +220,7 @@ public abstract class AnnotatedInterceptor<A extends Annotation> implements Inte
                     if (logger.isLoggable(Level.SEVERE)) {
                         logger.severe(format("The annotationType[%s] should annotate %s",
                                 typeArgument.getName(),
-                                InterceptorBinding.class.getName()));
+                                InterceptorBindings.class.getName()));
                     }
                 }
             }
@@ -276,17 +276,6 @@ public abstract class AnnotatedInterceptor<A extends Annotation> implements Inte
             failure = getFailure(failure);
         }
         return failure;
-    }
-
-    /**
-     * Load the sorted instances of {@link AnnotatedInterceptor} via Java Standard SPI.
-     *
-     * @return non-null
-     */
-    public static AnnotatedInterceptor<?>[] loadInterceptors() {
-        return stream(load(AnnotatedInterceptor.class))
-                .sorted()
-                .toArray(AnnotatedInterceptor[]::new);
     }
 
     public InterceptorRegistry getInterceptorRegistry() {

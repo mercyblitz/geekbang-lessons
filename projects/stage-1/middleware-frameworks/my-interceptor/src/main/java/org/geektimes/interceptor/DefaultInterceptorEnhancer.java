@@ -19,6 +19,8 @@ package org.geektimes.interceptor;
 import org.geektimes.interceptor.cglib.CglibInterceptorEnhancer;
 import org.geektimes.interceptor.jdk.DynamicProxyInterceptorEnhancer;
 
+import static org.geektimes.commons.lang.util.ClassLoaderUtils.getClassLoader;
+
 /**
  * Default {@link InterceptorEnhancer}
  *
@@ -27,9 +29,18 @@ import org.geektimes.interceptor.jdk.DynamicProxyInterceptorEnhancer;
  */
 public class DefaultInterceptorEnhancer implements InterceptorEnhancer {
 
-    private final InterceptorEnhancer jdkProxyInterceptorEnhancer = new DynamicProxyInterceptorEnhancer();
+    private final InterceptorEnhancer jdkProxyInterceptorEnhancer;
 
-    private final InterceptorEnhancer cglibInterceptorEnhancer = new CglibInterceptorEnhancer();
+    private final InterceptorEnhancer cglibInterceptorEnhancer;
+
+    private final InterceptorRegistry interceptorRegistry;
+
+    public DefaultInterceptorEnhancer() {
+        this.jdkProxyInterceptorEnhancer = new DynamicProxyInterceptorEnhancer();
+        this.cglibInterceptorEnhancer = new CglibInterceptorEnhancer();
+        this.interceptorRegistry = InterceptorRegistry.getInstance(getClassLoader(this.getClass()));
+        this.interceptorRegistry.registerDiscoveredInterceptors();
+    }
 
     @Override
     public <T> T enhance(T source, Class<? super T> type, Object... interceptors) {

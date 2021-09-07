@@ -16,6 +16,8 @@
  */
 package org.geektimes.enterprise.inject.util;
 
+import org.geektimes.commons.collection.util.CollectionUtils;
+
 import javax.enterprise.inject.Stereotype;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
@@ -23,7 +25,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static java.util.Collections.unmodifiableSet;
-import static org.geektimes.commons.collection.util.CollectionUtils.ofSet;
+import static org.geektimes.commons.collection.util.CollectionUtils.asSet;
 import static org.geektimes.commons.lang.util.AnnotationUtils.getAllDeclaredAnnotations;
 import static org.geektimes.commons.lang.util.AnnotationUtils.isMetaAnnotation;
 
@@ -44,7 +46,7 @@ public abstract class Stereotypes {
     }
 
     public static Set<Annotation> getAllStereotypes(AnnotatedElement annotatedElement) {
-        return ofSet(getAllDeclaredAnnotations(annotatedElement, Stereotypes::isStereotype));
+        return CollectionUtils.asSet(getAllDeclaredAnnotations(annotatedElement, Stereotypes::isStereotype));
     }
 
     public static Set<Class<? extends Annotation>> getStereotypeTypes(AnnotatedElement annotatedElement) {

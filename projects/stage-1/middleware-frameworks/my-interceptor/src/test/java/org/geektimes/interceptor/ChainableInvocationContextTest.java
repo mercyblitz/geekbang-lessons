@@ -20,7 +20,7 @@ import org.junit.Test;
 
 import java.lang.reflect.Method;
 
-import static org.geektimes.interceptor.AnnotatedInterceptor.loadInterceptors;
+import static org.geektimes.interceptor.Interceptor.loadInterceptors;
 
 /**
  * {@link ChainableInvocationContext} Test

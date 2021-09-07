@@ -23,7 +23,10 @@ import javax.annotation.PreDestroy;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InterceptorBinding;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Collections.*;
 import static org.geektimes.commons.lang.util.AnnotationUtils.isMetaAnnotation;
@@ -49,7 +52,7 @@ public class DefaultInterceptorRegistry implements InterceptorRegistry {
     /**
      * The interceptor binding types map the sorted {@link Interceptor @Interceptor} instances
      */
-    private final Map<Class<? extends Annotation>, List<Object>> bindingInterceptors;
+    private final Map<InterceptorBindings, List<Object>> bindingInterceptors;
 
     public DefaultInterceptorRegistry() {
         this.interceptorBindingTypes = new LinkedHashSet<>();
@@ -67,17 +70,12 @@ public class DefaultInterceptorRegistry implements InterceptorRegistry {
     public void registerInterceptor(Object interceptor) {
         Class<?> interceptorClass = interceptor.getClass();
         registerInterceptorClass(interceptorClass);
-        Set<Annotation> interceptorBindings = getInterceptorBindings(interceptorClass);
-        interceptorBindings.stream()
-                .map(Annotation::annotationType)
-                .forEach(interceptorBindingType -> {
-                    List<Object> interceptors = bindingInterceptors.computeIfAbsent(interceptorBindingType,
-                            t -> new LinkedList<>());
-                    if (!interceptors.contains(interceptor)) {
-                        interceptors.add(interceptor);
-                        interceptors.sort(PriorityComparator.INSTANCE);
-                    }
-                });
+        InterceptorBindings interceptorBindings = getInterceptorBindings(interceptorClass);
+        List<Object> interceptors = bindingInterceptors.computeIfAbsent(interceptorBindings, t -> new LinkedList<>());
+        if (!interceptors.contains(interceptor)) {
+            interceptors.add(interceptor);
+            interceptors.sort(PriorityComparator.INSTANCE);
+        }
     }
 
     @Override
@@ -86,18 +84,14 @@ public class DefaultInterceptorRegistry implements InterceptorRegistry {
     }
 
     @Override
-    public List<Object> getInterceptors(Class<? extends Annotation> interceptorBindingType) {
-        return unmodifiableList(bindingInterceptors.getOrDefault(interceptorBindingType, emptyList()));
+    public List<Object> getInterceptors(AnnotatedElement interceptedElement) {
+        InterceptorBindings interceptorBindings = resolveInterceptorBindings(interceptedElement);
+        return unmodifiableList(bindingInterceptors.getOrDefault(interceptorBindings, emptyList()));
     }
 
     @Override
     public void registerInterceptorBindingType(Class<? extends Annotation> interceptorBindingType) {
         this.interceptorBindingTypes.add(interceptorBindingType);
-    }
-
-    private void registerDefaultInterceptorBindingType() {
-        registerInterceptorBindingType(PostConstruct.class);
-        registerInterceptorBindingType(PreDestroy.class);
     }
 
     @Override
@@ -108,5 +102,17 @@ public class DefaultInterceptorRegistry implements InterceptorRegistry {
 
     public Set<Class<? extends Annotation>> getInterceptorBindingTypes() {
         return unmodifiableSet(interceptorBindingTypes);
+    }
+
+    private void registerDefaultInterceptorBindingType() {
+        registerInterceptorBindingType(PostConstruct.class);
+        registerInterceptorBindingType(PreDestroy.class);
+    }
+
+    private InterceptorBindings resolveInterceptorBindings(AnnotatedElement interceptedElement) {
+        Set<Annotation> interceptorBindings = Stream.of(interceptedElement.getAnnotations())
+                .filter(this::isInterceptorBinding)
+                .collect(Collectors.toSet());
+        return new InterceptorBindings(interceptorBindings);
     }
 }

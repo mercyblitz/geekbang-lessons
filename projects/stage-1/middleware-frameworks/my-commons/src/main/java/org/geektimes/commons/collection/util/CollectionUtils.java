@@ -58,11 +58,11 @@ public abstract class CollectionUtils extends BaseUtils {
     }
 
 
-    public static <T> Set<T> ofSet(Collection<T> values, T... others) {
+    public static <T> Set<T> asSet(Collection<T> values, T... others) {
         int size = size(values);
 
         if (size < 1) {
-            return ofSet(others);
+            return asSet(others);
         }
 
         Set<T> elements = newLinkedHashSet(size + others.length);
@@ -83,7 +83,7 @@ public abstract class CollectionUtils extends BaseUtils {
      * @param <T>    the type of <code>values</code>
      * @return read-only {@link Set}
      */
-    public static <T> Set<T> ofSet(T[] values) {
+    public static <T> Set<T> asSet(T[] values) {
         int size = ArrayUtils.length(values);
         if (size < 1) {
             return emptySet();
@@ -104,7 +104,7 @@ public abstract class CollectionUtils extends BaseUtils {
      * @param <T>    the type of <code>values</code>
      * @return read-only {@link Set}
      */
-    public static <T> Set<T> ofSet(T one, T... others) {
+    public static <T> Set<T> asSet(T one, T... others) {
         int size = others == null ? 0 : others.length;
         if (size < 1) {
             return singleton(one);

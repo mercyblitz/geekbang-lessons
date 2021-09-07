@@ -16,11 +16,13 @@
  */
 package org.geektimes.interceptor;
 
-import org.geektimes.commons.util.ServiceLoaders;
+import org.geektimes.commons.function.Predicates;
 
 import javax.interceptor.InterceptorBinding;
 import java.lang.reflect.Method;
 import java.util.function.Predicate;
+
+import static org.geektimes.commons.util.ServiceLoaders.loadAsArray;
 
 /**
  * The attribute filter of {@lnk InterceptorBinding}
@@ -29,6 +31,8 @@ import java.util.function.Predicate;
  * @since 1.0.0
  */
 public interface InterceptorBindingAttributeFilter extends Predicate<Method> {
+
+    Predicate<Method> FILTERS = filters();
 
     default boolean test(Method attributeMethod) {
         return accept(attributeMethod);
@@ -41,9 +45,8 @@ public interface InterceptorBindingAttributeFilter extends Predicate<Method> {
      */
     boolean accept(Method attributeMethod);
 
-
-    static Predicate<Method> compose() {
-        ServiceLoaders.loadAsStream(InterceptorBindingAttributeFilter.class);
+    static Predicate<Method> filters() {
+        return Predicates.or(loadAsArray(InterceptorBindingAttributeFilter.class));
     }
 
 }

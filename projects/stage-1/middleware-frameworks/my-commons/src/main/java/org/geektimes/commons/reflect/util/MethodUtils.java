@@ -20,10 +20,14 @@ import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import java.lang.reflect.Method;
-import java.util.*;
+import java.util.LinkedHashSet;
+import java.util.Objects;
+import java.util.Set;
 import java.util.function.Predicate;
 
-import static java.util.Collections.*;
+import static java.util.Collections.emptySet;
+import static java.util.Collections.unmodifiableSet;
+import static org.geektimes.commons.collection.util.CollectionUtils.asSet;
 import static org.geektimes.commons.function.Streams.filterAll;
 import static org.geektimes.commons.lang.util.StringUtils.isNotEmpty;
 import static org.geektimes.commons.reflect.util.ClassUtils.*;
@@ -36,6 +40,13 @@ import static org.geektimes.commons.reflect.util.MemberUtils.*;
  * @since 1.0.0
  */
 public class MethodUtils {
+
+    /**
+     * The {@link Predicate} reference to {@link MethodUtils#isObjectMethod(Method)}
+     */
+    public final static Predicate<Method> OBJECT_METHOD_PREDICATE = MethodUtils::isObjectMethod;
+
+    public final static Set<Method> OBJECT_METHODS = asSet(Object.class.getMethods());
 
     /**
      * Get all {@link Method methods} of the declared class

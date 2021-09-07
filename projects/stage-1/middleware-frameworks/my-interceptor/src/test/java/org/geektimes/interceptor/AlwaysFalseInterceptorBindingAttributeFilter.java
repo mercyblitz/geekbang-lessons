@@ -14,28 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.interceptor.cglib;
+package org.geektimes.interceptor;
 
-import org.geektimes.interceptor.EchoService;
-import org.junit.Test;
-
-import static org.geektimes.interceptor.Interceptor.loadInterceptors;
-
+import java.lang.reflect.Method;
 
 /**
- * {@link CglibInterceptorEnhancer} Test
- *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class CglibInterceptorEnhancerTest {
+public class AlwaysFalseInterceptorBindingAttributeFilter implements InterceptorBindingAttributeFilter {
 
-    @Test
-    public void test() {
-        CglibInterceptorEnhancer enhancer = new CglibInterceptorEnhancer();
-        EchoService echoService = new EchoService();
-        Object proxy = enhancer.enhance(echoService, loadInterceptors());
-        EchoService echoServiceProxy = (EchoService) proxy;
-        echoServiceProxy.echo("Hello,World");
+    @Override
+    public boolean accept(Method attributeMethod) {
+        return false;
     }
 }

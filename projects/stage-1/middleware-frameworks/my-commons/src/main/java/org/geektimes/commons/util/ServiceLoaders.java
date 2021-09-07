@@ -21,8 +21,8 @@ import java.util.ServiceLoader;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Stream;
 
-import static java.util.ServiceLoader.load;
 import static org.geektimes.commons.function.Streams.stream;
+import static org.geektimes.commons.lang.util.ArrayUtils.asArray;
 import static org.geektimes.commons.lang.util.ClassLoaderUtils.getClassLoader;
 
 /**
@@ -40,7 +40,7 @@ public abstract class ServiceLoaders {
     }
 
     public static <T> Stream<T> loadAsStream(Class<T> serviceClass, ClassLoader classLoader) {
-        return stream(doLoad(serviceClass, classLoader));
+        return stream(load(serviceClass, classLoader));
     }
 
     public static <T> T loadSpi(Class<T> serviceClass) {
@@ -48,7 +48,7 @@ public abstract class ServiceLoaders {
     }
 
     public static <T> T loadSpi(Class<T> serviceClass, ClassLoader classLoader) {
-        return doLoad(serviceClass, classLoader).iterator().next();
+        return load(serviceClass, classLoader).iterator().next();
     }
 
     public static <T> T[] loadAsArray(Class<T> serviceClass) {
@@ -56,13 +56,17 @@ public abstract class ServiceLoaders {
     }
 
     public static <T> T[] loadAsArray(Class<T> serviceClass, ClassLoader classLoader) {
-        return (T[]) loadAsStream(serviceClass, classLoader).toArray();
+        return asArray(load(serviceClass, classLoader), serviceClass);
     }
 
-    static <T> ServiceLoader<T> doLoad(Class<T> serviceClass, ClassLoader classLoader) {
+    public static <T> ServiceLoader<T> load(Class<T> serviceClass) {
+        return load(serviceClass, getClassLoader(serviceClass));
+    }
+
+    public static <T> ServiceLoader<T> load(Class<T> serviceClass, ClassLoader classLoader) {
         Map<Class<?>, ServiceLoader<?>> serviceLoadersMap = serviceLoadersCache.computeIfAbsent(classLoader, cl -> new ConcurrentHashMap<>());
         ServiceLoader<T> serviceLoader = (ServiceLoader<T>) serviceLoadersMap.computeIfAbsent(serviceClass,
-                service -> load(service, classLoader));
+                service -> ServiceLoader.load(service, classLoader));
         return serviceLoader;
     }
 }

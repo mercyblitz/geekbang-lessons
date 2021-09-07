@@ -29,11 +29,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import static java.lang.String.format;
-import static java.util.Collections.unmodifiableSet;
-import static org.geektimes.commons.collection.util.CollectionUtils.ofSet;
+import static org.geektimes.commons.collection.util.CollectionUtils.asSet;
 import static org.geektimes.commons.lang.util.AnnotationUtils.getAllDeclaredAnnotations;
 import static org.geektimes.commons.reflect.util.MethodUtils.getAllDeclaredMethods;
 import static org.geektimes.interceptor.util.InterceptorUtils.validatorInterceptorClass;
@@ -60,10 +58,7 @@ public class InterceptorInfo {
 
     private final Method preDestroyMethod;
 
-    private final Set<Annotation> interceptorBindings;
-
-    private final Set<Class<? extends Annotation>> interceptorBindingTypes;
-
+    private final InterceptorBindings interceptorBindings;
 
     public InterceptorInfo(Class<?> interceptorClass) {
         validatorInterceptorClass(interceptorClass);
@@ -76,7 +71,6 @@ public class InterceptorInfo {
         this.postConstructMethod = interceptionMethods.remove(PostConstruct.class);
         this.preDestroyMethod = interceptionMethods.remove(PreDestroy.class);
         this.interceptorBindings = resolveInterceptorBindings();
-        this.interceptorBindingTypes = resolveInterceptorBindingTypes();
     }
 
     private Map<Class<? extends Annotation>, Method> resolveInterceptionMethods() throws IllegalStateException {
@@ -109,14 +103,8 @@ public class InterceptorInfo {
                 annotationType.getName(), interceptorClass.getName()));
     }
 
-    private Set<Annotation> resolveInterceptorBindings() {
-        return ofSet(getAllDeclaredAnnotations(interceptorClass, interceptorRegistry::isInterceptorBinding));
-    }
-
-    private Set<Class<? extends Annotation>> resolveInterceptorBindingTypes() {
-        return unmodifiableSet(interceptorBindings.stream()
-                .map(Annotation::annotationType)
-                .collect(Collectors.toSet()));
+    private InterceptorBindings resolveInterceptorBindings() {
+        return new InterceptorBindings(getAllDeclaredAnnotations(interceptorClass, interceptorRegistry::isInterceptorBinding));
     }
 
     public Class<?> getInterceptorClass() {
@@ -143,12 +131,12 @@ public class InterceptorInfo {
         return preDestroyMethod;
     }
 
-    public Set<Annotation> getInterceptorBindings() {
+    public InterceptorBindings getInterceptorBindings() {
         return interceptorBindings;
     }
 
     public Set<Class<? extends Annotation>> getInterceptorBindingTypes() {
-        return interceptorBindingTypes;
+        return interceptorBindings.getInterceptorBindingTypes();
     }
 
     public InterceptorRegistry getInterceptorRegistry() {

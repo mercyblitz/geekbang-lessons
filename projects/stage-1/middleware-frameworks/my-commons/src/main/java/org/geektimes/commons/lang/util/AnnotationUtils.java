@@ -16,7 +16,6 @@
  */
 package org.geektimes.commons.lang.util;
 
-import org.geektimes.commons.function.Predicates;
 import org.geektimes.commons.util.BaseUtils;
 
 import java.lang.annotation.*;
@@ -29,11 +28,14 @@ import java.util.stream.Stream;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.Optional.ofNullable;
+import static org.geektimes.commons.function.Predicates.and;
 import static org.geektimes.commons.function.Streams.filterAll;
 import static org.geektimes.commons.function.Streams.filterFirst;
 import static org.geektimes.commons.function.ThrowableSupplier.execute;
 import static org.geektimes.commons.lang.util.ArrayUtils.length;
 import static org.geektimes.commons.reflect.util.ClassUtils.getAllInheritedTypes;
+import static org.geektimes.commons.reflect.util.MethodUtils.OBJECT_METHODS;
+import static org.geektimes.commons.reflect.util.MethodUtils.overrides;
 
 /**
  * {@link Annotation} Utilities class
@@ -45,6 +47,14 @@ public abstract class AnnotationUtils extends BaseUtils {
 
     public final static List<Class<? extends Annotation>> NATIVE_ANNOTATION_TYPES = unmodifiableList(asList
             (Target.class, Retention.class, Documented.class, Inherited.class, Native.class, Repeatable.class));
+
+    private static final Predicate<Method> INHERITED_OBJECT_METHOD_PREDICATE = AnnotationUtils::isInheritedObjectMethod;
+
+    private static final Predicate<Method> NON_INHERITED_OBJECT_METHOD_PREDICATE = INHERITED_OBJECT_METHOD_PREDICATE.negate();
+
+    private static final Predicate<Method> ANNOTATION_METHOD_PREDICATE = AnnotationUtils::isAnnotationMethod;
+
+    private static final Predicate<Method> NON_ANNOTATION_METHOD_PREDICATE = ANNOTATION_METHOD_PREDICATE.negate();
 
     /**
      * Is the specified type a generic {@link Class type}
@@ -128,7 +138,7 @@ public abstract class AnnotationUtils extends BaseUtils {
             return true;
         }
 
-        boolean annotated = true;
+        boolean annotated = false;
         for (Annotation annotation : annotationType.getDeclaredAnnotations()) {
             if (isMetaAnnotation(annotation, metaAnnotationTypes)) {
                 annotated = true;
@@ -358,13 +368,32 @@ public abstract class AnnotationUtils extends BaseUtils {
                     Object value = execute(() -> method.invoke(annotation));
                     attributesMap.put(method.getName(), value);
                 });
-        return unmodifiableMap(attributesMap);
+        return attributesMap.isEmpty() ? emptyMap() : unmodifiableMap(attributesMap);
+    }
+
+    public static boolean isAnnotationMethod(Method attributeMethod) {
+        return attributeMethod != null && Objects.equals(Annotation.class, attributeMethod.getDeclaringClass());
+    }
+
+    private static boolean isInheritedObjectMethod(Method attributeMethod) {
+        boolean inherited = false;
+
+        for (Method method : OBJECT_METHODS) {
+            if (overrides(attributeMethod, method)) {
+                inherited = true;
+                break;
+            }
+        }
+
+        return inherited;
     }
 
     private static Stream<Method> getAttributeMethods(Annotation annotation, Predicate<Method>... attributesToFilter) {
         Class<? extends Annotation> annotationType = annotation.annotationType();
         return Stream.of(annotationType.getMethods())
-                .filter(Predicates.and(attributesToFilter));
+                .filter(NON_INHERITED_OBJECT_METHOD_PREDICATE
+                        .and(NON_ANNOTATION_METHOD_PREDICATE)
+                        .and(and(attributesToFilter)));
     }
 
 }

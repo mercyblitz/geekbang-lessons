@@ -16,6 +16,8 @@
  */
 package org.geektimes.interceptor;
 
+import org.geektimes.commons.util.ServiceLoaders;
+
 /**
  * The tagging interface that all {@link javax.interceptor.Interceptor @Interceptor} class should implement.
  *
@@ -23,4 +25,13 @@ package org.geektimes.interceptor;
  * @since 1.0.0
  */
 public interface Interceptor {
+
+    /**
+     * Load the sorted instances of {@link Interceptor} via Java Standard SPI.
+     *
+     * @return non-null
+     */
+    static Interceptor[] loadInterceptors() {
+        return ServiceLoaders.loadAsArray(Interceptor.class);
+    }
 }

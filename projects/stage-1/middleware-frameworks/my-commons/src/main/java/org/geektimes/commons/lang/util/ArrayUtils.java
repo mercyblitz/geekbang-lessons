@@ -16,6 +16,7 @@
  */
 package org.geektimes.commons.lang.util;
 
+import org.geektimes.commons.collection.util.CollectionUtils;
 import org.geektimes.commons.util.BaseUtils;
 
 import java.lang.reflect.Array;
@@ -26,6 +27,7 @@ import java.util.function.Consumer;
 
 import static java.lang.reflect.Array.newInstance;
 import static java.util.Collections.list;
+import static org.geektimes.commons.collection.util.CollectionUtils.newArrayList;
 
 /**
  * The utilities class for {@link Array}
@@ -53,6 +55,10 @@ public abstract class ArrayUtils extends BaseUtils {
 
     public static <E> E[] asArray(Enumeration<E> enumeration, Class<?> componentType) {
         return asArray(list(enumeration), componentType);
+    }
+
+    public static <E> E[] asArray(Iterable<E> elements, Class<?> componentType) {
+        return asArray(newArrayList(elements), componentType);
     }
 
     public static <E> E[] asArray(Collection<E> collection, Class<?> componentType) {

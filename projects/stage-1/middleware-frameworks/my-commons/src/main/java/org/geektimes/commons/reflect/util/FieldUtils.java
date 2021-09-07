@@ -23,7 +23,7 @@ import java.util.Set;
 import java.util.function.Predicate;
 
 import static java.util.Arrays.asList;
-import static org.geektimes.commons.collection.util.CollectionUtils.ofSet;
+import static org.geektimes.commons.collection.util.CollectionUtils.asSet;
 import static org.geektimes.commons.function.Predicates.and;
 import static org.geektimes.commons.function.Streams.filter;
 import static org.geektimes.commons.function.ThrowableSupplier.execute;
