@@ -16,23 +16,24 @@
  */
 package org.geektimes.interceptor;
 
-import org.junit.Test;
+import javax.interceptor.InterceptorBinding;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
 
-import static org.junit.Assert.assertEquals;
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * {@link InterceptorRegistry}
+ * {@link Monitored @Monitored} annotation from Java Interceptor Specification
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class InterceptorRegistryTest {
-
-    @Test
-    public void test() {
-        InterceptorRegistry registry = InterceptorRegistry.getInstance();
-        for (int i = 0; i < 99; i++) {
-            assertEquals(registry, InterceptorRegistry.getInstance());
-        }
-    }
+@Inherited
+@InterceptorBinding
+@Target({TYPE, METHOD})
+@Retention(RUNTIME)
+public @interface Monitored {
 }

@@ -14,36 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.cache.annotation.interceptor;
+package org.geektimes.interceptor;
 
-import org.geektimes.cache.DataRepository;
-import org.geektimes.cache.InMemoryDataRepository;
-import org.geektimes.interceptor.DefaultComponentEnhancer;
-import org.geektimes.interceptor.Interceptor;
-import org.geektimes.interceptor.ComponentEnhancer;
 import org.junit.Test;
 
-import static org.geektimes.commons.util.ServiceLoaders.loadAsArray;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
 /**
- * {@link CacheResultInterceptor} Test
+ * {@link InterceptorManager}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class CacheResultInterceptorTest {
-
-    private DataRepository dataRepository = new InMemoryDataRepository();
-
-    private ComponentEnhancer enhancer = new DefaultComponentEnhancer();
+public class InterceptorManagerTest {
 
     @Test
     public void test() {
-        DataRepository repository = enhancer.enhance(dataRepository, DataRepository.class, loadAsArray(Interceptor.class));
-        assertTrue(repository.save("A", 1));
-        assertEquals(Integer.valueOf(1), repository.get("A"));
-        assertEquals(Integer.valueOf(1), repository.getWithoutCache("A"));
+        InterceptorManager registry = InterceptorManager.getInstance();
+        for (int i = 0; i < 99; i++) {
+            assertEquals(registry, InterceptorManager.getInstance());
+        }
     }
 }

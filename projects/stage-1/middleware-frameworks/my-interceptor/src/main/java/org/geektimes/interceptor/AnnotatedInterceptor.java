@@ -34,9 +34,8 @@ import java.util.logging.Logger;
 
 import static java.lang.String.format;
 import static java.util.ServiceLoader.load;
-import static org.geektimes.commons.function.Streams.stream;
 import static org.geektimes.commons.reflect.util.TypeUtils.resolveTypeArguments;
-import static org.geektimes.interceptor.InterceptorRegistry.getInstance;
+import static org.geektimes.interceptor.InterceptorManager.getInstance;
 import static org.geektimes.interceptor.util.InterceptorUtils.INTERCEPTOR_ANNOTATION_TYPE;
 
 /**
@@ -51,7 +50,7 @@ public abstract class AnnotatedInterceptor<A extends Annotation> implements Inte
 
     private final Logger logger = Logger.getLogger(getClass().getName());
 
-    private final InterceptorRegistry interceptorRegistry;
+    private final InterceptorManager interceptorManager;
 
     private final Class<A> interceptorBindingType;
 
@@ -63,10 +62,10 @@ public abstract class AnnotatedInterceptor<A extends Annotation> implements Inte
      */
     public AnnotatedInterceptor() throws IllegalArgumentException {
         Class<?> interceptorClass = getClass();
-        this.interceptorRegistry = getInstance(interceptorClass.getClassLoader());
-        this.interceptorRegistry.registerInterceptorClass(interceptorClass);
+        this.interceptorManager = getInstance(interceptorClass.getClassLoader());
+        this.interceptorManager.registerInterceptorClass(interceptorClass);
         this.interceptorBindingType = resolveInterceptorBindingType(interceptorClass);
-        this.interceptorRegistry.registerInterceptor(this);
+        this.interceptorManager.registerInterceptor(this);
     }
 
     @Override
@@ -232,11 +231,11 @@ public abstract class AnnotatedInterceptor<A extends Annotation> implements Inte
     }
 
     private boolean isInterceptorBindingType(Class<? extends Annotation> annotationType) {
-        return interceptorRegistry.isInterceptorBindingType(annotationType);
+        return interceptorManager.isInterceptorBindingType(annotationType);
     }
 
     private void registerSyntheticInterceptorBindingType(Class<A> annotationType) {
-        interceptorRegistry.registerInterceptorBindingType(annotationType);
+        interceptorManager.registerInterceptorBindingType(annotationType);
     }
 
     protected boolean shouldRegisterSyntheticInterceptorBindingType() {
@@ -278,8 +277,8 @@ public abstract class AnnotatedInterceptor<A extends Annotation> implements Inte
         return failure;
     }
 
-    public InterceptorRegistry getInterceptorRegistry() {
-        return interceptorRegistry;
+    public InterceptorManager getInterceptorRegistry() {
+        return interceptorManager;
     }
 
     private boolean excludeInterceptorAnnotation(Annotation annotation) {

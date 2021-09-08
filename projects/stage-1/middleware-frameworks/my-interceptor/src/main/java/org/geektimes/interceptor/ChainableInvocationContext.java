@@ -19,13 +19,12 @@ package org.geektimes.interceptor;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.interceptor.InvocationContext;
-import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 
-import static org.geektimes.interceptor.InterceptorRegistry.getInstance;
+import static org.geektimes.interceptor.InterceptorManager.getInstance;
 
 /**
  * Chainable {@link InvocationContext}
@@ -41,17 +40,14 @@ public class ChainableInvocationContext implements InvocationContext {
 
     private final int size;
 
-    private final InterceptorRegistry interceptorRegistry;
+    private final InterceptorManager interceptorManager;
 
     private int pos; // position
 
-    public ChainableInvocationContext(InvocationContext delegateContext, Object... interceptors) {
+    public ChainableInvocationContext(InvocationContext delegateContext, Object... defaultInterceptors) {
         this.delegateContext = delegateContext;
-        // sort
-        this.interceptorRegistry = getInstance(resolveClassLoader(interceptors));
-        this.interceptorRegistry.registerInterceptors(interceptors);
-        this.interceptorRegistry.registerDiscoveredInterceptors();
-        this.interceptors = resolveInterceptors();
+        this.interceptorManager = getInstance(resolveClassLoader(defaultInterceptors));
+        this.interceptors = resolveInterceptors(defaultInterceptors);
         this.size = this.interceptors.size();
         this.pos = 0;
     }
@@ -108,16 +104,17 @@ public class ChainableInvocationContext implements InvocationContext {
         return target.getClass().getClassLoader();
     }
 
-    private List<Object> resolveInterceptors() {
-        AnnotatedElement annotatedElement = getMethod();
-        if (annotatedElement == null) {
-            annotatedElement = getConstructor();
+    private List<Object> resolveInterceptors(Object[] defaultInterceptors) {
+        Method method = getMethod();
+        if (method != null) {
+            return interceptorManager.resolveInterceptors(method, defaultInterceptors);
         }
-        return interceptorRegistry.getInterceptors(annotatedElement);
+        return interceptorManager.resolveInterceptors(getConstructor(), defaultInterceptors);
     }
 
+
     private Method resolveInterceptionMethod(Object interceptor) {
-        InterceptorInfo interceptorInfo = interceptorRegistry.getInterceptorInfo(interceptor.getClass());
+        InterceptorInfo interceptorInfo = interceptorManager.getInterceptorInfo(interceptor.getClass());
 
         final Method interceptionMethod;  // nerver null
 

@@ -16,28 +16,23 @@
  */
 package org.geektimes.interceptor;
 
-import static org.geektimes.commons.util.ServiceLoaders.loadAsArray;
+import org.junit.Test;
 
 /**
- * {@link Interceptor} Enhancer
+ * {@link DefaultComponentEnhancer} Test
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public interface InterceptorEnhancer {
+public class DefaultComponentEnhancerTest {
 
-    default <T> T enhance(T source) {
-        return enhance(source, (Class<? super T>) source.getClass());
+    private ComponentEnhancer interceptorEnhancer = new DefaultComponentEnhancer();
+
+    @Test
+    public void testInterface() {
+        EchoService echoService = new EchoService();
+        echoService = interceptorEnhancer.enhance(echoService);
+        echoService.init();
+        echoService.echo("Hello,World");
     }
-
-    default <T> T enhance(T source, Class<? super T> type) {
-        return enhance(source, type, loadAsArray(AnnotatedInterceptor.class));
-    }
-
-    default <T> T enhance(T source, Object... interceptors) {
-        return enhance(source, (Class<? super T>) source.getClass(), interceptors);
-    }
-
-    <T> T enhance(T source, Class<? super T> type, Object... interceptors);
-
 }

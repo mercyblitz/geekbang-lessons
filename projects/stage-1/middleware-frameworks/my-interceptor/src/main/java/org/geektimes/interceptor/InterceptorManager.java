@@ -20,21 +20,24 @@ import org.geektimes.commons.lang.util.ClassLoaderUtils;
 import org.geektimes.commons.util.ServiceLoaders;
 import org.geektimes.interceptor.util.InterceptorUtils;
 
+import javax.annotation.Priority;
 import javax.interceptor.InterceptorBinding;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
+import java.lang.reflect.Method;
 import java.util.List;
 
 import static java.util.Arrays.asList;
 import static org.geektimes.commons.util.ServiceLoaders.loadSpi;
 
 /**
- * The registry of {@link Interceptor}
+ * The Mananger of {@link Interceptor}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public interface InterceptorRegistry {
+public interface InterceptorManager {
 
     void registerInterceptorClass(Class<?> interceptorClass);
 
@@ -90,12 +93,47 @@ public interface InterceptorRegistry {
     InterceptorInfo getInterceptorInfo(Class<?> interceptorClass) throws IllegalStateException;
 
     /**
-     * Gets the sorted {@link List list} of {@link javax.interceptor.Interceptor @Interceptor} instances
+     * Resolve the bindings of {@link javax.interceptor.Interceptor @Interceptor} instances upon
+     * the specified {@link Method}
      *
-     * @param interceptedElement the intercepted of {@linkplain AnnotatedElement annotated element}
-     * @return a non-null read-only sorted {@link List list}
+     * @param method              the intercepted of {@linkplain Method method}
+     * @param defaultInterceptors the default interceptors
+     * @return a non-null read-only {@link Priority priority} {@link List list} of
+     * {@link javax.interceptor.Interceptor @Interceptor} instances
      */
-    List<Object> getInterceptors(AnnotatedElement interceptedElement);
+    default List<Object> resolveInterceptors(Method method, Object... defaultInterceptors) {
+        return resolveInterceptors((Executable) method, defaultInterceptors);
+    }
+
+    /**
+     * Resolve the bindings of {@link javax.interceptor.Interceptor @Interceptor} instances upon
+     * the specified {@link Constructor}
+     *
+     * @param constructor         the intercepted of {@linkplain Constructor constructor}
+     * @param defaultInterceptors the default interceptors
+     * @return a non-null read-only {@link Priority priority} {@link List list} of
+     * {@link javax.interceptor.Interceptor @Interceptor} instances
+     */
+    default List<Object> resolveInterceptors(Constructor<?> constructor, Object... defaultInterceptors) {
+        return resolveInterceptors((Executable) constructor, defaultInterceptors);
+    }
+
+    /**
+     * Resolve the bindings of {@link javax.interceptor.Interceptor @Interceptor} instances upon
+     * the specified {@linkplain Method method} or {@link Constructor}
+     * <p>
+     * See Specification:
+     * <p>
+     * 5.2 Interceptor Ordering Rules
+     * <p>
+     * 5.2.1 Use of the Priority Annotation in Ordering Interceptors
+     *
+     * @param executable          the intercepted of {@linkplain Method method} or {@linkplain Constructor constructor}
+     * @param defaultInterceptors the default interceptors
+     * @return a non-null read-only {@link Priority priority} {@link List list} of
+     * {@link javax.interceptor.Interceptor @Interceptor} instances
+     */
+    List<Object> resolveInterceptors(Executable executable, Object... defaultInterceptors);
 
     /**
      * <p>
@@ -113,11 +151,11 @@ public interface InterceptorRegistry {
 
     boolean isInterceptorBindingType(Class<? extends Annotation> annotationType);
 
-    static InterceptorRegistry getInstance(ClassLoader classLoader) {
-        return loadSpi(InterceptorRegistry.class, classLoader);
+    static InterceptorManager getInstance(ClassLoader classLoader) {
+        return loadSpi(InterceptorManager.class, classLoader);
     }
 
-    static InterceptorRegistry getInstance() {
-        return getInstance(ClassLoaderUtils.getClassLoader(InterceptorRegistry.class));
+    static InterceptorManager getInstance() {
+        return getInstance(ClassLoaderUtils.getClassLoader(InterceptorManager.class));
     }
 }

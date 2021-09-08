@@ -14,24 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.interceptor.jdk;
+package org.geektimes.interceptor.cglib;
 
-import org.geektimes.interceptor.InterceptorEnhancer;
+import org.geektimes.interceptor.EchoService;
+import org.junit.Test;
 
-import static java.lang.reflect.Proxy.newProxyInstance;
-import static org.geektimes.commons.lang.util.ClassLoaderUtils.getClassLoader;
+import static org.geektimes.interceptor.Interceptor.loadInterceptors;
+
 
 /**
- * {@link InterceptorEnhancer} based on JDK Dynamic Proxy
+ * {@link CglibComponentEnhancer} Test
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class DynamicProxyInterceptorEnhancer implements InterceptorEnhancer {
+public class CglibComponentEnhancerTest {
 
-    @Override
-    public <T> T enhance(T source, Class<? super T> type, Object... interceptors) {
-        ClassLoader classLoader = getClassLoader(type);
-        return (T) newProxyInstance(classLoader, new Class[]{type}, new InvocationHandlerAdapter(source, interceptors));
+    @Test
+    public void test() {
+        CglibComponentEnhancer enhancer = new CglibComponentEnhancer();
+        EchoService echoService = new EchoService();
+        Object proxy = enhancer.enhance(echoService, loadInterceptors());
+        EchoService echoServiceProxy = (EchoService) proxy;
+        echoServiceProxy.echo("Hello,World");
     }
 }

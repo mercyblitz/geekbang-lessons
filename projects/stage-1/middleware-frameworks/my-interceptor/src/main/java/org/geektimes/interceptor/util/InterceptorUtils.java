@@ -16,17 +16,24 @@
  */
 package org.geektimes.interceptor.util;
 
+import org.geektimes.commons.util.PriorityComparator;
+
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.interceptor.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Executable;
 import java.lang.reflect.Method;
+import java.util.LinkedList;
+import java.util.List;
 
 import static java.lang.String.format;
 import static java.lang.reflect.Modifier.*;
 import static java.util.Objects.requireNonNull;
-import static org.geektimes.commons.lang.util.AnnotationUtils.*;
+import static org.geektimes.commons.function.ThrowableSupplier.execute;
+import static org.geektimes.commons.lang.util.AnnotationUtils.isAnnotationPresent;
+import static org.geektimes.commons.lang.util.AnnotationUtils.isMetaAnnotation;
 import static org.geektimes.commons.reflect.util.ConstructorUtils.hasPublicNoArgConstructor;
 
 /**
@@ -45,6 +52,35 @@ public abstract class InterceptorUtils {
             validatorInterceptorClass(interceptorClass);
         }
         return false;
+    }
+
+    public static List<Object> sortInterceptors(List<Object> interceptors) {
+        List<Object> sortedInterceptors = new LinkedList<>(interceptors);
+        sortedInterceptors.sort(PriorityComparator.INSTANCE);
+        return sortedInterceptors;
+    }
+
+    public static <T> T unwrap(Class<T> type) {
+        return execute(type::newInstance);
+    }
+
+    public static <A extends Annotation> A searchAnnotation(Executable executable, Class<A> annotationType) {
+        A annotation = executable.getAnnotation(annotationType);
+        if (annotation == null) {
+            annotation = searchAnnotation(executable.getDeclaringClass(), annotationType);
+        }
+        return annotation;
+    }
+
+    public static <A extends Annotation> A searchAnnotation(Class<?> componentClass, Class<A> annotationType) {
+        A annotation = null;
+        if (!componentClass.isInterface()) {
+            do {
+                annotation = componentClass.getAnnotation(annotationType);
+                componentClass = componentClass.getSuperclass();
+            } while (annotation == null && componentClass != null);
+        }
+        return annotation;
     }
 
     /**
@@ -140,24 +176,15 @@ public abstract class InterceptorUtils {
         if (method == null) {
             return null;
         }
-        A annotation = findAnnotation(method, interceptorBindingType);
-        if (annotation == null) {
-            annotation = findAnnotation(method.getDeclaringClass(), interceptorBindingType);
-        }
-        return annotation;
+        return searchAnnotation(method, interceptorBindingType);
     }
 
     public static <A extends Annotation> A resolveInterceptorBinding(Constructor constructor, Class<A> interceptorBindingType) {
         if (constructor == null) {
             return null;
         }
-        A annotation = findAnnotation(constructor, interceptorBindingType);
-        if (annotation == null) {
-            annotation = findAnnotation(constructor.getDeclaringClass(), interceptorBindingType);
-        }
-        return annotation;
+        return searchAnnotation(constructor, interceptorBindingType);
     }
-
 
     static boolean isInterceptionMethod(Method method, Class<? extends Annotation> annotationType,
                                         Class<?> validReturnType) {

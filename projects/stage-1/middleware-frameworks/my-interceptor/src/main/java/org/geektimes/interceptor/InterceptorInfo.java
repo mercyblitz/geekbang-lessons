@@ -44,7 +44,7 @@ import static org.geektimes.interceptor.util.InterceptorUtils.validatorIntercept
  */
 public class InterceptorInfo {
 
-    private final InterceptorRegistry interceptorRegistry;
+    private final InterceptorManager interceptorManager;
 
     private final Class<?> interceptorClass;
 
@@ -62,7 +62,7 @@ public class InterceptorInfo {
 
     public InterceptorInfo(Class<?> interceptorClass) {
         validatorInterceptorClass(interceptorClass);
-        this.interceptorRegistry = InterceptorRegistry.getInstance(interceptorClass.getClassLoader());
+        this.interceptorManager = InterceptorManager.getInstance(interceptorClass.getClassLoader());
         this.interceptorClass = interceptorClass;
         Map<Class<? extends Annotation>, Method> interceptionMethods = resolveInterceptionMethods();
         this.aroundInvokeMethod = interceptionMethods.remove(AroundInvoke.class);
@@ -104,7 +104,7 @@ public class InterceptorInfo {
     }
 
     private InterceptorBindings resolveInterceptorBindings() {
-        return new InterceptorBindings(getAllDeclaredAnnotations(interceptorClass, interceptorRegistry::isInterceptorBinding));
+        return new InterceptorBindings(getAllDeclaredAnnotations(interceptorClass, interceptorManager::isInterceptorBinding));
     }
 
     public Class<?> getInterceptorClass() {
@@ -139,8 +139,8 @@ public class InterceptorInfo {
         return interceptorBindings.getInterceptorBindingTypes();
     }
 
-    public InterceptorRegistry getInterceptorRegistry() {
-        return interceptorRegistry;
+    public InterceptorManager getInterceptorRegistry() {
+        return interceptorManager;
     }
 
 }

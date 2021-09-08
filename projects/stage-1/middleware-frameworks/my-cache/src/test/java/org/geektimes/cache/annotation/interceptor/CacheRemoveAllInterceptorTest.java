@@ -18,8 +18,8 @@ package org.geektimes.cache.annotation.interceptor;
 
 import org.geektimes.cache.DataRepository;
 import org.geektimes.cache.InMemoryDataRepository;
-import org.geektimes.interceptor.DefaultInterceptorEnhancer;
-import org.geektimes.interceptor.InterceptorEnhancer;
+import org.geektimes.interceptor.DefaultComponentEnhancer;
+import org.geektimes.interceptor.ComponentEnhancer;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
@@ -34,7 +34,7 @@ public class CacheRemoveAllInterceptorTest {
 
     private DataRepository dataRepository = new InMemoryDataRepository();
 
-    private InterceptorEnhancer enhancer = new DefaultInterceptorEnhancer();
+    private ComponentEnhancer enhancer = new DefaultComponentEnhancer();
 
     @Test
     public void test() {

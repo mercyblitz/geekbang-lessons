@@ -33,17 +33,17 @@ class MethodInterceptorAdapter implements MethodInterceptor {
 
     private final Object target;
 
-    private final Object[] interceptors;
+    private final Object[] additionalInterceptors;
 
-    public MethodInterceptorAdapter(Object target, Object[] interceptors) {
+    public MethodInterceptorAdapter(Object target, Object... additionalInterceptors) {
         this.target = target;
-        this.interceptors = interceptors;
+        this.additionalInterceptors = additionalInterceptors;
     }
 
     @Override
     public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
         InvocationContext delegateContext = new CglibMethodInvocationContext(obj, method, proxy, args);
-        ChainableInvocationContext context = new ChainableInvocationContext(delegateContext, interceptors);
+        ChainableInvocationContext context = new ChainableInvocationContext(delegateContext, additionalInterceptors);
         return context.proceed();
     }
 }

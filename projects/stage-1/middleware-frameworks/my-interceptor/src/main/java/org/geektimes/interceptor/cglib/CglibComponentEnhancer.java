@@ -14,25 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.interceptor;
+package org.geektimes.interceptor.cglib;
 
-import org.junit.Test;
+
+import net.sf.cglib.proxy.Enhancer;
+import org.geektimes.interceptor.ComponentEnhancer;
+
+import javax.interceptor.Interceptor;
 
 /**
- * {@link DefaultInterceptorEnhancer} Test
+ * {@link Interceptor @Interceptor} enhancer by CGLIB
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class DefaultInterceptorEnhancerTest {
+public class CglibComponentEnhancer implements ComponentEnhancer {
 
-    private InterceptorEnhancer interceptorEnhancer = new DefaultInterceptorEnhancer();
-
-    @Test
-    public void testInterface() {
-        EchoService echoService = new EchoService();
-        echoService = interceptorEnhancer.enhance(echoService);
-        echoService.init();
-        echoService.echo("Hello,World");
+    @Override
+    public <T> T enhance(T source, Class<? super T> componentClass, Object... defaultInterceptors) {
+        Enhancer enhancer = new Enhancer();
+        enhancer.setSuperclass(componentClass);
+        enhancer.setCallback(new MethodInterceptorAdapter(source, defaultInterceptors));
+        return (T) enhancer.create();
     }
 }

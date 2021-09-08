@@ -14,28 +14,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.interceptor.cglib;
+package org.geektimes.interceptor;
 
-import org.geektimes.interceptor.EchoService;
-import org.junit.Test;
-
-import static org.geektimes.interceptor.Interceptor.loadInterceptors;
-
+import javax.interceptor.AroundInvoke;
+import javax.interceptor.InvocationContext;
 
 /**
- * {@link CglibInterceptorEnhancer} Test
+ * {@link MonitoringInterceptor} from Java Interceptor Specification
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class CglibInterceptorEnhancerTest {
+@Monitored
+@javax.interceptor.Interceptor
+public class MonitoringInterceptor {
 
-    @Test
-    public void test() {
-        CglibInterceptorEnhancer enhancer = new CglibInterceptorEnhancer();
-        EchoService echoService = new EchoService();
-        Object proxy = enhancer.enhance(echoService, loadInterceptors());
-        EchoService echoServiceProxy = (EchoService) proxy;
-        echoServiceProxy.echo("Hello,World");
+    @AroundInvoke
+    public Object monitorInvocation(InvocationContext context) throws Exception {
+        return context.proceed();
     }
 }

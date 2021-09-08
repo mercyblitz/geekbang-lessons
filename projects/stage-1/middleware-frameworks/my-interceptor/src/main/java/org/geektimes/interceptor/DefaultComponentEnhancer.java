@@ -16,39 +16,39 @@
  */
 package org.geektimes.interceptor;
 
-import org.geektimes.interceptor.cglib.CglibInterceptorEnhancer;
-import org.geektimes.interceptor.jdk.DynamicProxyInterceptorEnhancer;
+import org.geektimes.interceptor.cglib.CglibComponentEnhancer;
+import org.geektimes.interceptor.jdk.DynamicProxyComponentEnhancer;
 
 import static org.geektimes.commons.lang.util.ClassLoaderUtils.getClassLoader;
 
 /**
- * Default {@link InterceptorEnhancer}
+ * Default {@link ComponentEnhancer}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class DefaultInterceptorEnhancer implements InterceptorEnhancer {
+public class DefaultComponentEnhancer implements ComponentEnhancer {
 
-    private final InterceptorEnhancer jdkProxyInterceptorEnhancer;
+    private final ComponentEnhancer jdkProxyInterceptorEnhancer;
 
-    private final InterceptorEnhancer cglibInterceptorEnhancer;
+    private final ComponentEnhancer cglibInterceptorEnhancer;
 
-    private final InterceptorRegistry interceptorRegistry;
+    private final InterceptorManager interceptorManager;
 
-    public DefaultInterceptorEnhancer() {
-        this.jdkProxyInterceptorEnhancer = new DynamicProxyInterceptorEnhancer();
-        this.cglibInterceptorEnhancer = new CglibInterceptorEnhancer();
-        this.interceptorRegistry = InterceptorRegistry.getInstance(getClassLoader(this.getClass()));
-        this.interceptorRegistry.registerDiscoveredInterceptors();
+    public DefaultComponentEnhancer() {
+        this.jdkProxyInterceptorEnhancer = new DynamicProxyComponentEnhancer();
+        this.cglibInterceptorEnhancer = new CglibComponentEnhancer();
+        this.interceptorManager = InterceptorManager.getInstance(getClassLoader(this.getClass()));
+        this.interceptorManager.registerDiscoveredInterceptors();
     }
 
     @Override
-    public <T> T enhance(T source, Class<? super T> type, Object... interceptors) {
-        assertType(type);
-        if (type.isInterface()) {
-            return jdkProxyInterceptorEnhancer.enhance(source, type, interceptors);
+    public <T> T enhance(T source, Class<? super T> componentClass, Object... defaultInterceptors) {
+        assertType(componentClass);
+        if (componentClass.isInterface()) {
+            return jdkProxyInterceptorEnhancer.enhance(source, componentClass, defaultInterceptors);
         } else {
-            return cglibInterceptorEnhancer.enhance(source, type, interceptors);
+            return cglibInterceptorEnhancer.enhance(source, componentClass, defaultInterceptors);
         }
     }
 

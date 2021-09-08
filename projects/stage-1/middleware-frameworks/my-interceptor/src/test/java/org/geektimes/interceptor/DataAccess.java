@@ -17,25 +17,24 @@
 package org.geektimes.interceptor;
 
 import javax.interceptor.InterceptorBinding;
-import java.lang.annotation.Annotation;
-import java.util.Comparator;
+import java.lang.annotation.Inherited;
+import java.lang.annotation.Retention;
+import java.lang.annotation.Target;
+
+import static java.lang.annotation.ElementType.METHOD;
+import static java.lang.annotation.ElementType.TYPE;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
- * The {@link Comparator} of {@link InterceptorBinding Inteceptor Binding} annotation using the
- * {@link String} representing of {@link Annotation#toString() annotation}
+ * {@link DataAccess @DataAccess} annotation from Java Interceptor Specification.
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-class InterceptorBindingComparator implements Comparator<Annotation> {
-
-    final static Comparator<Annotation> INSTANCE = new InterceptorBindingComparator();
-
-    private InterceptorBindingComparator() {
-    }
-
-    @Override
-    public int compare(Annotation o1, Annotation o2) {
-        return o1.toString().compareTo(o2.toString());
-    }
+@Inherited
+@InterceptorBinding
+@Target({TYPE, METHOD})
+@Retention(RUNTIME)
+@Monitored
+public @interface DataAccess {
 }
