@@ -46,10 +46,11 @@ public class ExternalInterceptor {
     }
 
     @PostConstruct
-    public void postConstruct(InvocationContext context) {
+    public void postConstruct(InvocationContext context) throws Exception {
         String methodName = context.getMethod().getName();
         methodNames.add(methodName);
         logger.info("Post Construct : " + context.getMethod().getName());
+        context.proceed();
     }
 
     public Set<String> getMethodNames() {
