@@ -21,6 +21,7 @@ import javax.annotation.PreDestroy;
 import javax.interceptor.InvocationContext;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -92,8 +93,12 @@ public class ChainableInvocationContext implements InvocationContext {
         if (pos < size) {
             int currentPos = pos++;
             Object interceptor = interceptors.get(currentPos);
-            Method interceptionMethod = resolveInterceptionMethod(interceptor);
-            return interceptionMethod.invoke(interceptor, this);
+            Collection<Method> interceptionMethods = resolveInterceptionMethods(interceptor);
+            Object result = null;
+            for (Method interceptionMethod : interceptionMethods) {
+                result = interceptionMethod.invoke(interceptor, this);
+            }
+            return result;
         } else {
             return delegateContext.proceed();
         }
@@ -113,26 +118,30 @@ public class ChainableInvocationContext implements InvocationContext {
     }
 
 
-    private Method resolveInterceptionMethod(Object interceptor) {
+    private Collection<Method> resolveInterceptionMethods(Object interceptor) {
         InterceptorInfo interceptorInfo = interceptorManager.getInterceptorInfo(interceptor.getClass());
 
-        final Method interceptionMethod;  // nerver null
+        if (interceptorInfo == null) { // interceptor may be a default(external) Interceptor
+            interceptorInfo = new InterceptorInfo(interceptor.getClass());
+        }
+
+        final Collection<Method> interceptionMethods;  // nerver null
 
         if (getTimer() != null) { // If the "Timer" is present
-            interceptionMethod = interceptorInfo.getAroundTimeoutMethod();
+            interceptionMethods = interceptorInfo.getAroundTimeoutMethods();
         } else if (getConstructor() != null) { // If the "Constructor" should be intercepted
-            interceptionMethod = interceptorInfo.getAroundConstructMethod();
+            interceptionMethods = interceptorInfo.getAroundConstructMethods();
         } else {
             Method method = getMethod();
             if (method.isAnnotationPresent(PostConstruct.class)) {
-                interceptionMethod = interceptorInfo.getPostConstructMethod();
+                interceptionMethods = interceptorInfo.getPostConstructMethods();
             } else if (method.isAnnotationPresent(PreDestroy.class)) {
-                interceptionMethod = interceptorInfo.getPreDestroyMethod();
+                interceptionMethods = interceptorInfo.getPreDestroyMethods();
             } else {
-                interceptionMethod = interceptorInfo.getAroundInvokeMethod();
+                interceptionMethods = interceptorInfo.getAroundInvokeMethods();
             }
         }
 
-        return interceptionMethod;
+        return interceptionMethods;
     }
 }

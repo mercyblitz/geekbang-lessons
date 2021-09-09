@@ -1,1 +1,1 @@
-org.geektimes.interceptor.LoggingInterceptor
+org.geektimes.interceptor.ExtLoggingInterceptor

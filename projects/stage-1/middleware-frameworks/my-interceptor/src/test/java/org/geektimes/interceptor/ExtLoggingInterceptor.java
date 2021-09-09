@@ -16,29 +16,25 @@
  */
 package org.geektimes.interceptor;
 
-import org.junit.Test;
+import org.geektimes.interceptor.Logging;
+import org.geektimes.interceptor.LoggingInterceptor;
 
-import static org.geektimes.commons.collection.util.CollectionUtils.asSet;
-import static org.junit.Assert.assertEquals;
+import javax.annotation.PostConstruct;
+import javax.interceptor.Interceptor;
+import javax.interceptor.InvocationContext;
+import java.util.logging.Logger;
 
 /**
- * {@link DefaultComponentEnhancer} Test
- *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
- * @since 1.0.0
+ * @since
  */
-public class DefaultComponentEnhancerTest {
+@Logging
+@Interceptor
+public class ExtLoggingInterceptor extends LoggingInterceptor {
 
-    private ComponentEnhancer interceptorEnhancer = new DefaultComponentEnhancer();
-
-    @Test
-    public void testInterface() {
-        EchoService echoService = new EchoService();
-        ExternalInterceptor interceptor = new ExternalInterceptor();
-        echoService = interceptorEnhancer.enhance(echoService, interceptor);
-        echoService.init();
-        echoService.echo("Hello,World");
-
-        assertEquals(asSet("init", "echo"), interceptor.getMethodNames());
+    @PostConstruct
+    public void postConstruct(InvocationContext context) throws Exception {
+        Logger logger = Logger.getLogger(getClass().getName());
+        logger.info("postConstruct");
     }
 }
