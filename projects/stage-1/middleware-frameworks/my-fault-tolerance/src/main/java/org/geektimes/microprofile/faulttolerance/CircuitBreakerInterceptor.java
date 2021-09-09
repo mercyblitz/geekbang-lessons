@@ -21,6 +21,7 @@ import org.eclipse.microprofile.faulttolerance.exceptions.CircuitBreakerOpenExce
 import org.geektimes.commons.util.TimeUtils;
 import org.geektimes.interceptor.AnnotatedInterceptor;
 
+import javax.annotation.Priority;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import java.util.Arrays;
@@ -29,7 +30,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.LongAdder;
 
+import static javax.interceptor.Interceptor.Priority.LIBRARY_BEFORE;
 import static org.geektimes.commons.reflect.util.ClassUtils.isDerived;
+import static org.geektimes.microprofile.faulttolerance.CircuitBreakerInterceptor.CIRCUIT_BREAKER_PRIORITY;
 
 /**
  * The interceptor implementation for the annotation {@link CircuitBreaker} of
@@ -40,13 +43,15 @@ import static org.geektimes.commons.reflect.util.ClassUtils.isDerived;
  */
 @CircuitBreaker
 @Interceptor
+@Priority(CIRCUIT_BREAKER_PRIORITY)
 public class CircuitBreakerInterceptor extends AnnotatedInterceptor<CircuitBreaker> {
+
+    public static final int CIRCUIT_BREAKER_PRIORITY = LIBRARY_BEFORE + 100;
 
     private final ConcurrentMap<CircuitBreaker, CountableSlidingWindow> slidingWindowsCache = new ConcurrentHashMap<>();
 
     public CircuitBreakerInterceptor() {
         super();
-        setPriority(0);
     }
 
     @Override

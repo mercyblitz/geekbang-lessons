@@ -19,6 +19,7 @@ package org.geektimes.microprofile.faulttolerance;
 import org.eclipse.microprofile.faulttolerance.Retry;
 import org.geektimes.interceptor.AnnotatedInterceptor;
 
+import javax.annotation.Priority;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import java.util.Optional;
@@ -28,8 +29,12 @@ import static java.lang.String.format;
 import static java.util.Optional.empty;
 import static java.util.Optional.of;
 import static java.util.concurrent.Executors.newScheduledThreadPool;
+import static javax.interceptor.Interceptor.Priority.LIBRARY_BEFORE;
 import static org.geektimes.commons.reflect.util.ClassUtils.isDerived;
 import static org.geektimes.commons.util.TimeUtils.toTimeUnit;
+import static org.geektimes.microprofile.faulttolerance.BulkheadInterceptor.BULKHEAD_PRIORITY;
+import static org.geektimes.microprofile.faulttolerance.FallbackInterceptor.FALLBACK_PRIORITY;
+import static org.geektimes.microprofile.faulttolerance.RetryInterceptor.RETRY_PRIORITY;
 
 /**
  * The interceptor implementation for the annotation {@link Retry} of
@@ -40,14 +45,16 @@ import static org.geektimes.commons.util.TimeUtils.toTimeUnit;
  */
 @Retry
 @Interceptor
+@Priority(RETRY_PRIORITY)
 public class RetryInterceptor extends AnnotatedInterceptor<Retry> {
+
+    public static final int RETRY_PRIORITY = FALLBACK_PRIORITY + 100;
 
     private final ScheduledExecutorService executorService = newScheduledThreadPool(2);
 
 
     public RetryInterceptor() {
         super();
-        setPriority(300);
     }
 
     @Override

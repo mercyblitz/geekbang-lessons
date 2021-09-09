@@ -22,6 +22,7 @@ import org.eclipse.microprofile.faulttolerance.FallbackHandler;
 import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefinitionException;
 import org.geektimes.interceptor.AnnotatedInterceptor;
 
+import javax.annotation.Priority;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import java.lang.reflect.Method;
@@ -29,6 +30,8 @@ import java.lang.reflect.Method;
 import static java.lang.String.format;
 import static org.geektimes.commons.reflect.util.ClassUtils.getTypes;
 import static org.geektimes.commons.reflect.util.ClassUtils.isDerived;
+import static org.geektimes.microprofile.faulttolerance.BulkheadInterceptor.BULKHEAD_PRIORITY;
+import static org.geektimes.microprofile.faulttolerance.FallbackInterceptor.FALLBACK_PRIORITY;
 
 /**
  * The interceptor implementation for the annotation {@link Fallback} of
@@ -38,11 +41,13 @@ import static org.geektimes.commons.reflect.util.ClassUtils.isDerived;
  * @since 1.0.0
  */
 @Interceptor
+@Priority(FALLBACK_PRIORITY)
 public class FallbackInterceptor extends AnnotatedInterceptor<Fallback> {
+
+    public static final int FALLBACK_PRIORITY = BULKHEAD_PRIORITY + 100;
 
     public FallbackInterceptor() {
         super();
-        setPriority(200);
     }
 
     @Override

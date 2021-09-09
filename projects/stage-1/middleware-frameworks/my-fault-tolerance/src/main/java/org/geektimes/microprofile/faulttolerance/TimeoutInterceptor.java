@@ -19,12 +19,15 @@ package org.geektimes.microprofile.faulttolerance;
 import org.eclipse.microprofile.faulttolerance.Timeout;
 import org.geektimes.interceptor.AnnotatedInterceptor;
 
+import javax.annotation.Priority;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import java.time.temporal.ChronoUnit;
 import java.util.concurrent.*;
 
 import static org.geektimes.commons.util.TimeUtils.toTimeUnit;
+import static org.geektimes.microprofile.faulttolerance.RetryInterceptor.RETRY_PRIORITY;
+import static org.geektimes.microprofile.faulttolerance.TimeoutInterceptor.TIMEOUT_PRIORITY;
 
 /**
  * The interceptor implementation for the annotation {@link Timeout} of
@@ -35,14 +38,16 @@ import static org.geektimes.commons.util.TimeUtils.toTimeUnit;
  */
 @Timeout
 @Interceptor
+@Priority(TIMEOUT_PRIORITY)
 public class TimeoutInterceptor extends AnnotatedInterceptor<Timeout> {
+
+    public static final int TIMEOUT_PRIORITY = RETRY_PRIORITY + 100;
 
     // TODO ExecutorService fixed size = external Server Thread numbers
     private final ExecutorService executor = ForkJoinPool.commonPool();
 
     public TimeoutInterceptor() {
         super();
-        setPriority(400);
     }
 
     @Override

@@ -21,12 +21,15 @@ import org.eclipse.microprofile.faulttolerance.exceptions.FaultToleranceDefiniti
 import org.geektimes.commons.function.ThrowableSupplier;
 import org.geektimes.interceptor.AnnotatedInterceptor;
 
+import javax.annotation.Priority;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import java.lang.reflect.Method;
 import java.util.concurrent.*;
 
 import static java.util.concurrent.CompletableFuture.supplyAsync;
+import static org.geektimes.microprofile.faulttolerance.AsynchronousInterceptor.ASYNCHRONOUS_PRIORITY;
+import static org.geektimes.microprofile.faulttolerance.TimeoutInterceptor.TIMEOUT_PRIORITY;
 
 /**
  * The interceptor implementation for the annotation {@link Asynchronous} of
@@ -37,14 +40,16 @@ import static java.util.concurrent.CompletableFuture.supplyAsync;
  */
 @Asynchronous
 @Interceptor
+@Priority(ASYNCHRONOUS_PRIORITY)
 public class AsynchronousInterceptor extends AnnotatedInterceptor<Asynchronous> {
+
+    public static final int ASYNCHRONOUS_PRIORITY = TIMEOUT_PRIORITY + 100;
 
     // TODO ExecutorService fixed size = external Server Thread numbers
     private final ExecutorService executor = ForkJoinPool.commonPool();
 
     public AsynchronousInterceptor() {
         super();
-        setPriority(500);
     }
 
     @Override

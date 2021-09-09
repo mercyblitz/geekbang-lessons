@@ -21,6 +21,7 @@ import org.eclipse.microprofile.faulttolerance.Bulkhead;
 import org.eclipse.microprofile.faulttolerance.exceptions.BulkheadException;
 import org.geektimes.interceptor.AnnotatedInterceptor;
 
+import javax.annotation.Priority;
 import javax.interceptor.Interceptor;
 import javax.interceptor.InvocationContext;
 import java.lang.reflect.Method;
@@ -28,6 +29,8 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import static java.lang.String.format;
+import static org.geektimes.microprofile.faulttolerance.BulkheadInterceptor.BULKHEAD_PRIORITY;
+import static org.geektimes.microprofile.faulttolerance.CircuitBreakerInterceptor.CIRCUIT_BREAKER_PRIORITY;
 
 /**
  * The interceptor implementation for the annotation {@link Bulkhead} of
@@ -38,7 +41,10 @@ import static java.lang.String.format;
  */
 @Bulkhead
 @Interceptor
+@Priority(BULKHEAD_PRIORITY)
 public class BulkheadInterceptor extends AnnotatedInterceptor<Bulkhead> {
+
+    public static final int BULKHEAD_PRIORITY = CIRCUIT_BREAKER_PRIORITY + 100;
 
     private final ConcurrentMap<Bulkhead, ExecutorService> executorsCache = new ConcurrentHashMap<>();
 
@@ -46,7 +52,6 @@ public class BulkheadInterceptor extends AnnotatedInterceptor<Bulkhead> {
 
     public BulkheadInterceptor() {
         super();
-        setPriority(100);
     }
 
     @Override
