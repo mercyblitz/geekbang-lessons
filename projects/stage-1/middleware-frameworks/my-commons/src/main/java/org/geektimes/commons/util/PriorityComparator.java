@@ -44,7 +44,7 @@ public class PriorityComparator implements Comparator<Object> {
 
     @Override
     public int compare(Object o1, Object o2) {
-        return compare(o1.getClass(), o2.getClass());
+        return compare(resolveClass(o1), resolveClass(o2));
     }
 
     public static int compare(Class<?> type1, Class<?> type2) {
@@ -59,6 +59,10 @@ public class PriorityComparator implements Comparator<Object> {
         int priorityValue2 = getValue(priority2);
 
         return Integer.compare(priorityValue1, priorityValue2);
+    }
+
+    private static Class<?> resolveClass(Object object) {
+        return object instanceof Class ? (Class) object : object.getClass();
     }
 
     private static int getValue(Priority priority) {

@@ -51,7 +51,6 @@ import static java.lang.System.getProperty;
 import static java.util.Collections.*;
 import static java.util.Objects.requireNonNull;
 import static org.geektimes.commons.collection.util.CollectionUtils.newLinkedHashSet;
-import static org.geektimes.commons.collection.util.CollectionUtils.asSet;
 import static org.geektimes.commons.lang.util.StringUtils.endsWith;
 import static org.geektimes.commons.lang.util.StringUtils.isBlank;
 import static org.geektimes.enterprise.inject.standard.beans.BeanArchiveType.EXPLICIT;
@@ -80,24 +79,17 @@ public class BeanArchiveManager {
 
     private final SimpleClassScanner classScanner;
 
-    // Discovered types
+    private final Map<BeanTypeSource, List<Class<?>>> beanClasses;
 
-    private final Set<Class<?>> beanClasses;
+    private final Map<BeanTypeSource, List<Class<?>>> interceptorClasses;
 
-    private final List<Class<?>> interceptorClasses;
+    private final Map<BeanTypeSource, List<Class<?>>> decoratorClasses;
 
-    private final List<Class<?>> decoratorClasses;
-
-    private final List<Class<?>> alternativeClasses;
+    private final Map<BeanTypeSource, List<Class<?>>> alternativeClasses;
 
     private final Set<Class<? extends Annotation>> alternativeStereotypeClasses;
 
     // Synthetic meta-data
-
-    /**
-     * Synthetic Bean classes from {@link SeContainerInitializer#addBeanClasses(Class[])}
-     */
-    private final Set<Class<?>> syntheticBeanClasses;
 
     /**
      * Synthetic package names from {@link SeContainerInitializer#addPackages(boolean, Package...)}
@@ -147,13 +139,14 @@ public class BeanArchiveManager {
         this.classLoader = classLoader;
         this.beansReader = ServiceLoaders.loadSpi(BeansReader.class, classLoader);
         this.classScanner = SimpleClassScanner.INSTANCE;
-        this.beanClasses = new LinkedHashSet<>();
-        this.interceptorClasses = new LinkedList<>();
-        this.decoratorClasses = new LinkedList<>();
-        this.alternativeClasses = new LinkedList<>();
+
+        this.beanClasses = new LinkedHashMap<>();
+        this.interceptorClasses = new LinkedHashMap<>();
+        this.decoratorClasses = new LinkedHashMap<>();
+        this.alternativeClasses = new LinkedHashMap<>();
+
         this.alternativeStereotypeClasses = new LinkedHashSet<>();
 
-        this.syntheticBeanClasses = new LinkedHashSet<>();
         this.syntheticPackagesToScan = new TreeMap<>();
         this.syntheticQualifiers = new LinkedHashSet<>();
         this.syntheticStereotypes = new LinkedHashMap<>();
@@ -165,21 +158,18 @@ public class BeanArchiveManager {
         this.scanImplicitEnabled = false;
     }
 
-    public BeanArchiveManager addSyntheticPackage(Package packageToScan, boolean scanRecursively) {
+    public void addSyntheticPackage(Package packageToScan, boolean scanRecursively) {
         requireNonNull(packageToScan, "The 'packageToScan' argument must not be null!");
-        return addSyntheticPackage(packageToScan.getName(), scanRecursively);
+        addSyntheticPackage(packageToScan.getName(), scanRecursively);
     }
 
-    public BeanArchiveManager addSyntheticPackage(String packageToScan, boolean scanRecursively) {
+    public void addSyntheticPackage(String packageToScan, boolean scanRecursively) {
         requireNonNull(packageToScan, "The 'packageToScan' argument must not be null!");
         this.syntheticPackagesToScan.put(packageToScan, scanRecursively);
-        return this;
     }
 
-    public BeanArchiveManager addSyntheticBeanClass(Class<?> beanClass) {
-        requireNonNull(beanClass, "The 'beanClass' argument must not be null!");
-        this.syntheticBeanClasses.add(beanClass);
-        return this;
+    public void addSyntheticBeanClass(Class<?> beanClass) {
+        addBeanType(beanClass, BeanTypeSource.SYNTHETIC, beanClasses);
     }
 
     public BeanArchiveManager addSyntheticQualifier(Class<? extends Annotation> qualifier) {
@@ -221,6 +211,24 @@ public class BeanArchiveManager {
                 this::addBeanClass);
     }
 
+
+    private void addEnabledBeanClass(Class<?> beanClass) {
+        addBeanType(beanClass, BeanTypeSource.ENABLED, beanClasses);
+    }
+
+    private void addDiscoveredBeanClass(Class<?> beanClass) {
+        addBeanType(beanClass, BeanTypeSource.DISCOVERED, beanClasses);
+    }
+
+    private static void addBeanType(Class<?> beanType, BeanTypeSource beanTypeSource,
+                                    Map<BeanTypeSource, List<Class<?>>> beanTypesRepository) {
+        requireNonNull(beanType, "The 'class' argument must not be null!");
+        List<Class<?>> beanTypes = beanTypesRepository.computeIfAbsent(beanTypeSource, source -> new LinkedList<>());
+        if (!beanTypes.contains(beanType)) {
+            beanTypes.add(beanType);
+        }
+    }
+
     /**
      * Add provided bean classes.
      *
@@ -251,7 +259,7 @@ public class BeanArchiveManager {
      *
      * @param interceptors
      */
-    private void addInterceptors(org.geektimes.enterprise.inject.standard.beans.xml.bind.Interceptors interceptors) {
+    private void enableInterceptors(org.geektimes.enterprise.inject.standard.beans.xml.bind.Interceptors interceptors) {
         if (interceptors != null) {
             List<String> classNames = interceptors.getClazz();
             loadAnnotatedClasses(classNames, javax.interceptor.Interceptor.class)
@@ -288,7 +296,7 @@ public class BeanArchiveManager {
      *
      * @param decorators
      */
-    private void addDecorators(org.geektimes.enterprise.inject.standard.beans.xml.bind.Decorators decorators) {
+    private void enableDecorators(org.geektimes.enterprise.inject.standard.beans.xml.bind.Decorators decorators) {
         if (decorators != null) {
             List<String> classNames = decorators.getClazz();
             loadAnnotatedClasses(classNames, javax.decorator.Decorator.class)
@@ -309,7 +317,7 @@ public class BeanArchiveManager {
     }
 
 
-    private void addAlternatives(Alternatives alternatives) {
+    private void enableAlternatives(Alternatives alternatives) {
 //        alternatives.getClazzOrStereotype()
 //                .stream()
 //                .map(this::)
@@ -392,14 +400,14 @@ public class BeanArchiveManager {
      */
     public void discoverTypes() {
         if (!discovered) {
-            discoverTypesInBeanArchives();
-            discoverTypesInNonBeanArchivesAsImplicit();
+            discoverTypesInExplicitBeanArchives();
+            discoverTypesInImplicitBeanArchives();
             discoverTypesInSyntheticBeanArchives();
             discovered = true;
         }
     }
 
-    private void discoverTypesInBeanArchives() {
+    private void discoverTypesInExplicitBeanArchives() {
         try {
             Enumeration<URL> beansXMLResources = classLoader.getResources(BEANS_XML_RESOURCE_NAME);
             while (beansXMLResources.hasMoreElements()) {
@@ -434,7 +442,7 @@ public class BeanArchiveManager {
      *      <code>"javax.enterprise.inject.scan.implicit"</code> as key and Boolean.TRUE as value.</li>
      * </ul>
      */
-    private void discoverTypesInNonBeanArchivesAsImplicit() {
+    private void discoverTypesInImplicitBeanArchives() {
         if (isScanImplicitEnabled()) {
             Set<String> classPaths = ClassPathUtils.getClassPaths();
             classPaths.stream().map(File::new).forEach(archiveFile -> {
@@ -484,11 +492,11 @@ public class BeanArchiveManager {
             // Exclude filters
             excludeFilters(discoveredTypes, beans);
             // Add Interceptor classes
-            addInterceptors(beans.getInterceptors());
+            enableInterceptors(beans.getInterceptors());
             // Add Decorator classes
-            addDecorators(beans.getDecorators());
+            enableDecorators(beans.getDecorators());
             // Add Alternative classes
-            addAlternatives(beans.getAlternatives());
+            enableAlternatives(beans.getAlternatives());
             // Trimmed bean archive
             if (!trimBeanArchive(discoveredTypes, beans)) {
                 // Add bean classes from the remaining discovered types

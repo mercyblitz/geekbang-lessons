@@ -25,6 +25,7 @@ import org.geektimes.enterprise.inject.standard.producer.ProducerFieldFactory;
 import org.geektimes.enterprise.inject.standard.producer.ProducerMethodBeanAttributes;
 import org.geektimes.enterprise.inject.standard.producer.ProducerMethodFactory;
 import org.geektimes.enterprise.inject.util.Annotations;
+import org.geektimes.interceptor.InterceptorManager;
 
 import javax.el.ELResolver;
 import javax.el.ExpressionFactory;
@@ -56,6 +57,7 @@ import static org.geektimes.enterprise.inject.util.Injections.getMethodParameter
 import static org.geektimes.enterprise.inject.util.Injections.validateForbiddenAnnotation;
 import static org.geektimes.enterprise.inject.util.Parameters.isConstructorParameter;
 import static org.geektimes.enterprise.inject.util.Parameters.isMethodParameter;
+import static org.geektimes.interceptor.InterceptorManager.getInstance;
 
 /**
  * Standard {@link BeanManager}
@@ -79,17 +81,21 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
      */
     public static final String SCAN_IMPLICIT_PROPERTY_NAME = "javax.enterprise.inject.scan.implicit";
 
-    private final Map<String, Object> properties;
+    private ClassLoader classLoader;
 
-    private final Map<Class<? extends Extension>, Extension> extensions;
+    private final Map<String, Object> properties;
 
     private final BeanArchiveManager beanArchiveManager;
 
     private final ObserverMethodManager observerMethodsManager;
 
-    private ClassLoader classLoader;
+    private final InterceptorManager interceptorManager;
+
+    private final Map<Class<? extends Extension>, Extension> extensions;
 
     private final Map<String, AnnotatedType<?>> beanTypes;
+
+    private final DisposerMethodManager disposerMethodManager;
 
     private final Map<String, AnnotatedType<?>> alternativeTypes;
 
@@ -101,21 +107,22 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     private final List<ManagedBean<?>> managedBeans;
 
-    private final DisposerMethodManager disposerMethodManager;
-
     public StandardBeanManager() {
         this.classLoader = ClassLoaderUtils.getClassLoader(getClass());
+
+        this.beanArchiveManager = new BeanArchiveManager(classLoader);
+        this.observerMethodsManager = new ObserverMethodManager(this);
+        this.disposerMethodManager = new DisposerMethodManager(this);
+        this.interceptorManager = getInstance(classLoader);
+
         this.properties = new HashMap<>();
         this.extensions = new LinkedHashMap<>();
-        this.observerMethodsManager = new ObserverMethodManager(this);
-        this.beanArchiveManager = new BeanArchiveManager(classLoader);
         this.beanTypes = new LinkedHashMap<>();
         this.alternativeTypes = new LinkedHashMap<>();
         this.interceptorTypes = new LinkedHashMap<>();
         this.decoratorTypes = new LinkedHashMap<>();
         this.syntheticTypes = new LinkedHashMap<>();
         this.managedBeans = new LinkedList<>();
-        this.disposerMethodManager = new DisposerMethodManager(this);
     }
 
     @Override
@@ -554,7 +561,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         fireProcessInjectionPointEvents(managedBean);
         fireProcessInjectionTarget(beanType, managedBean);
         fireProcessBeanAttributesEvent(beanType, managedBean);
-        if(!managedBean.isVetoed()){ // vetoed if ProcessBeanAttributes.veto() method was invoked
+        if (!managedBean.isVetoed()) { // vetoed if ProcessBeanAttributes.veto() method was invoked
             fireProcessBeanEvent(beanType, managedBean);
             determineProducerMethods(managedBean);
             determineProducerFields(managedBean);
@@ -651,6 +658,12 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     private void determineInterceptorBean(AnnotatedType<?> interceptorType) {
         // TODO
+        registerInterceptorClass(interceptorType);
+    }
+
+    private void registerInterceptorClass(AnnotatedType<?> interceptorType) {
+        Class<?> interceptorClass = interceptorType.getJavaClass();
+        interceptorManager.registerInterceptorClass(interceptorClass);
     }
 
     private void determineDecoratorBeans() {

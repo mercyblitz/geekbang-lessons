@@ -68,7 +68,7 @@ public class DefaultInterceptorManager implements InterceptorManager {
 
     public DefaultInterceptorManager() {
         this.interceptorBindingTypes = new LinkedHashSet<>();
-        this.interceptorInfoRepository = new LinkedHashMap<>();
+        this.interceptorInfoRepository = new TreeMap<>(PriorityComparator.INSTANCE);
         this.bindingInterceptors = new LinkedHashMap<>();
         this.interceptorsCache = new LinkedHashMap<>();
         registerDefaultInterceptorBindingType();
@@ -164,6 +164,12 @@ public class DefaultInterceptorManager implements InterceptorManager {
                 interceptorBindingTypes.contains(annotationType);
     }
 
+    @Override
+    public Set<Class<?>> getInterceptorClasses() {
+        return interceptorInfoRepository.keySet();
+    }
+
+    @Override
     public Set<Class<? extends Annotation>> getInterceptorBindingTypes() {
         return unmodifiableSet(interceptorBindingTypes);
     }

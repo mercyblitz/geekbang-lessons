@@ -46,6 +46,7 @@ public class AfterTypeDiscoveryEvent extends ContainerEvent implements AfterType
     @Override
     public List<Class<?>> getAlternatives() {
         getCallerExtension();
+        // FIXME
         return beanArchiveManager.getAlternativeClasses();
     }
 
@@ -60,12 +61,14 @@ public class AfterTypeDiscoveryEvent extends ContainerEvent implements AfterType
     @Override
     public List<Class<?>> getInterceptors() {
         getCallerExtension();
+        // FIXME
         return beanArchiveManager.getInterceptorClasses();
     }
 
     @Override
     public List<Class<?>> getDecorators() {
         getCallerExtension();
+        // FIXME
         return beanArchiveManager.getDecoratorClasses();
     }
 
