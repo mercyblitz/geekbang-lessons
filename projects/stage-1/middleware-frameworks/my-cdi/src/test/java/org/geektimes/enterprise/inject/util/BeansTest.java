@@ -70,14 +70,14 @@ public class BeansTest {
 
     @Decorator
     @Interceptor
-    static class A {
+    public static class A {
     }
 
-    static class B {
+    public static class B {
         public String name;
     }
 
-    static class C<T> {
+    public static class C<T> {
 
     }
 
