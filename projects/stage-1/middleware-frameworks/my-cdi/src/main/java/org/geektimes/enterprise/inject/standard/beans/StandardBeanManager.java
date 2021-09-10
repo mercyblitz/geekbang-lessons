@@ -261,14 +261,13 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     @Override
     public boolean isInterceptorBinding(Class<? extends Annotation> annotationType) {
-        return beanArchiveManager.isInterceptorBinding(annotationType);
+        return interceptorManager.isInterceptorBindingType(annotationType);
     }
 
     @Override
     public boolean isStereotype(Class<? extends Annotation> annotationType) {
         return beanArchiveManager.isStereotype(annotationType);
     }
-
 
     @Override
     public Set<Annotation> getInterceptorBindingDefinition(Class<? extends Annotation> bindingType) {
@@ -500,6 +499,8 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
      * that is not excluded from discovery by an exclude filter as defined in Exclude filters.
      */
     private void performTypeDiscovery() {
+
+        beanArchiveManager.discoverTypes();
 
         discoverBeanTypes().forEach(this::registerBeanType);
 
@@ -924,22 +925,18 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     }
 
     private Set<AnnotatedType<?>> discoverBeanTypes() {
-        beanArchiveManager.discoverTypes();
         return createAnnotatedTypes(beanArchiveManager.getBeanClasses());
     }
 
     private Set<AnnotatedType<?>> discoverAlternativeTypes() {
-        beanArchiveManager.discoverTypes();
         return createAnnotatedTypes(beanArchiveManager.getAlternativeClasses());
     }
 
     private Set<AnnotatedType<?>> discoverInterceptorTypes() {
-        beanArchiveManager.discoverTypes();
         return createAnnotatedTypes(beanArchiveManager.getInterceptorClasses());
     }
 
     public Set<AnnotatedType<?>> discoverDecoratorTypes() {
-        beanArchiveManager.discoverTypes();
         return createAnnotatedTypes(beanArchiveManager.getDecoratorClasses());
     }
 

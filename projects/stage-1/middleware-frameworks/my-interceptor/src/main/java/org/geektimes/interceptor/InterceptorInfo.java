@@ -151,7 +151,7 @@ public class InterceptorInfo {
         return preDestroyMethods;
     }
 
-    InterceptorBindings getInterceptorBindings() {
+    public InterceptorBindings getInterceptorBindings() {
         return interceptorBindings;
     }
 
