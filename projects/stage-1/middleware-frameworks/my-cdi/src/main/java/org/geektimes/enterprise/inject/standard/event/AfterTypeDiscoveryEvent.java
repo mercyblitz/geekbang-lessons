@@ -24,6 +24,9 @@ import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.configurator.AnnotatedTypeConfigurator;
 import java.util.List;
 
+import static org.geektimes.enterprise.inject.standard.beans.BeanTypeSource.DISCOVERED;
+import static org.geektimes.enterprise.inject.standard.beans.BeanTypeSource.SYNTHETIC;
+
 /**
  * {@link AfterTypeDiscovery} Event is fired by container when it has fully completed the type discovery
  * process and before it begins the bean discovery process.
@@ -46,8 +49,7 @@ public class AfterTypeDiscoveryEvent extends ContainerEvent implements AfterType
     @Override
     public List<Class<?>> getAlternatives() {
         getCallerExtension();
-        // FIXME
-        return beanArchiveManager.getAlternativeClasses();
+        return beanArchiveManager.getAlternativeClasses(DISCOVERED, SYNTHETIC);
     }
 
     /**
@@ -62,14 +64,14 @@ public class AfterTypeDiscoveryEvent extends ContainerEvent implements AfterType
     public List<Class<?>> getInterceptors() {
         getCallerExtension();
         // FIXME
-        return beanArchiveManager.getInterceptorClasses();
+        return beanArchiveManager.getInterceptorClasses(DISCOVERED, SYNTHETIC);
     }
 
     @Override
     public List<Class<?>> getDecorators() {
         getCallerExtension();
         // FIXME
-        return beanArchiveManager.getDecoratorClasses();
+        return beanArchiveManager.getDecoratorClasses(DISCOVERED, SYNTHETIC);
     }
 
     @Override

@@ -68,15 +68,15 @@ public class StandardContainer implements SeContainer {
     }
 
     void addInterceptors(Class<?>... interceptorClasses) {
-        standardBeanManager.interceptorClasses(interceptorClasses);
+        standardBeanManager.syntheticInterceptors(interceptorClasses);
     }
 
     void addDecorators(Class<?>... decoratorClasses) {
-        standardBeanManager.decoratorClasses(decoratorClasses);
+        standardBeanManager.syntheticDecorators(decoratorClasses);
     }
 
     void addAlternatives(Class<?>... alternativeClasses) {
-        standardBeanManager.alternativeClasses(alternativeClasses);
+        standardBeanManager.syntheticAlternatives(alternativeClasses);
     }
 
     void addAlternativeStereotypes(Class<? extends Annotation>... alternativeStereotypeClasses) {

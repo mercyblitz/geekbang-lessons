@@ -67,7 +67,6 @@ import static org.geektimes.interceptor.InterceptorManager.getInstance;
  */
 public class StandardBeanManager implements BeanManager, Instance<Object> {
 
-
     /**
      * An archive which doesn’t contain a beans.xml file can’t be discovered as an implicit bean archive unless:
      *
@@ -862,18 +861,18 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         extensions.put(extension.getClass(), extension);
     }
 
-    public StandardBeanManager interceptorClasses(Class<?>... interceptorClasses) {
-        iterate(interceptorClasses, beanArchiveManager::addInterceptorClass);
+    public StandardBeanManager syntheticInterceptors(Class<?>... interceptorClasses) {
+        iterate(interceptorClasses, beanArchiveManager::addSyntheticInterceptorClass);
         return this;
     }
 
-    public StandardBeanManager decoratorClasses(Class<?>... decoratorClasses) {
-        iterate(decoratorClasses, beanArchiveManager::addDecoratorClass);
+    public StandardBeanManager syntheticDecorators(Class<?>... decoratorClasses) {
+        iterate(decoratorClasses, beanArchiveManager::addSyntheticDecoratorClass);
         return this;
     }
 
-    public StandardBeanManager alternativeClasses(Class<?>... alternativeClasses) {
-        iterate(alternativeClasses, beanArchiveManager::addAlternativeClass);
+    public StandardBeanManager syntheticAlternatives(Class<?>... alternativeClasses) {
+        iterate(alternativeClasses, beanArchiveManager::addSyntheticAlternativeClass);
         return this;
     }
 
