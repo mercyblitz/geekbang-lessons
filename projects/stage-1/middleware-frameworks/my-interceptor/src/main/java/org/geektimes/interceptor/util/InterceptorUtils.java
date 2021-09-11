@@ -49,7 +49,7 @@ public abstract class InterceptorUtils {
 
     public static boolean isInterceptorClass(Class<?> interceptorClass) {
         if (isAnnotationPresent(interceptorClass, INTERCEPTOR_ANNOTATION_TYPE)) {
-            validatorInterceptorClass(interceptorClass);
+            validateInterceptorClass(interceptorClass);
         }
         return false;
     }
@@ -247,7 +247,7 @@ public abstract class InterceptorUtils {
      * @throws IllegalStateException If an interceptor class does not annotate @Interceptor or
      *                               is abstract or have not a public no-arg constructor
      */
-    public static void validatorInterceptorClass(Class<?> interceptorClass) throws NullPointerException, IllegalStateException {
+    public static void validateInterceptorClass(Class<?> interceptorClass) throws NullPointerException, IllegalStateException {
         requireNonNull(interceptorClass, "The argument 'interceptorClass' must not be null!");
         if (!interceptorClass.isAnnotationPresent(INTERCEPTOR_ANNOTATION_TYPE)) {
             throw new IllegalStateException(format("The Interceptor class[%s] must annotate %s",

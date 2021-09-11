@@ -33,6 +33,8 @@ import static org.geektimes.interceptor.util.InterceptorUtils.isInterceptorBindi
  */
 public class InterceptorBindingInfo {
 
+    private final Annotation declaredAnnotation;
+
     private final Class<? extends Annotation> declaredAnnotationType;
 
     /**
@@ -43,6 +45,7 @@ public class InterceptorBindingInfo {
     private final Map<String, Object> attributes;
 
     public InterceptorBindingInfo(Annotation declaredAnnotation) {
+        this.declaredAnnotation = declaredAnnotation;
         this.declaredAnnotationType = declaredAnnotation.annotationType();
         this.synthetic = !isInterceptorBinding(declaredAnnotationType);
         this.attributes = getAttributesMap(declaredAnnotation, FILTERS);
@@ -71,6 +74,10 @@ public class InterceptorBindingInfo {
     @Override
     public int hashCode() {
         return Objects.hash(declaredAnnotationType, synthetic, attributes);
+    }
+
+    public Annotation getDeclaredAnnotation() {
+        return declaredAnnotation;
     }
 
     /**

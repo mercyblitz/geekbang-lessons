@@ -76,6 +76,7 @@ public class DefaultInterceptorManager implements InterceptorManager {
 
     @Override
     public void registerInterceptorClass(Class<?> interceptorClass) {
+        validateInterceptorClass(interceptorClass);
         interceptorInfoRepository.computeIfAbsent(interceptorClass, InterceptorInfo::new);
     }
 
@@ -172,6 +173,21 @@ public class DefaultInterceptorManager implements InterceptorManager {
     @Override
     public Set<Class<? extends Annotation>> getInterceptorBindingTypes() {
         return unmodifiableSet(interceptorBindingTypes);
+    }
+
+    @Override
+    public boolean isInterceptorClass(Class<?> interceptorClass) {
+        if(interceptorInfoRepository.containsKey(interceptorClass)){
+            return true;
+        }
+        return InterceptorUtils.isInterceptorClass(interceptorClass);
+    }
+
+    @Override
+    public void validateInterceptorClass(Class<?> interceptorClass) throws NullPointerException, IllegalStateException {
+        if (!interceptorInfoRepository.containsKey(interceptorClass)) {
+            InterceptorUtils.validateInterceptorClass(interceptorClass);
+        }
     }
 
     private void registerDefaultInterceptorBindingType() {

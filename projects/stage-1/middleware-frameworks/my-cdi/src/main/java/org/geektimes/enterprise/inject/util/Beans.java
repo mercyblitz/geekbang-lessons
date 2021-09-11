@@ -18,6 +18,7 @@ package org.geektimes.enterprise.inject.util;
 
 import org.geektimes.commons.lang.util.ArrayUtils;
 import org.geektimes.commons.reflect.util.MemberUtils;
+import org.geektimes.interceptor.InterceptorManager;
 
 import javax.decorator.Decorator;
 import javax.enterprise.context.Dependent;
@@ -47,6 +48,7 @@ import static org.geektimes.commons.reflect.util.FieldUtils.getAllFields;
 import static org.geektimes.commons.reflect.util.TypeUtils.*;
 import static org.geektimes.enterprise.inject.util.Decorators.isDecorator;
 import static org.geektimes.enterprise.inject.util.Qualifiers.findQualifier;
+import static org.geektimes.interceptor.InterceptorManager.getInstance;
 import static org.geektimes.interceptor.util.InterceptorUtils.isInterceptorClass;
 
 /**
@@ -228,7 +230,8 @@ public abstract class Beans {
      * @throws DefinitionException if the bean class does not meet above conditions
      */
     public static void validateManagedBeanType(Class<?> managedBeanClass) throws DefinitionException {
-        if (isInterceptorClass(managedBeanClass) && isDecorator(managedBeanClass)) {
+        InterceptorManager interceptorManager = getInstance(managedBeanClass.getClassLoader());
+        if (interceptorManager.isInterceptorClass(managedBeanClass) && isDecorator(managedBeanClass)) {
             throwDefinitionException("The managed bean [class : %s] must not annotate with both %s and %s",
                     managedBeanClass.getName(), Interceptor.class.getName(), Decorator.class.getName());
         }

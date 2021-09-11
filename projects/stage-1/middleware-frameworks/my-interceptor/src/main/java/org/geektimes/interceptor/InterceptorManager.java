@@ -177,14 +177,9 @@ public interface InterceptorManager {
     /**
      * The given interceptor class is {@link javax.interceptor.Interceptor @Interceptor} or not.
      *
-     * @param interceptorClass the class of interceptor
-     * @throws NullPointerException  If <code>interceptorClass</code> is <code>null</code>
-     * @throws IllegalStateException If an interceptor class does not annotate @Interceptor or
-     *                               is abstract or have not a public no-arg constructor
+     * @param interceptorClass the class of interceptor is abstract or have not a public no-arg constructor
      */
-    default boolean isInterceptorClass(Class<?> interceptorClass) throws NullPointerException, IllegalStateException {
-        return InterceptorUtils.isInterceptorClass(interceptorClass);
-    }
+    boolean isInterceptorClass(Class<?> interceptorClass);
 
     /**
      * An interceptor class must not be abstract and must have a public no-arg constructor.
@@ -194,9 +189,7 @@ public interface InterceptorManager {
      * @throws IllegalStateException If an interceptor class does not annotate @Interceptor or
      *                               is abstract or have not a public no-arg constructor
      */
-    default void validatorInterceptorClass(Class<?> interceptorClass) throws NullPointerException, IllegalStateException {
-        InterceptorUtils.validatorInterceptorClass(interceptorClass);
-    }
+    void validateInterceptorClass(Class<?> interceptorClass) throws NullPointerException, IllegalStateException;
 
     default boolean isInterceptorBinding(Annotation annotation) {
         return isInterceptorBindingType(annotation.annotationType());

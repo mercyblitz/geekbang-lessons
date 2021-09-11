@@ -30,6 +30,7 @@ import org.geektimes.enterprise.inject.util.Decorators;
 import org.geektimes.enterprise.inject.util.Qualifiers;
 import org.geektimes.enterprise.inject.util.Scopes;
 import org.geektimes.enterprise.inject.util.Stereotypes;
+import org.geektimes.interceptor.InterceptorManager;
 import org.geektimes.interceptor.util.InterceptorUtils;
 
 import javax.enterprise.context.*;
@@ -60,7 +61,8 @@ import static org.geektimes.enterprise.inject.standard.beans.BeanDiscoveryMode.N
 import static org.geektimes.enterprise.inject.standard.beans.BeanTypeSource.*;
 import static org.geektimes.enterprise.inject.standard.beans.xml.BeansReader.BEANS_XML_RESOURCE_NAME;
 import static org.geektimes.enterprise.inject.util.Decorators.isDecorator;
-import static org.geektimes.interceptor.util.InterceptorUtils.isInterceptorClass;
+import static org.geektimes.interceptor.InterceptorManager.getInstance;
+
 
 /**
  * Bean archives Manager
@@ -79,6 +81,8 @@ public class BeanArchiveManager {
     private final BeansReader beansReader;
 
     private final SimpleClassScanner classScanner;
+
+    private final InterceptorManager interceptorManager;
 
     private final Map<BeanTypeSource, List<Class<?>>> beanClasses;
 
@@ -140,6 +144,7 @@ public class BeanArchiveManager {
         this.classLoader = classLoader;
         this.beansReader = ServiceLoaders.loadSpi(BeansReader.class, classLoader);
         this.classScanner = SimpleClassScanner.INSTANCE;
+        this.interceptorManager = getInstance(classLoader);
 
         this.beanClasses = new TreeMap<>();
         this.interceptorClasses = new TreeMap<>();
@@ -272,7 +277,7 @@ public class BeanArchiveManager {
 
     private void discoverInterceptorClasses(Set<Class<?>> discoveredTypes) {
         filterAndHandleBeanTypes(discoveredTypes,
-                InterceptorUtils::isInterceptorClass,
+                interceptorManager::isInterceptorClass,
                 this::addDiscoveredInterceptorClass);
     }
 
@@ -545,7 +550,7 @@ public class BeanArchiveManager {
 
     private void addSyntheticInterceptorClasses(Set<Class<?>> discoveredTypes) {
         filterAndHandleBeanTypes(discoveredTypes,
-                InterceptorUtils::isInterceptorClass,
+                interceptorManager::isInterceptorClass,
                 this::addSyntheticInterceptorClass);
     }
 
@@ -814,7 +819,7 @@ public class BeanArchiveManager {
      */
     public boolean isDefiningAnnotationType(Class<?> type, boolean includedInterceptor, boolean includedDecorator) {
 
-        if (includedInterceptor && isInterceptorClass(type)) {
+        if (includedInterceptor && interceptorManager.isInterceptorClass(type)) {
             return true;
         }
         if (includedDecorator && isDecorator(type)) {

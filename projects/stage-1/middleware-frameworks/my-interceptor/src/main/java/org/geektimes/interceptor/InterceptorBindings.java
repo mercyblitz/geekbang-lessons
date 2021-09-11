@@ -43,7 +43,9 @@ import static org.geektimes.commons.collection.util.CollectionUtils.asSet;
  */
 public class InterceptorBindings implements Iterable<InterceptorBindingInfo> {
 
-    private final Set<InterceptorBindingInfo> interceptorBindings;
+    private final Set<Annotation> declaredAnnotations;
+
+    private final Set<InterceptorBindingInfo> bindingInfoSet;
 
     private final Set<Class<? extends Annotation>> interceptorBindingTypes;
 
@@ -52,12 +54,13 @@ public class InterceptorBindings implements Iterable<InterceptorBindingInfo> {
     }
 
     public InterceptorBindings(Set<Annotation> interceptorBindings) {
-        this.interceptorBindings = asInterceptorBindings(interceptorBindings);
+        this.declaredAnnotations = interceptorBindings;
+        this.bindingInfoSet = asInterceptorBindings(interceptorBindings);
         this.interceptorBindingTypes = asInterceptorBindingTypes(interceptorBindings);
     }
 
-    public Set<InterceptorBindingInfo> getInterceptorBindings() {
-        return interceptorBindings;
+    public Set<Annotation> getDeclaredAnnotations() {
+        return declaredAnnotations;
     }
 
     public Set<Class<? extends Annotation>> getInterceptorBindingTypes() {
@@ -66,7 +69,7 @@ public class InterceptorBindings implements Iterable<InterceptorBindingInfo> {
 
     @Override
     public Iterator<InterceptorBindingInfo> iterator() {
-        return interceptorBindings.iterator();
+        return bindingInfoSet.iterator();
     }
 
     @Override
@@ -74,12 +77,12 @@ public class InterceptorBindings implements Iterable<InterceptorBindingInfo> {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         InterceptorBindings that = (InterceptorBindings) o;
-        return Objects.equals(interceptorBindings, that.interceptorBindings);
+        return Objects.equals(bindingInfoSet, that.bindingInfoSet);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(interceptorBindings);
+        return Objects.hash(bindingInfoSet);
     }
 
     private Set<InterceptorBindingInfo> asInterceptorBindings(Collection<Annotation> interceptorBindings) {

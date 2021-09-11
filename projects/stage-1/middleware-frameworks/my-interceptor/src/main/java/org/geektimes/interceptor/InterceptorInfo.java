@@ -30,10 +30,9 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import static java.lang.String.format;
-import static java.util.Collections.unmodifiableCollection;
 import static org.geektimes.commons.lang.util.AnnotationUtils.getAllDeclaredAnnotations;
 import static org.geektimes.commons.reflect.util.ClassUtils.getAllClasses;
-import static org.geektimes.interceptor.util.InterceptorUtils.validatorInterceptorClass;
+import static org.geektimes.interceptor.util.InterceptorUtils.validateInterceptorClass;
 
 /**
  * Interceptor Info Metadata class
@@ -66,7 +65,6 @@ public class InterceptorInfo {
     private final InterceptorBindings interceptorBindings;
 
     public InterceptorInfo(Class<?> interceptorClass) {
-        validatorInterceptorClass(interceptorClass);
         this.interceptorManager = InterceptorManager.getInstance(interceptorClass.getClassLoader());
         this.interceptorClass = interceptorClass;
         this.aroundInvokeMethods = new LinkedList<>();
@@ -127,10 +125,6 @@ public class InterceptorInfo {
         return new InterceptorBindings(getAllDeclaredAnnotations(interceptorClass, interceptorManager::isInterceptorBinding));
     }
 
-    public Class<?> getInterceptorClass() {
-        return interceptorClass;
-    }
-
     Collection<Method> getAroundInvokeMethods() {
         return aroundInvokeMethods;
     }
@@ -150,6 +144,31 @@ public class InterceptorInfo {
     Collection<Method> getPreDestroyMethods() {
         return preDestroyMethods;
     }
+
+    public Class<?> getInterceptorClass() {
+        return interceptorClass;
+    }
+
+    public boolean hasAroundInvokeMethod() {
+        return !getAroundInvokeMethods().isEmpty();
+    }
+
+    public boolean hasAroundTimeoutMethod(){
+        return !getAroundTimeoutMethods().isEmpty();
+    }
+
+    public boolean hasAroundConstructMethod(){
+        return !getAroundConstructMethods().isEmpty();
+    }
+
+    public boolean hasPostConstructMethod(){
+        return !getPostConstructMethods().isEmpty();
+    }
+
+    public boolean hasPreDestroyMethod(){
+        return !getPreDestroyMethods().isEmpty();
+    }
+
 
     public InterceptorBindings getInterceptorBindings() {
         return interceptorBindings;

@@ -17,7 +17,6 @@
 package org.geektimes.enterprise.inject.standard.interceptor;
 
 import org.geektimes.enterprise.inject.standard.AbstractAnnotatedTypeBean;
-import org.geektimes.interceptor.InterceptorBindings;
 import org.geektimes.interceptor.InterceptorInfo;
 import org.geektimes.interceptor.InterceptorManager;
 
@@ -27,6 +26,7 @@ import javax.interceptor.InvocationContext;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 
+import static java.lang.String.format;
 import static org.geektimes.interceptor.InterceptorManager.getInstance;
 
 /**
@@ -46,6 +46,8 @@ public class InterceptorBean<T> extends AbstractAnnotatedTypeBean<T> implements 
 
     private final InterceptorInfo interceptorInfo;
 
+    private final Set<Annotation> interceptorBindings;
+
     private final BeanManager beanManager;
 
     public InterceptorBean(AnnotatedType<T> interceptorType, BeanManager beanManager) {
@@ -55,23 +57,56 @@ public class InterceptorBean<T> extends AbstractAnnotatedTypeBean<T> implements 
         this.interceptorManager = getInstance(interceptorClass.getClassLoader());
         this.interceptorManager.registerInterceptorClass(interceptorClass);
         this.interceptorInfo = interceptorManager.getInterceptorInfo(interceptorClass);
+        this.interceptorBindings = resolveInterceptorBindings();
         this.beanManager = beanManager;
+    }
+
+    private Set<Annotation> resolveInterceptorBindings() {
+        return interceptorInfo.getInterceptorBindings().getDeclaredAnnotations();
     }
 
     @Override
     public Set<Annotation> getInterceptorBindings() {
-        // TODO
-        return null;
+        return interceptorBindings;
     }
 
     @Override
     public boolean intercepts(InterceptionType type) {
-        // TODO
+        boolean supported = false;
+        switch (type) {
+            case AROUND_INVOKE:
+                supported = interceptorInfo.hasAroundInvokeMethod();
+                break;
+            case AROUND_TIMEOUT:
+                supported = interceptorInfo.hasAroundTimeoutMethod();
+                break;
+            case AROUND_CONSTRUCT:
+                supported = interceptorInfo.hasAroundConstructMethod();
+                break;
+            case POST_CONSTRUCT:
+                supported = interceptorInfo.hasPostConstructMethod();
+                break;
+            case PRE_DESTROY:
+                supported = interceptorInfo.hasPreDestroyMethod();
+                break;
+            case PRE_PASSIVATE:
+                // TODO
+                break;
+            case POST_ACTIVATE:
+                // TODO
+                break;
+        }
         return false;
     }
 
     @Override
     public Object intercept(InterceptionType type, T instance, InvocationContext ctx) throws Exception {
+        if (!intercepts(type)) {
+            throw new UnsupportedOperationException(format(
+                    "The interceptor[type:%s] does not support the interception type[%s]!",
+                    interceptorClass.getName(),
+                    type.name()));
+        }
         // TODO
         return null;
     }
@@ -101,12 +136,11 @@ public class InterceptorBean<T> extends AbstractAnnotatedTypeBean<T> implements 
 
     @Override
     protected void validateAnnotatedElement(Class interceptorClass) {
-        // TODO
+        this.interceptorManager.validateInterceptorClass(interceptorClass);
     }
 
     @Override
     public Annotated getAnnotated() {
-        // TODO
         return interceptorType;
     }
 }
