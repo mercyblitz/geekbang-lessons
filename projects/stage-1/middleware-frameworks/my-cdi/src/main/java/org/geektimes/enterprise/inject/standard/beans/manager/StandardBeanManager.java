@@ -26,6 +26,7 @@ import org.geektimes.enterprise.inject.standard.beans.AbstractBean;
 import org.geektimes.enterprise.inject.standard.beans.GenericBeanAttributes;
 import org.geektimes.enterprise.inject.standard.beans.InjectionTargetBean;
 import org.geektimes.enterprise.inject.standard.beans.ManagedBean;
+import org.geektimes.enterprise.inject.standard.beans.decorator.DecoratorBean;
 import org.geektimes.enterprise.inject.standard.beans.interceptor.InterceptorBean;
 import org.geektimes.enterprise.inject.standard.beans.producer.ProducerBean;
 import org.geektimes.enterprise.inject.standard.beans.producer.ProducerFieldBean;
@@ -707,7 +708,16 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     }
 
     private void determineDecoratorBean(AnnotatedType<?> decoratorType) {
-        // TODO
+        DecoratorBean<?> decoratorBean = new DecoratorBean(decoratorType,this);
+        fireProcessBeanAttributesEvent(decoratorType, decoratorBean);
+        if (!decoratorBean.isVetoed()) { // vetoed if ProcessBeanAttributes.veto() method was invoked
+            fireProcessBeanEvent(decoratorType, decoratorBean);
+            registerDecoratorBean(decoratorBean);
+        }
+    }
+
+    private void registerDecoratorBean(DecoratorBean<?> decoratorBean) {
+        this.decoratorBeans.add(decoratorBean);
     }
 
     private void registerBeans() {

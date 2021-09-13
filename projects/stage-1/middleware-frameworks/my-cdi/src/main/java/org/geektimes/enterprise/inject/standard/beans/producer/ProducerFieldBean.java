@@ -46,7 +46,7 @@ public class ProducerFieldBean<T> extends AbstractBean<Field, T> implements Prod
     }
 
     @Override
-    protected void validateAnnotatedElement(Field producerField) {
+    protected void validate(Field producerField) {
         validateProducerField(producerField);
     }
 

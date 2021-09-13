@@ -120,13 +120,7 @@ public class InterceptorBean<T> extends GenericBean<T> implements Interceptor<T>
     }
 
     @Override
-    protected String getBeanName(Class interceptorClass) {
-        // TODO
-        return null;
-    }
-
-    @Override
-    protected void validateAnnotatedElement(Class interceptorClass) {
+    protected void validate(Class interceptorClass) {
         this.interceptorManager.validateInterceptorClass(interceptorClass);
     }
 

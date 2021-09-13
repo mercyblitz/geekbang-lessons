@@ -41,7 +41,7 @@ public class GenericBeanAttributes<T> extends AbstractBeanAttributes<Class, T> {
     }
 
     @Override
-    protected void validateAnnotatedElement(Class beanClass) {
+    protected void validate(Class beanClass) {
         // DO NOTING
     }
 

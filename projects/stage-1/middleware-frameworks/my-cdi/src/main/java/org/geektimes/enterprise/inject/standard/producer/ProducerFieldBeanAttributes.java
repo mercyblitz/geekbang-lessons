@@ -47,7 +47,7 @@ public class ProducerFieldBeanAttributes<T> extends AbstractBeanAttributes<Field
     }
 
     @Override
-    protected void validateAnnotatedElement(Field producerField) {
+    protected void validate(Field producerField) {
         Producers.validateProducerField(producerField);
     }
 

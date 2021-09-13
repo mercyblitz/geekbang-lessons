@@ -62,7 +62,7 @@ public class ManagedBean<T> extends GenericBean<T> {
     }
 
     @Override
-    protected void validateAnnotatedElement(Class beanClass) {
+    protected void validate(Class<T> beanClass) {
         validateManagedBeanType(beanClass);
         validateManagedBeanSpecializes(beanClass);
     }

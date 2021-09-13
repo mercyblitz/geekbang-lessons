@@ -16,7 +16,6 @@
  */
 package org.geektimes.enterprise.inject.standard.beans;
 
-import org.geektimes.enterprise.inject.standard.annotation.ReflectiveAnnotatedType;
 import org.geektimes.enterprise.inject.util.Qualifiers;
 
 import javax.enterprise.inject.Alternative;
@@ -68,7 +67,7 @@ public abstract class AbstractBeanAttributes<A extends AnnotatedElement, T> impl
     public AbstractBeanAttributes(A annotatedElement, AnnotatedType<T> beanType) {
         requireNonNull(annotatedElement, "The 'annotatedElement' argument must not be null!");
         requireNonNull(beanType, "The 'beanType' argument must not be null!");
-        validateAnnotatedElement(annotatedElement);
+        validate(annotatedElement);
         this.annotatedElement = annotatedElement;
         this.beanClass = beanType.getJavaClass();
         this.beanTypes = getBeanTypes(beanClass);
@@ -157,7 +156,7 @@ public abstract class AbstractBeanAttributes<A extends AnnotatedElement, T> impl
     // Abstract methods
     protected abstract String getBeanName(A annotatedElement);
 
-    protected abstract void validateAnnotatedElement(A annotatedElement);
+    protected abstract void validate(A annotatedElement);
 
     public abstract Annotated getAnnotated();
 

@@ -65,7 +65,7 @@ public class GenericBean<T> extends AbstractBean<Class<T>, T> implements Bean<T>
     }
 
     @Override
-    protected void validateAnnotatedElement(Class<T> annotatedElement) {
+    protected void validate(Class<T> annotatedElement) {
         // DO NOTHING
     }
 

@@ -48,7 +48,7 @@ public class ProducerMethodBean<T> extends AbstractBean<Method, T> implements Pr
     }
 
     @Override
-    protected void validateAnnotatedElement(Method producerMethod) {
+    protected void validate(Method producerMethod) {
         validateProducerMethod(producerMethod);
     }
 
