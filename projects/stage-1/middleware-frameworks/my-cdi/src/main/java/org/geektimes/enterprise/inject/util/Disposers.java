@@ -16,7 +16,7 @@
  */
 package org.geektimes.enterprise.inject.util;
 
-import org.geektimes.enterprise.inject.standard.ManagedBean;
+import org.geektimes.enterprise.inject.standard.beans.ManagedBean;
 
 import javax.enterprise.event.Observes;
 import javax.enterprise.event.ObservesAsync;
@@ -80,7 +80,7 @@ public abstract class Disposers {
      */
     public static Map<Type, AnnotatedMethod> resolveAndValidateDisposerMethods(ManagedBean managedBean) throws DefinitionException {
         Map<Type, AnnotatedMethod> disposerMethodsMap = new LinkedHashMap<>();
-        AnnotatedType annotatedType = managedBean.getAnnotatedType();
+        AnnotatedType annotatedType = managedBean.getBeanType();
         Set<Type> producerTypes = managedBean.getProducerTypes();
         Set<AnnotatedMethod> methods = annotatedType.getMethods();
         // records the defined types from disposer method

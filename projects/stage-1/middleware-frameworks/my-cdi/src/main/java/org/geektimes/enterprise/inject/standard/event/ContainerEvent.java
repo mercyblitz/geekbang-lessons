@@ -21,7 +21,7 @@ import javax.enterprise.inject.spi.Extension;
 import java.util.EventObject;
 
 import static java.lang.String.format;
-import static org.geektimes.enterprise.inject.standard.ReflectiveObserverMethod.getBeanInstance;
+import static org.geektimes.enterprise.inject.standard.event.ReflectiveObserverMethod.getBeanInstance;
 
 /**
  * Container Event

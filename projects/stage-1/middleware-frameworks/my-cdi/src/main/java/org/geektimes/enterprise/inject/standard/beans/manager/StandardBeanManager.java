@@ -14,10 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard.beans;
+package org.geektimes.enterprise.inject.standard.beans.manager;
 
 import org.geektimes.commons.lang.util.ClassLoaderUtils;
-import org.geektimes.enterprise.inject.standard.*;
+import org.geektimes.enterprise.inject.standard.AnnotatedTypeInjectionTargetFactory;
+import org.geektimes.enterprise.inject.standard.ConstructorParameterInjectionPoint;
+import org.geektimes.enterprise.inject.standard.FieldInjectionPoint;
+import org.geektimes.enterprise.inject.standard.MethodParameterInjectionPoint;
+import org.geektimes.enterprise.inject.standard.annotation.ReflectiveAnnotatedType;
+import org.geektimes.enterprise.inject.standard.beans.AbstractBean;
+import org.geektimes.enterprise.inject.standard.beans.GenericBeanAttributes;
+import org.geektimes.enterprise.inject.standard.beans.InjectionTargetBean;
+import org.geektimes.enterprise.inject.standard.beans.ManagedBean;
+import org.geektimes.enterprise.inject.standard.beans.interceptor.InterceptorBean;
+import org.geektimes.enterprise.inject.standard.beans.producer.ProducerBean;
+import org.geektimes.enterprise.inject.standard.beans.producer.ProducerFieldBean;
+import org.geektimes.enterprise.inject.standard.beans.producer.ProducerMethodBean;
 import org.geektimes.enterprise.inject.standard.disposer.DisposerMethodManager;
 import org.geektimes.enterprise.inject.standard.event.*;
 import org.geektimes.enterprise.inject.standard.producer.ProducerFieldBeanAttributes;
@@ -106,6 +118,10 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     private final List<ManagedBean<?>> managedBeans;
 
+    private final List<Interceptor<?>> interceptorBeans;
+
+    private final List<Decorator<?>> decoratorBeans;
+
     public StandardBeanManager() {
         this.classLoader = ClassLoaderUtils.getClassLoader(getClass());
 
@@ -121,7 +137,10 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         this.interceptorTypes = new LinkedHashMap<>();
         this.decoratorTypes = new LinkedHashMap<>();
         this.syntheticTypes = new LinkedHashMap<>();
+
         this.managedBeans = new LinkedList<>();
+        this.interceptorBeans = new LinkedList<>();
+        this.decoratorBeans = new LinkedList<>();
     }
 
     @Override
@@ -345,7 +364,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     @Override
     public <T> BeanAttributes<T> createBeanAttributes(AnnotatedType<T> type) {
-        return new GenericBeanAttributes(type.getJavaClass());
+        return new GenericBeanAttributes(type);
     }
 
     @Override
@@ -528,6 +547,11 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         determineAlternativeBeans();
         determineInterceptorBeans();
         determineDecoratorBeans();
+
+        // register the instances of enabled Beans, Interceptors and Decorator
+        registerBeans();
+        registerInterceptorBeans();
+        registerDecoratorBeans();
     }
 
     private void determineManagedBeans() {
@@ -540,7 +564,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     }
 
     /**
-     * Determine Managed Bean, and fire events as below:
+     * Determine Managed Bean in Bean discovery, and fire events as below:
      *
      * <ol>
      *     <li>fire an event of type {@link ProcessInjectionPoint} for each injection point in the class</li>
@@ -558,6 +582,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
      */
     private void determineManagedBean(AnnotatedType beanType) {
         ManagedBean managedBean = new ManagedBean(beanType, this);
+
         fireProcessInjectionPointEvents(managedBean);
         fireProcessInjectionTarget(beanType, managedBean);
         fireProcessBeanAttributesEvent(beanType, managedBean);
@@ -590,7 +615,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     }
 
     private void determineProducer(Producer producer, AnnotatedMember annotatedMember, AbstractBean bean) {
-        AnnotatedType annotatedType = bean.getAnnotatedType();
+        AnnotatedType annotatedType = bean.getBeanType();
         registerBeanType(annotatedType);
         Set<InjectionPoint> injectionPoints = producer.getInjectionPoints();
         fireProcessInjectionPointEvents(injectionPoints);
@@ -657,8 +682,17 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     }
 
     private void determineInterceptorBean(AnnotatedType<?> interceptorType) {
-        // TODO
+        InterceptorBean<?> interceptorBean = new InterceptorBean(interceptorType, this);
+        fireProcessBeanAttributesEvent(interceptorType, interceptorBean);
+        if (!interceptorBean.isVetoed()) {
+            fireProcessBeanEvent(interceptorType, interceptorBean);
+            registerInterceptorBean(interceptorType, interceptorBean);
+        }
+    }
+
+    private void registerInterceptorBean(AnnotatedType<?> interceptorType, Interceptor<?> interceptorBean) {
         registerInterceptorClass(interceptorType);
+        this.interceptorBeans.add(interceptorBean);
     }
 
     private void registerInterceptorClass(AnnotatedType<?> interceptorType) {
@@ -673,6 +707,18 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     }
 
     private void determineDecoratorBean(AnnotatedType<?> decoratorType) {
+        // TODO
+    }
+
+    private void registerBeans() {
+        // TODO
+    }
+
+    private void registerInterceptorBeans() {
+        // TODO
+    }
+
+    private void registerDecoratorBeans() {
         // TODO
     }
 

@@ -14,43 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard;
+package org.geektimes.enterprise.inject.standard.annotation;
 
-import javax.enterprise.inject.spi.AnnotatedCallable;
-import javax.enterprise.inject.spi.AnnotatedParameter;
-import java.lang.reflect.Parameter;
+import javax.enterprise.inject.spi.AnnotatedConstructor;
+import javax.enterprise.inject.spi.AnnotatedType;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
 
 /**
- * {@link AnnotatedParameter} based on Java Reflection {@link Parameter}
+ * {@link AnnotatedConstructor} based on Java reflection {@link Constructor}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class ReflectiveAnnotatedParameter<X> extends ReflectiveAnnotated<Parameter> implements AnnotatedParameter<X> {
+public class ReflectiveAnnotatedConstructor<X> extends ReflectiveAnnotatedCallable<Constructor, X>
+        implements AnnotatedConstructor<X> {
 
-    private final int index;
-
-    private final AnnotatedCallable<X> declaringCallable;
-
-    public ReflectiveAnnotatedParameter(Parameter parameter, int index, AnnotatedCallable<X> declaringCallable) {
-        super(parameter);
-        this.index = index;
-        this.declaringCallable = declaringCallable;
+    public ReflectiveAnnotatedConstructor(Constructor constructor) {
+        super(constructor);
     }
 
-    @Override
-    public int getPosition() {
-        return index;
-    }
-
-    @Override
-    public AnnotatedCallable<X> getDeclaringCallable() {
-        return declaringCallable;
+    public ReflectiveAnnotatedConstructor(Constructor constructor, AnnotatedType<X> declaringType) {
+        super(constructor, declaringType);
     }
 
     @Override
     public Type getBaseType() {
-        return getAnnotatedElement().getParameterizedType();
+        return getDeclaringType().getBaseType();
     }
 }

@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard;
+package org.geektimes.enterprise.inject.standard.beans;
 
 import org.geektimes.enterprise.inject.BookShop;
 import org.geektimes.enterprise.inject.Business;
-import org.geektimes.enterprise.inject.standard.beans.StandardBeanManager;
+import org.geektimes.enterprise.inject.standard.beans.manager.StandardBeanManager;
 import org.junit.Test;
 
 import javax.enterprise.context.Dependent;

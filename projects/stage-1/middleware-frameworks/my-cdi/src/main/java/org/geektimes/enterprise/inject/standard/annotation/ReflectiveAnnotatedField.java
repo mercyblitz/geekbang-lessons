@@ -14,21 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard;
+package org.geektimes.enterprise.inject.standard.annotation;
 
+import javax.enterprise.inject.spi.AnnotatedField;
 import javax.enterprise.inject.spi.AnnotatedType;
-import javax.enterprise.inject.spi.Bean;
+import java.lang.reflect.Field;
+import java.lang.reflect.Type;
 
 /**
- * Abstract {@link Bean} implementation based on {@link AnnotatedType}
+ * {@link AnnotatedField} based on Java reflection {@link Field}
  *
- * @param <T> the type of {@link Bean}
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public abstract class AbstractAnnotatedTypeBean<T> extends AbstractBean<Class, T> {
+public class ReflectiveAnnotatedField<X> extends ReflectiveAnnotatedMember<Field, Field, X>
+        implements AnnotatedField<X> {
 
-    public AbstractAnnotatedTypeBean(AnnotatedType<T> beanType) {
-        super(beanType.getJavaClass(), beanType.getJavaClass());
+    public ReflectiveAnnotatedField(Field field) {
+        super(field, field);
+    }
+
+    public ReflectiveAnnotatedField(Field field, AnnotatedType<X> declaringType) {
+        super(field, field, declaringType);
+    }
+
+    @Override
+    public Type getBaseType() {
+        return getAnnotatedElement().getGenericType();
     }
 }

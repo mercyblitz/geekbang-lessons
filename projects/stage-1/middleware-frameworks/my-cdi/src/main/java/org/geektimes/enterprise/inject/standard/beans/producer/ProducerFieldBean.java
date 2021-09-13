@@ -14,8 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard;
+package org.geektimes.enterprise.inject.standard.beans.producer;
 
+import org.geektimes.enterprise.inject.standard.beans.AbstractBean;
 import org.geektimes.enterprise.inject.util.Beans;
 
 import javax.enterprise.context.spi.CreationalContext;
@@ -40,7 +41,7 @@ public class ProducerFieldBean<T> extends AbstractBean<Field, T> implements Prod
     private final AnnotatedField producerField;
 
     public ProducerFieldBean(AnnotatedField producerField) {
-        super(producerField.getJavaMember(), producerField.getJavaMember().getType());
+        super(producerField.getJavaMember(), producerField.getDeclaringType());
         this.producerField = producerField;
     }
 

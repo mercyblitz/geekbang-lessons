@@ -14,8 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard;
+package org.geektimes.enterprise.inject.standard.beans.producer;
 
+import org.geektimes.enterprise.inject.standard.MethodParameterInjectionPoint;
+import org.geektimes.enterprise.inject.standard.annotation.ReflectiveAnnotatedMethod;
+import org.geektimes.enterprise.inject.standard.beans.AbstractBean;
 import org.geektimes.enterprise.inject.util.Beans;
 
 import javax.enterprise.context.spi.CreationalContext;
@@ -40,7 +43,7 @@ public class ProducerMethodBean<T> extends AbstractBean<Method, T> implements Pr
     private final AnnotatedMethod<T> method;
 
     public ProducerMethodBean(AnnotatedMethod<T> method) {
-        super(method.getJavaMember(), method.getJavaMember().getReturnType());
+        super(method.getJavaMember(), method.getDeclaringType());
         this.method = method;
     }
 

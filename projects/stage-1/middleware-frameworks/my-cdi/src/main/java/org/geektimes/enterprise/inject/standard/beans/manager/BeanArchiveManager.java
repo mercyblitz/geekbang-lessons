@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard.beans;
+package org.geektimes.enterprise.inject.standard.beans.manager;
 
 import org.geektimes.commons.collection.util.CollectionUtils;
 import org.geektimes.commons.lang.util.ClassPathUtils;
@@ -22,6 +22,9 @@ import org.geektimes.commons.reflect.util.ClassUtils;
 import org.geektimes.commons.reflect.util.SimpleClassScanner;
 import org.geektimes.commons.util.PriorityComparator;
 import org.geektimes.commons.util.ServiceLoaders;
+import org.geektimes.enterprise.inject.standard.beans.BeanArchiveType;
+import org.geektimes.enterprise.inject.standard.beans.BeanDiscoveryMode;
+import org.geektimes.enterprise.inject.standard.beans.BeanTypeSource;
 import org.geektimes.enterprise.inject.standard.beans.xml.BeansReader;
 import org.geektimes.enterprise.inject.standard.beans.xml.bind.Alternatives;
 import org.geektimes.enterprise.inject.standard.beans.xml.bind.Beans;

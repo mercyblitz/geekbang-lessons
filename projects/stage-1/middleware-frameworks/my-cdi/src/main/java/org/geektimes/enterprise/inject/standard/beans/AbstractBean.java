@@ -14,8 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard;
+package org.geektimes.enterprise.inject.standard.beans;
 
+import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.Bean;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
@@ -36,8 +37,8 @@ import java.lang.reflect.Method;
  */
 public abstract class AbstractBean<A extends AnnotatedElement, T> extends AbstractBeanAttributes<A, T> implements Bean<T> {
 
-    public AbstractBean(A annotatedElement, Class<?> beanClass) {
-        super(annotatedElement, beanClass);
+    public AbstractBean(A annotatedElement, AnnotatedType<T> beanType) {
+        super(annotatedElement, beanType);
     }
 
     /**

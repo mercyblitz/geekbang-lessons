@@ -21,10 +21,9 @@ import org.geektimes.commons.reflect.util.ClassUtils;
 import org.geektimes.commons.reflect.util.TypeUtils;
 import org.geektimes.commons.util.PriorityComparator;
 import org.geektimes.enterprise.inject.standard.MethodParameterInjectionPoint;
-import org.geektimes.enterprise.inject.standard.ReflectiveAnnotatedMethod;
-import org.geektimes.enterprise.inject.standard.ReflectiveAnnotatedParameter;
-import org.geektimes.enterprise.inject.standard.ReflectiveObserverMethod;
-import org.geektimes.enterprise.inject.standard.beans.StandardBeanManager;
+import org.geektimes.enterprise.inject.standard.annotation.ReflectiveAnnotatedMethod;
+import org.geektimes.enterprise.inject.standard.annotation.ReflectiveAnnotatedParameter;
+import org.geektimes.enterprise.inject.standard.beans.manager.StandardBeanManager;
 
 import javax.enterprise.event.Event;
 import javax.enterprise.event.NotificationOptions;

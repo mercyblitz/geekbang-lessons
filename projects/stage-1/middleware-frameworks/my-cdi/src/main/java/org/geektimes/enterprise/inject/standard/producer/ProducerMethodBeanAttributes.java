@@ -16,7 +16,7 @@
  */
 package org.geektimes.enterprise.inject.standard.producer;
 
-import org.geektimes.enterprise.inject.standard.AbstractBeanAttributes;
+import org.geektimes.enterprise.inject.standard.beans.AbstractBeanAttributes;
 import org.geektimes.enterprise.inject.util.Beans;
 import org.geektimes.enterprise.inject.util.Producers;
 

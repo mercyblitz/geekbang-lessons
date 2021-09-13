@@ -14,38 +14,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard;
+package org.geektimes.enterprise.inject.standard.annotation;
 
-import org.geektimes.enterprise.inject.util.Beans;
-
-import javax.enterprise.inject.spi.Annotated;
-import javax.enterprise.inject.spi.BeanAttributes;
+import javax.enterprise.inject.spi.AnnotatedMethod;
+import javax.enterprise.inject.spi.AnnotatedType;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
 
 /**
- * Generic {@link BeanAttributes} implementation
+ * {@link AnnotatedMethod} based on Java reflection {@link Method}
  *
- * @param <T> the class of the bean instance
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class GenericBeanAttributes<T> extends AbstractBeanAttributes<Class, T> {
+public class ReflectiveAnnotatedMethod<X> extends ReflectiveAnnotatedCallable<Method, X>
+        implements AnnotatedMethod<X> {
 
-    public GenericBeanAttributes(Class<?> beanClass) {
-        super(beanClass, beanClass);
+    public ReflectiveAnnotatedMethod(Method method) {
+        super(method);
+    }
+
+    public ReflectiveAnnotatedMethod(Method method, AnnotatedType<X> declaringType) {
+        super(method, declaringType);
     }
 
     @Override
-    protected String getBeanName(Class beanClass) {
-        return Beans.getBeanName(beanClass);
-    }
-
-    @Override
-    protected void validateAnnotatedElement(Class beanClass) {
-        // DO NOTING
-    }
-
-    @Override
-    public Annotated getAnnotated() {
-        return getAnnotatedType();
+    public Type getBaseType() {
+        return getAnnotatedElement().getGenericReturnType();
     }
 }

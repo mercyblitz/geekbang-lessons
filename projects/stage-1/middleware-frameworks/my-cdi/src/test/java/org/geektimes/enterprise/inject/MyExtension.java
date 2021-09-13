@@ -16,7 +16,7 @@
  */
 package org.geektimes.enterprise.inject;
 
-import org.geektimes.enterprise.inject.standard.ReflectiveAnnotatedType;
+import org.geektimes.enterprise.inject.standard.annotation.ReflectiveAnnotatedType;
 
 import javax.enterprise.event.Observes;
 import javax.enterprise.event.ObservesAsync;

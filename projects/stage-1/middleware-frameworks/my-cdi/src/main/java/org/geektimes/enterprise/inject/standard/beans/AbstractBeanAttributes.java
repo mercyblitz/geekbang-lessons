@@ -14,8 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard;
+package org.geektimes.enterprise.inject.standard.beans;
 
+import org.geektimes.enterprise.inject.standard.annotation.ReflectiveAnnotatedType;
 import org.geektimes.enterprise.inject.util.Qualifiers;
 
 import javax.enterprise.inject.Alternative;
@@ -60,23 +61,23 @@ public abstract class AbstractBeanAttributes<A extends AnnotatedElement, T> impl
 
     private boolean alternative;
 
-    private final AnnotatedType<T> annotatedType;
+    private final AnnotatedType<T> beanType;
 
     private boolean vetoed;
 
-    public AbstractBeanAttributes(A annotatedElement, Class<?> beanClass) {
+    public AbstractBeanAttributes(A annotatedElement, AnnotatedType<T> beanType) {
         requireNonNull(annotatedElement, "The 'annotatedElement' argument must not be null!");
-        requireNonNull(beanClass, "The 'beanClass' argument must not be null!");
+        requireNonNull(beanType, "The 'beanType' argument must not be null!");
         validateAnnotatedElement(annotatedElement);
         this.annotatedElement = annotatedElement;
-        this.beanClass = beanClass;
+        this.beanClass = beanType.getJavaClass();
         this.beanTypes = getBeanTypes(beanClass);
         this.qualifiers = Qualifiers.getQualifiers(annotatedElement);
         this.scopeType = getScopeType(annotatedElement);
         this.beanName = getBeanName(annotatedElement);
         this.stereotypeTypes = getStereotypeTypes(annotatedElement);
         this.alternative = isAnnotationPresent(annotatedElement, Alternative.class);
-        this.annotatedType = new ReflectiveAnnotatedType<>(beanClass);
+        this.beanType = beanType;
         this.vetoed = false;
     }
 
@@ -127,8 +128,8 @@ public abstract class AbstractBeanAttributes<A extends AnnotatedElement, T> impl
         return annotatedElement;
     }
 
-    public AnnotatedType getAnnotatedType() {
-        return annotatedType;
+    public AnnotatedType getBeanType() {
+        return beanType;
     }
 
     @Override

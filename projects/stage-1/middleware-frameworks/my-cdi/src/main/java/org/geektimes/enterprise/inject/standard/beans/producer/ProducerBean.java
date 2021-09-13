@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard;
+package org.geektimes.enterprise.inject.standard.beans.producer;
 
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.*;
@@ -23,25 +23,25 @@ import java.lang.reflect.Type;
 import java.util.Set;
 
 /**
- * {@link InjectionTarget} {@link Bean} delegate implementation
+ * {@link Producer} {@link Bean} delegate implementation
  *
  * @param <T> the class of the bean instance
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class InjectionTargetBean<T> implements Bean<T> {
+public class ProducerBean<T, X> implements Bean<T> {
 
     private final BeanAttributes<T> beanAttributes;
 
     private final Class<?> beanClass;
 
-    private final InjectionTarget<T> injectionTarget;
+    private final Producer<T> producer;
 
-    public InjectionTargetBean(BeanAttributes<T> beanAttributes, Class<?> beanClass,
-                               InjectionTargetFactory<T> injectionTargetFactory) {
+    public ProducerBean(BeanAttributes<T> beanAttributes, Class<?> beanClass,
+                        ProducerFactory<X> producerFactory) {
         this.beanAttributes = beanAttributes;
         this.beanClass = beanClass;
-        this.injectionTarget = injectionTargetFactory.createInjectionTarget(this);
+        this.producer = producerFactory.createProducer(this);
     }
 
 
@@ -82,7 +82,7 @@ public class InjectionTargetBean<T> implements Bean<T> {
 
     @Override
     public Set<InjectionPoint> getInjectionPoints() {
-        return injectionTarget.getInjectionPoints();
+        return producer.getInjectionPoints();
     }
 
     @Override
@@ -92,21 +92,12 @@ public class InjectionTargetBean<T> implements Bean<T> {
 
     @Override
     public T create(CreationalContext<T> creationalContext) {
-        // Instantiation
-        T instance = injectionTarget.produce(creationalContext);
-        // Initialization
-        injectionTarget.postConstruct(instance);
-        // Injection
-        injectionTarget.inject(instance, creationalContext);
-        return instance;
+        return producer.produce(creationalContext);
     }
 
     @Override
     public void destroy(T instance, CreationalContext<T> creationalContext) {
-        // Pre-Destroy
-        injectionTarget.preDestroy(instance);
-        // Dispose
-        injectionTarget.dispose(instance);
+        producer.dispose(instance);
         // TODO : destroy other dependent objects
     }
 }

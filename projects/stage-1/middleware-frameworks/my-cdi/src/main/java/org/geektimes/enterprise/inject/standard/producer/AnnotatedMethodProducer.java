@@ -17,7 +17,7 @@
 package org.geektimes.enterprise.inject.standard.producer;
 
 import org.geektimes.enterprise.inject.standard.MethodParameterInjectionPoint;
-import org.geektimes.enterprise.inject.standard.beans.StandardBeanManager;
+import org.geektimes.enterprise.inject.standard.beans.manager.StandardBeanManager;
 import org.geektimes.enterprise.inject.standard.disposer.DisposerMethodManager;
 
 import javax.enterprise.context.spi.CreationalContext;

@@ -16,9 +16,9 @@
  */
 package org.geektimes.enterprise.inject.util;
 
-import org.geektimes.enterprise.inject.standard.ManagedBean;
-import org.geektimes.enterprise.inject.standard.ProducerFieldBean;
-import org.geektimes.enterprise.inject.standard.ProducerMethodBean;
+import org.geektimes.enterprise.inject.standard.beans.ManagedBean;
+import org.geektimes.enterprise.inject.standard.beans.producer.ProducerFieldBean;
+import org.geektimes.enterprise.inject.standard.beans.producer.ProducerMethodBean;
 
 import javax.decorator.Decorator;
 import javax.enterprise.context.Dependent;
@@ -54,7 +54,7 @@ public abstract class Producers {
 
     public static Set<ProducerMethodBean> resolveProducerMethodBeans(ManagedBean<?> managedBean) {
         Set<ProducerMethodBean> producerMethodBeans = new LinkedHashSet<>();
-        Set<AnnotatedMethod> methods = managedBean.getAnnotatedType().getMethods();
+        Set<AnnotatedMethod> methods = managedBean.getBeanType().getMethods();
         for (AnnotatedMethod method : methods) {
             Method javaMethod = method.getJavaMember();
             if (isProduceMethod(javaMethod)) {
@@ -259,7 +259,7 @@ public abstract class Producers {
 
     public static Set<ProducerFieldBean> resolveProducerFieldBeans(ManagedBean<?> managedBean) {
         Set<ProducerFieldBean> producerFieldBeans = new LinkedHashSet<>();
-        Set<AnnotatedField> fields = managedBean.getAnnotatedType().getFields();
+        Set<AnnotatedField> fields = managedBean.getBeanType().getFields();
         for (AnnotatedField field : fields) {
             Field javaField = field.getJavaMember();
             if (isProducerField(javaField)) {

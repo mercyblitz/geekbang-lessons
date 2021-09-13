@@ -17,6 +17,8 @@
 package org.geektimes.enterprise.inject.util;
 
 import org.geektimes.enterprise.inject.standard.*;
+import org.geektimes.enterprise.inject.standard.annotation.ReflectiveAnnotatedMethod;
+import org.geektimes.enterprise.inject.standard.annotation.ReflectiveAnnotatedParameter;
 
 import javax.enterprise.inject.spi.*;
 import javax.inject.Inject;

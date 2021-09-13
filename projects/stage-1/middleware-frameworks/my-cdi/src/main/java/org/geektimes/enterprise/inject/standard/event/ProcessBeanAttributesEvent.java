@@ -16,9 +16,9 @@
  */
 package org.geektimes.enterprise.inject.standard.event;
 
-import org.geektimes.enterprise.inject.standard.AbstractBeanAttributes;
-import org.geektimes.enterprise.inject.standard.GenericBeanAttributes;
-import org.geektimes.enterprise.inject.standard.beans.StandardBeanManager;
+import org.geektimes.enterprise.inject.standard.beans.AbstractBeanAttributes;
+import org.geektimes.enterprise.inject.standard.beans.GenericBeanAttributes;
+import org.geektimes.enterprise.inject.standard.beans.manager.StandardBeanManager;
 
 import javax.enterprise.inject.spi.*;
 import javax.enterprise.inject.spi.configurator.BeanAttributesConfigurator;
@@ -43,12 +43,12 @@ public class ProcessBeanAttributesEvent<T> implements ProcessBeanAttributes<T> {
 
     private final Annotated annotated;
 
-    private final Class<?> beanClass;
+    private final AnnotatedType<T> beanType;
 
     private AbstractBeanAttributes beanAttributes;
 
     public ProcessBeanAttributesEvent(Annotated annotated, StandardBeanManager standardBeanManager) {
-        this(annotated, new GenericBeanAttributes<>(resolveBeanClass(annotated)), standardBeanManager);
+        this(annotated, new GenericBeanAttributes<>(resolveAnnotatedType(annotated)), standardBeanManager);
     }
 
     public ProcessBeanAttributesEvent(Annotated annotated, AbstractBeanAttributes beanAttributes,
@@ -58,24 +58,21 @@ public class ProcessBeanAttributesEvent<T> implements ProcessBeanAttributes<T> {
         requireNonNull(standardBeanManager, "The 'standardBeanManager' argument must not be null!");
         this.standardBeanManager = standardBeanManager;
         this.annotated = annotated;
-        this.beanClass = resolveBeanClass(annotated);
+        this.beanType = beanAttributes.getBeanType();
         this.beanAttributes = beanAttributes;
     }
 
-    private static Class<?> resolveBeanClass(Annotated annotated) {
+    private static AnnotatedType resolveAnnotatedType(Annotated annotated) {
         if (annotated instanceof AnnotatedType) {
-            return ((AnnotatedType) annotated).getJavaClass();
-        } else if (annotated instanceof AnnotatedField) {
-            return ((AnnotatedField) annotated).getJavaMember().getDeclaringClass();
-        } else if (annotated instanceof AnnotatedMethod) {
-            return ((AnnotatedMethod) annotated).getJavaMember().getDeclaringClass();
+            return ((AnnotatedType) annotated);
+        } else if (annotated instanceof AnnotatedMember) {
+            return ((AnnotatedMember) annotated).getDeclaringType();
         }
 
         throw new IllegalArgumentException(
-                format("The 'annotated' argument must be a instance of %s, %s or %s",
+                format("The 'annotated' argument must be a instance of %s, or %s",
                         AnnotatedType.class.getName(),
-                        AnnotatedField.class.getName(),
-                        AnnotatedMethod.class.getName()
+                        AnnotatedMember.class.getName()
                 ));
     }
 
@@ -119,7 +116,7 @@ public class ProcessBeanAttributesEvent<T> implements ProcessBeanAttributes<T> {
     public String toString() {
         return new StringJoiner(", ", getClass().getSimpleName() + "[", "]")
                 .add("annotated=" + getAnnotated())
-                .add("beanClass=" + beanClass)
+                .add("beanClass=" + beanType.getJavaClass())
                 .add("beanAttributes=" + getBeanAttributes())
                 .toString();
     }

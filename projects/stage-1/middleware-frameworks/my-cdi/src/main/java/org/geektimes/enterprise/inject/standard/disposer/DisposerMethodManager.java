@@ -17,7 +17,7 @@
 package org.geektimes.enterprise.inject.standard.disposer;
 
 import org.geektimes.enterprise.inject.standard.MethodParameterInjectionPoint;
-import org.geektimes.enterprise.inject.standard.beans.StandardBeanManager;
+import org.geektimes.enterprise.inject.standard.beans.manager.StandardBeanManager;
 
 import javax.enterprise.inject.spi.AnnotatedMethod;
 import javax.enterprise.inject.spi.AnnotatedParameter;

@@ -14,9 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard.interceptor;
+package org.geektimes.enterprise.inject.standard.beans.interceptor;
 
-import org.geektimes.enterprise.inject.standard.AbstractAnnotatedTypeBean;
+import org.geektimes.enterprise.inject.standard.beans.GenericBean;
 import org.geektimes.interceptor.InterceptorInfo;
 import org.geektimes.interceptor.InterceptorManager;
 
@@ -36,7 +36,7 @@ import static org.geektimes.interceptor.InterceptorManager.getInstance;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class InterceptorBean<T> extends AbstractAnnotatedTypeBean<T> implements Interceptor<T> {
+public class InterceptorBean<T> extends GenericBean<T> implements Interceptor<T> {
 
     private final AnnotatedType<?> interceptorType;
 
@@ -48,17 +48,14 @@ public class InterceptorBean<T> extends AbstractAnnotatedTypeBean<T> implements 
 
     private final Set<Annotation> interceptorBindings;
 
-    private final BeanManager beanManager;
-
     public InterceptorBean(AnnotatedType<T> interceptorType, BeanManager beanManager) {
-        super(interceptorType);
+        super(interceptorType, beanManager);
         this.interceptorType = interceptorType;
         this.interceptorClass = interceptorType.getJavaClass();
         this.interceptorManager = getInstance(interceptorClass.getClassLoader());
         this.interceptorManager.registerInterceptorClass(interceptorClass);
         this.interceptorInfo = interceptorManager.getInterceptorInfo(interceptorClass);
         this.interceptorBindings = resolveInterceptorBindings();
-        this.beanManager = beanManager;
     }
 
     private Set<Annotation> resolveInterceptorBindings() {
@@ -107,12 +104,6 @@ public class InterceptorBean<T> extends AbstractAnnotatedTypeBean<T> implements 
                     interceptorClass.getName(),
                     type.name()));
         }
-        // TODO
-        return null;
-    }
-
-    @Override
-    public Set<InjectionPoint> getInjectionPoints() {
         // TODO
         return null;
     }
