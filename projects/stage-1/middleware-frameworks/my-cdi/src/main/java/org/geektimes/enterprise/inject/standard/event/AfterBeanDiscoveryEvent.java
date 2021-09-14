@@ -16,67 +16,71 @@
  */
 package org.geektimes.enterprise.inject.standard.event;
 
-import org.geektimes.enterprise.inject.standard.annotation.ReflectiveAnnotatedMethod;
 import org.geektimes.enterprise.inject.standard.beans.manager.StandardBeanManager;
 
-import javax.enterprise.inject.spi.AnnotatedMethod;
+import javax.enterprise.context.spi.Context;
+import javax.enterprise.inject.spi.AfterBeanDiscovery;
+import javax.enterprise.inject.spi.AnnotatedType;
+import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.ObserverMethod;
-import javax.enterprise.inject.spi.ProcessObserverMethod;
+import javax.enterprise.inject.spi.configurator.BeanConfigurator;
 import javax.enterprise.inject.spi.configurator.ObserverMethodConfigurator;
 
 /**
- * {@link ProcessObserverMethod}
+ * An event was raised when it has fully completed the bean discovery process, validated that there are
+ * no definition errors relating to the discovered beans, and registered Bean and ObserverMethod
+ * objects for the discovered beans.
  *
- * @param <T> The type of the event being observed
- * @param <X> The bean type containing the observer method
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class ProcessObserverMethodEvent<T, X> implements ProcessObserverMethod<T, X> {
-
-    private AnnotatedMethod<X> annotatedMethod;
-
-    private ObserverMethod<T> observerMethod;
+public class AfterBeanDiscoveryEvent implements AfterBeanDiscovery {
 
     private final StandardBeanManager standardBeanManager;
 
-    public ProcessObserverMethodEvent(ObserverMethod<T> observerMethod, StandardBeanManager standardBeanManager) {
-        setObserverMethod(observerMethod);
+    public AfterBeanDiscoveryEvent(StandardBeanManager standardBeanManager) {
         this.standardBeanManager = standardBeanManager;
     }
 
     @Override
-    public AnnotatedMethod<X> getAnnotatedMethod() {
-        return annotatedMethod;
-    }
-
-    @Override
-    public ObserverMethod<T> getObserverMethod() {
-        return observerMethod;
-    }
-
-    @Override
     public void addDefinitionError(Throwable t) {
-        standardBeanManager.addDefinitionError(t);
+
     }
 
     @Override
-    public void setObserverMethod(ObserverMethod<T> observerMethod) {
-        this.observerMethod = observerMethod;
-        if (observerMethod instanceof ReflectiveObserverMethod) {
-            ReflectiveObserverMethod method = (ReflectiveObserverMethod) observerMethod;
-            this.annotatedMethod = new ReflectiveAnnotatedMethod<>(method.getMethod());
-        }
+    public void addBean(Bean<?> bean) {
+        standardBeanManager.registerBean(bean);
     }
 
     @Override
-    public ObserverMethodConfigurator<T> configureObserverMethod() {
+    public <T> BeanConfigurator<T> addBean() {
         // TODO
         return null;
     }
 
     @Override
-    public void veto() {
+    public void addObserverMethod(ObserverMethod<?> observerMethod) {
+        standardBeanManager.registerObserverMethod(observerMethod);
+    }
+
+    @Override
+    public <T> ObserverMethodConfigurator<T> addObserverMethod() {
         // TODO
+        return null;
+    }
+
+    @Override
+    public void addContext(Context context) {
+
+    }
+
+    @Override
+    public <T> AnnotatedType<T> getAnnotatedType(Class<T> type, String id) {
+        return null;
+    }
+
+    @Override
+    public <T> Iterable<AnnotatedType<T>> getAnnotatedTypes(Class<T> type) {
+        return null;
     }
 }

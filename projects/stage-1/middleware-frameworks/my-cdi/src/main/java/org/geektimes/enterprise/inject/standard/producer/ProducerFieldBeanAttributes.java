@@ -16,6 +16,7 @@
  */
 package org.geektimes.enterprise.inject.standard.producer;
 
+import org.geektimes.enterprise.inject.standard.annotation.ReflectiveAnnotatedType;
 import org.geektimes.enterprise.inject.standard.beans.AbstractBeanAttributes;
 import org.geektimes.enterprise.inject.util.Beans;
 import org.geektimes.enterprise.inject.util.Producers;
@@ -37,7 +38,7 @@ public class ProducerFieldBeanAttributes<T> extends AbstractBeanAttributes<Field
     private final AnnotatedField annotatedField;
 
     public ProducerFieldBeanAttributes(AnnotatedField annotatedField) {
-        super(annotatedField.getJavaMember(), annotatedField.getJavaMember().getType());
+        super(annotatedField.getJavaMember(), new ReflectiveAnnotatedType<>(annotatedField.getJavaMember().getType()));
         this.annotatedField = annotatedField;
     }
 
