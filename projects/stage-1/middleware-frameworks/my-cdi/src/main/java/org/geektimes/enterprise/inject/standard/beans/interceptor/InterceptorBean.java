@@ -111,12 +111,13 @@ public class InterceptorBean<T> extends GenericBean<T> implements Interceptor<T>
     @Override
     public T create(CreationalContext<T> creationalContext) {
         // TODO
-        return null;
+        return super.create(creationalContext);
     }
 
     @Override
     public void destroy(T instance, CreationalContext<T> creationalContext) {
         // TODO
+        super.destroy(instance, creationalContext);
     }
 
     @Override

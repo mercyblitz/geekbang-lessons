@@ -18,8 +18,6 @@ package org.geektimes.commons.function;
 
 import java.util.function.Predicate;
 
-import static java.util.stream.Stream.of;
-
 /**
  * The utilities class for Java {@link Predicate}
  *
@@ -56,8 +54,12 @@ public interface Predicates {
      * @param <T>        the type to test
      * @return non-null
      */
-    static <T> Predicate<T> and(Predicate<T>... predicates) {
-        return of(predicates).reduce((a, b) -> a.and(b)).orElseGet(Predicates::alwaysTrue);
+    static <T> Predicate<T> and(Predicate<? super T>... predicates) {
+        Predicate<T> andPredicate = alwaysTrue();
+        for (Predicate<? super T> p : predicates) {
+            andPredicate = andPredicate.and(p);
+        }
+        return andPredicate;
     }
 
     /**
@@ -67,8 +69,12 @@ public interface Predicates {
      * @param <T>        the detected type
      * @return non-null
      */
-    static <T> Predicate<T> or(Predicate<T>... predicates) {
-        return of(predicates).reduce((a, b) -> a.or(b)).orElse(e -> true);
+    static <T> Predicate<T> or(Predicate<? super T>... predicates) {
+        Predicate<T> orPredicate = alwaysTrue();
+        for (Predicate<? super T> p : predicates) {
+            orPredicate = orPredicate.or(p);
+        }
+        return orPredicate;
     }
 
 }

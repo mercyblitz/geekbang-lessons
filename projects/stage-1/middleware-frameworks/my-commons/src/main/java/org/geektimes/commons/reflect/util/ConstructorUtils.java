@@ -17,7 +17,13 @@
 package org.geektimes.commons.reflect.util;
 
 import java.lang.reflect.Constructor;
+import java.util.Set;
+import java.util.function.Predicate;
 
+import static java.util.Collections.unmodifiableSet;
+import static java.util.stream.Collectors.toSet;
+import static java.util.stream.Stream.of;
+import static org.geektimes.commons.function.Predicates.and;
 import static org.geektimes.commons.reflect.util.MemberUtils.isPublic;
 
 /**
@@ -48,5 +54,11 @@ public abstract class ConstructorUtils {
             }
         }
         return has;
+    }
+
+    public static Set<Constructor<?>> getConstructors(Class<?> type, Predicate<Constructor<?>>... constructorFilters) {
+        return unmodifiableSet(of(type.getConstructors())
+                .filter(and(constructorFilters))
+                .collect(toSet()));
     }
 }

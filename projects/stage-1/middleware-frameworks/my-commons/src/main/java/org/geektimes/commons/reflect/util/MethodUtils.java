@@ -44,7 +44,7 @@ public class MethodUtils {
     /**
      * The {@link Predicate} reference to {@link MethodUtils#isObjectMethod(Method)}
      */
-    public final static Predicate<Method> OBJECT_METHOD_PREDICATE = MethodUtils::isObjectMethod;
+    public final static Predicate<? super Method> OBJECT_METHOD_PREDICATE = MethodUtils::isObjectMethod;
 
     public final static Set<Method> OBJECT_METHODS = asSet(Object.class.getMethods());
 
@@ -58,7 +58,7 @@ public class MethodUtils {
      * @return non-null read-only {@link Set}
      */
     public static Set<Method> getMethods(Class<?> declaringClass, boolean includeInheritedTypes, boolean publicOnly,
-                                         Predicate<Method>... methodsToFilter) {
+                                         Predicate<? super Method>... methodsToFilter) {
 
         if (declaringClass == null || declaringClass.isPrimitive()) {
             return emptySet();
@@ -95,7 +95,7 @@ public class MethodUtils {
      * @return non-null read-only {@link Set}
      * @see #getMethods(Class, boolean, boolean, Predicate[])
      */
-    static Set<Method> getDeclaredMethods(Class<?> declaringClass, Predicate<Method>... methodsToFilter) {
+    static Set<Method> getDeclaredMethods(Class<?> declaringClass, Predicate<? super Method>... methodsToFilter) {
         return getMethods(declaringClass, false, false, methodsToFilter);
     }
 
@@ -107,7 +107,7 @@ public class MethodUtils {
      * @return non-null read-only {@link Set}
      * @see #getMethods(Class, boolean, boolean, Predicate[])
      */
-    static Set<Method> getMethods(Class<?> declaringClass, Predicate<Method>... methodsToFilter) {
+    static Set<Method> getMethods(Class<?> declaringClass, Predicate<? super Method>... methodsToFilter) {
         return getMethods(declaringClass, false, true, methodsToFilter);
     }
 
@@ -119,7 +119,7 @@ public class MethodUtils {
      * @return non-null read-only {@link Set}
      * @see #getMethods(Class, boolean, boolean, Predicate[])
      */
-    public static Set<Method> getAllDeclaredMethods(Class<?> declaringClass, Predicate<Method>... methodsToFilter) {
+    public static Set<Method> getAllDeclaredMethods(Class<?> declaringClass, Predicate<? super Method>... methodsToFilter) {
         return getMethods(declaringClass, true, false, methodsToFilter);
     }
 
@@ -131,7 +131,7 @@ public class MethodUtils {
      * @return non-null read-only {@link Set}
      * @see #getMethods(Class, boolean, boolean, Predicate[])
      */
-    public static Set<Method> getAllMethods(Class<?> declaringClass, Predicate<Method>... methodsToFilter) {
+    public static Set<Method> getAllMethods(Class<?> declaringClass, Predicate<? super Method>... methodsToFilter) {
         return getMethods(declaringClass, true, true, methodsToFilter);
     }
 

@@ -91,11 +91,11 @@ public interface Streams {
         throw new UnsupportedOperationException(message);
     }
 
-    static <T, S extends Iterable<T>> S filterAll(S values, Predicate<T>... predicates) {
+    static <T, S extends Iterable<T>> S filterAll(S values, Predicate<? super T>... predicates) {
         return filter(values, and(predicates));
     }
 
-    static <T, S extends Iterable<T>> S filterAny(S values, Predicate<T>... predicates) {
+    static <T, S extends Iterable<T>> S filterAny(S values, Predicate<? super T>... predicates) {
         return filter(values, or(predicates));
     }
 
