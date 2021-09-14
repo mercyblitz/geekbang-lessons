@@ -44,7 +44,7 @@ public class AfterBeanDiscoveryEvent implements AfterBeanDiscovery {
 
     @Override
     public void addDefinitionError(Throwable t) {
-
+        standardBeanManager.addDefinitionError(t);
     }
 
     @Override
@@ -71,16 +71,16 @@ public class AfterBeanDiscoveryEvent implements AfterBeanDiscovery {
 
     @Override
     public void addContext(Context context) {
-
+        standardBeanManager.addContext(context);
     }
 
     @Override
     public <T> AnnotatedType<T> getAnnotatedType(Class<T> type, String id) {
-        return null;
+        return standardBeanManager.getAnnotatedType(type, id);
     }
 
     @Override
     public <T> Iterable<AnnotatedType<T>> getAnnotatedTypes(Class<T> type) {
-        return null;
+        return standardBeanManager.getAnnotatedTypes(type);
     }
 }

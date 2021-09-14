@@ -42,6 +42,7 @@ import org.geektimes.interceptor.InterceptorManager;
 
 import javax.el.ELResolver;
 import javax.el.ExpressionFactory;
+import javax.enterprise.context.ContextNotActiveException;
 import javax.enterprise.context.spi.Context;
 import javax.enterprise.context.spi.Contextual;
 import javax.enterprise.context.spi.CreationalContext;
@@ -57,8 +58,11 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.*;
+import java.util.function.Function;
 
+import static java.lang.String.format;
 import static java.lang.System.getProperty;
+import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.requireNonNull;
 import static java.util.ServiceLoader.load;
 import static org.geektimes.commons.lang.util.ArrayUtils.iterate;
@@ -101,13 +105,14 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     private final ObserverMethodManager observerMethodsManager;
 
+    private final DisposerMethodManager disposerMethodManager;
+
     private final InterceptorManager interceptorManager;
 
     private final Map<Class<? extends Extension>, Extension> extensions;
 
-    private final Map<String, AnnotatedType<?>> beanTypes;
 
-    private final DisposerMethodManager disposerMethodManager;
+    private final Map<String, AnnotatedType<?>> beanTypes;
 
     private final Map<String, AnnotatedType<?>> alternativeTypes;
 
@@ -127,9 +132,12 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     private final List<Bean<?>> genericBeans;
 
 
-    private Set<Throwable> definitionErrors;
+    private final Set<DefinitionException> definitionErrors;
 
-    private Set<Throwable> deploymentProblems;
+    private final Set<DeploymentException> deploymentProblems;
+
+
+    private final Map<Class<? extends Annotation>, Context> contexts;
 
     public StandardBeanManager() {
         this.classLoader = ClassLoaderUtils.getClassLoader(getClass());
@@ -154,10 +162,13 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
         this.definitionErrors = new LinkedHashSet<>();
         this.deploymentProblems = new LinkedHashSet<>();
+
+        this.contexts = new HashMap<>();
     }
 
     @Override
     public Object getReference(Bean<?> bean, Type beanType, CreationalContext<?> ctx) {
+        Class<? extends Annotation> scope = bean.getScope();
         // TODO
         return null;
     }
@@ -333,8 +344,11 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     @Override
     public Context getContext(Class<? extends Annotation> scopeType) {
-        // TODO
-        return null;
+        Context context =  contexts.get(scopeType);
+        if(!context.isActive()){
+            throw new ContextNotActiveException(format("The context[scope : @%s] is not active!",scopeType.getName()));
+        }
+        return context;
     }
 
     @Override
@@ -487,16 +501,17 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     }
 
     public void addDefinitionError(Throwable t) {
-        this.definitionErrors.add(t);
+        this.definitionErrors.add(new DefinitionException(t));
     }
 
     /**
      * Registers a deployment problem with the container, causing the container to abort deployment
      * after all observers have been notified.
+     *
      * @param t {@link Throwable}
      */
     public void addDeploymentProblem(Throwable t) {
-        this.deploymentProblems.add(t);
+        this.deploymentProblems.add(new DeploymentException(t));
     }
 
     private void initializeBeanArchiveManager() {
@@ -717,7 +732,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
             registerInterceptorBean((Interceptor) bean);
         } else if (bean instanceof Decorator) {
             registerDecoratorBean((Decorator) bean);
-        } else if (bean instanceof ManagedBean){
+        } else if (bean instanceof ManagedBean) {
             registerManagedBean((ManagedBean) bean);
         } else {
             genericBeans.add(bean);
@@ -958,7 +973,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         observerMethodsManager.registerObserverMethods(beanInstance);
     }
 
-    public void registerObserverMethod(ObserverMethod<?> observerMethod){
+    public void registerObserverMethod(ObserverMethod<?> observerMethod) {
         observerMethodsManager.registerObserverMethod(observerMethod);
     }
 
@@ -1052,6 +1067,62 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
             annotatedTypes.add(createAnnotatedType(klass));
         }
         return annotatedTypes;
+    }
+
+    public <T> AnnotatedType<T> getAnnotatedType(Class<T> type, String id) {
+        return id == null ? getAnnotatedType(type.getName()) : getAnnotatedType(id);
+    }
+
+    public <T> AnnotatedType<T> getAnnotatedType(String id) {
+        AnnotatedType<T> annotatedType = getAnnotatedType(id, beanTypes::get);
+
+        if (annotatedType == null) {
+            annotatedType = getAnnotatedType(id, alternativeTypes::get);
+        }
+
+        if (annotatedType == null) {
+            annotatedType = getAnnotatedType(id, interceptorTypes::get);
+        }
+
+        if (annotatedType == null) {
+            annotatedType = getAnnotatedType(id, decoratorTypes::get);
+        }
+
+        return annotatedType;
+    }
+
+    private <T> AnnotatedType<T> getAnnotatedType(String id, Function<Object, AnnotatedType<?>> typeMapping) {
+        return (AnnotatedType<T>) typeMapping.apply(id);
+    }
+
+    public <T> Iterable<AnnotatedType<T>> getAnnotatedTypes(Class<T> type) {
+        List<AnnotatedType<T>> annotatedTypes = new LinkedList<>();
+        addAnnotatedType(type, beanTypes, annotatedTypes);
+        addAnnotatedType(type, alternativeTypes, annotatedTypes);
+        addAnnotatedType(type, interceptorTypes, annotatedTypes);
+        addAnnotatedType(type, decoratorTypes, annotatedTypes);
+        return unmodifiableList(annotatedTypes);
+    }
+
+    private <T> void addAnnotatedType(Class<T> type, Map<String, AnnotatedType<?>> types,
+                                      List<AnnotatedType<T>> annotatedTypes) {
+        AnnotatedType<T> annotatedType = getAnnotatedType(type.getName(), types::get);
+        if (annotatedType != null) {
+            annotatedTypes.add(annotatedType);
+        }
+    }
+
+    /**
+     *
+     * @param context {@link Context}
+     * @throws DeploymentException If the scope of specified {@link Context} has been registered
+     */
+    public void addContext(Context context) throws DeploymentException {
+        Class<? extends Annotation> scope = context.getScope();
+        if(contexts.containsKey(scope)){
+            throw new DeploymentException(format("The context[scope : @%s] has been registered!",scope.getName()));
+        }
+        contexts.put(scope,context);
     }
 
 }
