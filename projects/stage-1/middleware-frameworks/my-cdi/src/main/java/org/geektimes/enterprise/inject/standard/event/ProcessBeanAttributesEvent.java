@@ -99,7 +99,7 @@ public class ProcessBeanAttributesEvent<T> implements ProcessBeanAttributes<T> {
 
     @Override
     public void addDefinitionError(Throwable t) {
-        standardBeanManager.addBeanDiscoveryDefinitionError(t);
+        standardBeanManager.addDefinitionError(t);
     }
 
     @Override

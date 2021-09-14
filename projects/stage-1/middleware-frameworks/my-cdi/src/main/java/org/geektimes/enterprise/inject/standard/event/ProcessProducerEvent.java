@@ -70,7 +70,7 @@ public class ProcessProducerEvent<T, X> implements ProcessProducer<T, X> {
 
     @Override
     public void addDefinitionError(Throwable t) {
-        standardBeanManager.addBeanDiscoveryDefinitionError(t);
+        standardBeanManager.addDefinitionError(t);
     }
 
     @Override

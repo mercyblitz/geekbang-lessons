@@ -18,53 +18,25 @@ package org.geektimes.enterprise.inject.standard.event;
 
 import org.geektimes.enterprise.inject.standard.beans.manager.StandardBeanManager;
 
-import javax.enterprise.inject.spi.Annotated;
-import javax.enterprise.inject.spi.Bean;
-import javax.enterprise.inject.spi.ProcessBean;
-import java.util.StringJoiner;
+import javax.enterprise.inject.spi.AfterDeploymentValidation;
 
 /**
- * The {@link ProcessBean} Event
+ * an event is raised after it has validated that there are no deployment problems and before creating
+ * contexts or processing requests.
  *
- * @param <X> The class of the bean
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class ProcessBeanEvent<X> implements ProcessBean<X> {
-
-    private final Annotated annotated;
-
-    private final Bean<X> bean;
+public class AfterDeploymentValidationEvent implements AfterDeploymentValidation {
 
     private final StandardBeanManager standardBeanManager;
 
-    public ProcessBeanEvent(Annotated annotated, Bean<X> bean, StandardBeanManager standardBeanManager) {
-        this.annotated = annotated;
-        this.bean = bean;
+    public AfterDeploymentValidationEvent(StandardBeanManager standardBeanManager) {
         this.standardBeanManager = standardBeanManager;
     }
 
-
     @Override
-    public Annotated getAnnotated() {
-        return annotated;
-    }
-
-    @Override
-    public Bean<X> getBean() {
-        return bean;
-    }
-
-    @Override
-    public void addDefinitionError(Throwable t) {
-        standardBeanManager.addDefinitionError(t);
-    }
-
-    @Override
-    public String toString() {
-        return new StringJoiner(", ", getClass().getSimpleName() + "[", "]")
-                .add("annotated=" + annotated)
-                .add("bean=" + bean)
-                .toString();
+    public void addDeploymentProblem(Throwable t) {
+        standardBeanManager.addDeploymentProblem(t);
     }
 }

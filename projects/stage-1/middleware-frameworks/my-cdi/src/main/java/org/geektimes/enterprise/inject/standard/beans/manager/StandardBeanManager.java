@@ -117,11 +117,19 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     private final Map<String, AnnotatedType<?>> syntheticTypes;
 
+
     private final List<ManagedBean<?>> managedBeans;
 
     private final List<Interceptor<?>> interceptorBeans;
 
     private final List<Decorator<?>> decoratorBeans;
+
+    private final List<Bean<?>> genericBeans;
+
+
+    private Set<Throwable> definitionErrors;
+
+    private Set<Throwable> deploymentProblems;
 
     public StandardBeanManager() {
         this.classLoader = ClassLoaderUtils.getClassLoader(getClass());
@@ -142,6 +150,10 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         this.managedBeans = new LinkedList<>();
         this.interceptorBeans = new LinkedList<>();
         this.decoratorBeans = new LinkedList<>();
+        this.genericBeans = new LinkedList<>();
+
+        this.definitionErrors = new LinkedHashSet<>();
+        this.deploymentProblems = new LinkedHashSet<>();
     }
 
     @Override
@@ -474,6 +486,19 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         // TODO
     }
 
+    public void addDefinitionError(Throwable t) {
+        this.definitionErrors.add(t);
+    }
+
+    /**
+     * Registers a deployment problem with the container, causing the container to abort deployment
+     * after all observers have been notified.
+     * @param t {@link Throwable}
+     */
+    public void addDeploymentProblem(Throwable t) {
+        this.deploymentProblems.add(t);
+    }
+
     private void initializeBeanArchiveManager() {
         beanArchiveManager.setClassLoader(classLoader);
         beanArchiveManager.enableScanImplicit(isScanImplicitEnabled());
@@ -548,11 +573,6 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         determineAlternativeBeans();
         determineInterceptorBeans();
         determineDecoratorBeans();
-
-        // register the instances of enabled Beans, Interceptors and Decorator
-        registerBeans();
-        registerInterceptorBeans();
-        registerDecoratorBeans();
     }
 
     private void determineManagedBeans() {
@@ -687,12 +707,24 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         fireProcessBeanAttributesEvent(interceptorType, interceptorBean);
         if (!interceptorBean.isVetoed()) {
             fireProcessBeanEvent(interceptorType, interceptorBean);
-            registerInterceptorBean(interceptorType, interceptorBean);
+            registerInterceptorClass(interceptorType);
+            registerInterceptorBean(interceptorBean);
         }
     }
 
-    private void registerInterceptorBean(AnnotatedType<?> interceptorType, Interceptor<?> interceptorBean) {
-        registerInterceptorClass(interceptorType);
+    public void registerBean(Bean<?> bean) {
+        if (bean instanceof Interceptor) {
+            registerInterceptorBean((Interceptor) bean);
+        } else if (bean instanceof Decorator) {
+            registerDecoratorBean((Decorator) bean);
+        } else if (bean instanceof ManagedBean){
+            registerManagedBean((ManagedBean) bean);
+        } else {
+            genericBeans.add(bean);
+        }
+    }
+
+    private void registerInterceptorBean(Interceptor<?> interceptorBean) {
         this.interceptorBeans.add(interceptorBean);
     }
 
@@ -708,7 +740,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     }
 
     private void determineDecoratorBean(AnnotatedType<?> decoratorType) {
-        DecoratorBean<?> decoratorBean = new DecoratorBean(decoratorType,this);
+        DecoratorBean<?> decoratorBean = new DecoratorBean(decoratorType, this);
         fireProcessBeanAttributesEvent(decoratorType, decoratorBean);
         if (!decoratorBean.isVetoed()) { // vetoed if ProcessBeanAttributes.veto() method was invoked
             fireProcessBeanEvent(decoratorType, decoratorBean);
@@ -716,7 +748,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         }
     }
 
-    private void registerDecoratorBean(DecoratorBean<?> decoratorBean) {
+    private void registerDecoratorBean(Decorator<?> decoratorBean) {
         this.decoratorBeans.add(decoratorBean);
     }
 
@@ -737,7 +769,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
      * initialization of the application if any observer registers a definition error.
      */
     private void performAfterBeanDiscovery() {
-        // TODO
+        fireAfterBeanDiscoveryEvent();
     }
 
     /**
@@ -754,7 +786,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
      * and abort initialization of the application if any observer registers a deployment problem.
      */
     private void performAfterDeploymentValidation() {
-        // TODO
+        fireAfterDeploymentValidationEvent();
     }
 
     private StandardBeanManager discoverExtensions() {
@@ -833,6 +865,24 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         fireEvent(new ProcessProducerEvent(annotatedMember, producer, this));
     }
 
+    /**
+     * Fire fire an event when it has fully completed the bean discovery process, validated that there are
+     * no definition errors relating to the discovered beans, and registered Bean and ObserverMethod objects
+     * for the discovered beans.
+     */
+    private void fireAfterBeanDiscoveryEvent() {
+        fireEvent(new AfterBeanDiscoveryEvent(this));
+    }
+
+
+    /**
+     * Fire an event after it has validated that there are no deployment problems and before creating contexts
+     * or processing requests.
+     */
+    private void fireAfterDeploymentValidationEvent() {
+        fireEvent(new AfterDeploymentValidationEvent(this));
+    }
+
     private void fireEvent(Object event) {
         observerMethodsManager.fire(event);
     }
@@ -908,6 +958,10 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         observerMethodsManager.registerObserverMethods(beanInstance);
     }
 
+    public void registerObserverMethod(ObserverMethod<?> observerMethod){
+        observerMethodsManager.registerObserverMethod(observerMethod);
+    }
+
     public StandardBeanManager extensions(Extension... extensions) {
         iterate(extensions, this::addExtension);
         return this;
@@ -959,10 +1013,6 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         return beanArchiveManager;
     }
 
-    public void addBeanDiscoveryDefinitionError(Throwable t) {
-        // TODO
-    }
-
     public Boolean getScanImplicitProperty() {
         Boolean value = (Boolean) properties.get(SCAN_IMPLICIT_PROPERTY_NAME);
         if (value == null) {
@@ -1003,4 +1053,5 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         }
         return annotatedTypes;
     }
+
 }
