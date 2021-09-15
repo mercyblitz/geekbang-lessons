@@ -18,8 +18,6 @@ package org.geektimes.commons.function;
 
 import java.util.function.Predicate;
 
-import static java.util.stream.Stream.of;
-
 /**
  * The utilities class for Java {@link Predicate}
  *
@@ -29,6 +27,10 @@ public interface Predicates {
 
     Predicate[] EMPTY_ARRAY = new Predicate[0];
 
+    Predicate<?> ALWAYS_TRUE = e -> true;
+
+    Predicate<?> ALWAYS_FALSE = e -> false;
+
     /**
      * {@link Predicate} always return <code>true</code>
      *
@@ -36,7 +38,7 @@ public interface Predicates {
      * @return <code>true</code>
      */
     static <T> Predicate<T> alwaysTrue() {
-        return e -> true;
+        return (Predicate<T>) ALWAYS_TRUE;
     }
 
     /**
@@ -46,29 +48,65 @@ public interface Predicates {
      * @return <code>false</code>
      */
     static <T> Predicate<T> alwaysFalse() {
-        return e -> false;
+        return (Predicate<T>) ALWAYS_FALSE;
     }
 
     /**
      * a composed predicate that represents a short-circuiting logical AND of {@link Predicate predicates}
      *
-     * @param predicates {@link Predicate predicates}
+     * @param predicate       {@link Predicate one predicate}
+     * @param otherPredicates {@link Predicate other predicates}
+     * @param <T>             the type to test
+     * @return non-null
+     */
+    static <T> Predicate<T> and(Predicate<? super T> predicate, Predicate<? super T>... otherPredicates) {
+        Predicate<T> andPredicate = alwaysTrue();
+        andPredicate = andPredicate.and(predicate).and(and(otherPredicates));
+        return andPredicate;
+    }
+
+    /**
+     * a composed predicate that represents a short-circuiting logical AND of {@link Predicate predicates}
+     *
+     * @param predicates {@link Predicate other predicates}
      * @param <T>        the type to test
      * @return non-null
      */
-    static <T> Predicate<T> and(Predicate<T>... predicates) {
-        return of(predicates).reduce((a, b) -> a.and(b)).orElseGet(Predicates::alwaysTrue);
+    static <T> Predicate<T> and(Predicate<? super T>... predicates) {
+        Predicate<T> andPredicate = alwaysTrue();
+        for (Predicate<? super T> p : predicates) {
+            andPredicate = andPredicate.and(p);
+        }
+        return andPredicate;
     }
 
     /**
      * a composed predicate that represents a short-circuiting logical OR of {@link Predicate predicates}
      *
-     * @param predicates {@link Predicate predicates}
+     * @param predicate       {@link Predicate one predicate}
+     * @param otherPredicates {@link Predicate other predicates}
+     * @param <T>             the detected type
+     * @return non-null
+     */
+    static <T> Predicate<T> or(Predicate<? super T> predicate, Predicate<? super T>... otherPredicates) {
+        Predicate<T> orPredicate = alwaysTrue();
+        orPredicate = orPredicate.or(predicate).or(or(otherPredicates));
+        return orPredicate;
+    }
+
+    /**
+     * a composed predicate that represents a short-circuiting logical OR of {@link Predicate predicates}
+     *
+     * @param predicates {@link Predicate other predicates}
      * @param <T>        the detected type
      * @return non-null
      */
-    static <T> Predicate<T> or(Predicate<T>... predicates) {
-        return of(predicates).reduce((a, b) -> a.or(b)).orElse(e -> true);
+    static <T> Predicate<T> or(Predicate<? super T>... predicates) {
+        Predicate<T> orPredicate = alwaysTrue();
+        for (Predicate<? super T> p : predicates) {
+            orPredicate = orPredicate.or(p);
+        }
+        return orPredicate;
     }
 
 }

@@ -50,6 +50,8 @@ import java.util.Set;
  */
 public class DecoratorBean<T> extends ManagedBean<T> implements Decorator<T> {
 
+
+
     public DecoratorBean(AnnotatedType<T> decoratorType, BeanManager beanManager) {
         super(decoratorType, beanManager);
     }

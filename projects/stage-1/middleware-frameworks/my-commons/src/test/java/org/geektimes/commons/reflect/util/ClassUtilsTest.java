@@ -21,6 +21,7 @@ import org.geektimes.commons.lang.util.ClassPathUtils;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.net.URL;
 import java.util.AbstractCollection;
 import java.util.Map;
@@ -123,5 +124,60 @@ public class ClassUtilsTest {
 
         codeSourceLocation = ClassUtils.getCodeSourceLocation(String.class);
         assertNotNull(codeSourceLocation);
+    }
+
+    @Test
+    public void testIsPrimitive() {
+        assertTrue(isPrimitive(void.class));
+        assertTrue(isPrimitive(Void.TYPE));
+
+        assertTrue(isPrimitive(boolean.class));
+        assertTrue(isPrimitive(Boolean.TYPE));
+
+        assertTrue(isPrimitive(byte.class));
+        assertTrue(isPrimitive(Byte.TYPE));
+
+        assertTrue(isPrimitive(char.class));
+        assertTrue(isPrimitive(Character.TYPE));
+
+        assertTrue(isPrimitive(short.class));
+        assertTrue(isPrimitive(Short.TYPE));
+
+        assertTrue(isPrimitive(int.class));
+        assertTrue(isPrimitive(Integer.TYPE));
+
+        assertTrue(isPrimitive(long.class));
+        assertTrue(isPrimitive(Long.TYPE));
+
+        assertTrue(isPrimitive(float.class));
+        assertTrue(isPrimitive(Float.TYPE));
+
+        assertTrue(isPrimitive(double.class));
+        assertTrue(isPrimitive(Double.TYPE));
+
+        assertFalse(isPrimitive(null));
+        assertFalse(isPrimitive(Object.class));
+    }
+
+    @Test
+    public void testIsArray() {
+
+        // Primitive-Type array
+        assertTrue(isArray(int[].class));
+
+        // Object-Type array
+        assertTrue(isArray(Object[].class));
+
+        // Dynamic-Type array
+        assertTrue(isArray(Array.newInstance(int.class, 0).getClass()));
+        assertTrue(isArray(Array.newInstance(Object.class, 0).getClass()));
+
+        // Dynamic multiple-dimension array
+        assertTrue(isArray(Array.newInstance(int.class, 0, 3).getClass()));
+        assertTrue(isArray(Array.newInstance(Object.class, 0, 3).getClass()));
+
+        // non-array
+        assertFalse(isArray(Object.class));
+        assertFalse(isArray(int.class));
     }
 }

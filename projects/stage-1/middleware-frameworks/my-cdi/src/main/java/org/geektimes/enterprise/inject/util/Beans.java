@@ -45,11 +45,13 @@ import static org.geektimes.commons.lang.util.AnnotationUtils.findAnnotation;
 import static org.geektimes.commons.lang.util.AnnotationUtils.isAnnotationPresent;
 import static org.geektimes.commons.reflect.util.ClassUtils.*;
 import static org.geektimes.commons.reflect.util.FieldUtils.getAllFields;
+import static org.geektimes.commons.reflect.util.MemberUtils.NON_PRIVATE_METHOD_PREDICATE;
+import static org.geektimes.commons.reflect.util.MemberUtils.NON_STATIC_METHOD_PREDICATE;
+import static org.geektimes.commons.reflect.util.MethodUtils.getAllDeclaredMethods;
 import static org.geektimes.commons.reflect.util.TypeUtils.*;
 import static org.geektimes.enterprise.inject.util.Decorators.isDecorator;
 import static org.geektimes.enterprise.inject.util.Qualifiers.findQualifier;
 import static org.geektimes.interceptor.InterceptorManager.getInstance;
-import static org.geektimes.interceptor.util.InterceptorUtils.isInterceptorClass;
 
 /**
  * Bean Utilities class
@@ -200,6 +202,55 @@ public abstract class Beans {
         if (!hasManagedBeanConstructor(beanClass)) {
             return false;
         }
+        return true;
+    }
+
+    /**
+     * The container uses proxies to provide certain functionality. Certain legal bean types cannot be
+     * proxied by the container:
+     * <ul>
+     *     <li>classes which don’t have a non-private constructor with no parameters</li>
+     *     <li>classes which are declared final</li>
+     *     <li>classes which have non-static, final methods with public, protected or default visibility</li>
+     *     <li>primitive types</li>
+     *     <li>array types</li>
+     * </ul>
+     *
+     * @param beanClass the type of Bean
+     * @return <code>true</code> if bean type cannot be proxied by the container:
+     * * <ul>
+     * *     <li>classes which don’t have a non-private constructor with no parameters</li>
+     * *     <li>classes which are declared final</li>
+     * *     <li>classes which have non-static, final methods with public, protected or default visibility</li>
+     * *     <li>primitive types</li>
+     * *     <li>array types</li>
+     * * </ul>
+     */
+    public static boolean isUnproxyable(Class<?> beanClass) {
+        if (isArray(beanClass) ||
+                isPrimitive(beanClass) ||
+                isFinal(beanClass) ||
+                hasFinalMethod(beanClass) ||
+                hasNonDefaultConstructor(beanClass)) {
+            return true;
+        }
+        return false;
+    }
+
+    private static boolean hasFinalMethod(Class<?> beanClass) {
+        Set<Method> methods = getAllDeclaredMethods(beanClass, NON_STATIC_METHOD_PREDICATE, NON_PRIVATE_METHOD_PREDICATE);
+        boolean hasFinalMethod = false;
+        for (Method method : methods) {
+            hasFinalMethod = MemberUtils.isFinal(method);
+            if (hasFinalMethod) {
+                break;
+            }
+        }
+        return hasFinalMethod;
+    }
+
+    private static boolean hasNonDefaultConstructor(Class<?> beanClass) {
+        // TODO
         return true;
     }
 

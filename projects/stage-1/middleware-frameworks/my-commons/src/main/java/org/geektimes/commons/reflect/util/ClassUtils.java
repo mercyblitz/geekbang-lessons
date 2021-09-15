@@ -30,6 +30,7 @@ import org.geektimes.commons.lang.util.StringUtils;
 
 import java.io.File;
 import java.lang.reflect.Array;
+import java.lang.reflect.Modifier;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
@@ -44,11 +45,9 @@ import java.util.jar.JarFile;
 import static java.lang.reflect.Modifier.isAbstract;
 import static java.lang.reflect.Modifier.isInterface;
 import static java.util.Arrays.asList;
-import static java.util.Collections.emptySet;
-import static java.util.Collections.unmodifiableSet;
-import static org.geektimes.commons.collection.util.CollectionUtils.newLinkedHashSet;
+import static java.util.Collections.*;
 import static org.geektimes.commons.collection.util.CollectionUtils.asSet;
-import static org.geektimes.commons.function.Streams.filterAll;
+import static org.geektimes.commons.function.Streams.filter;
 import static org.geektimes.commons.function.ThrowableFunction.execute;
 import static org.geektimes.commons.lang.util.ArrayUtils.isEmpty;
 import static org.geektimes.commons.lang.util.ArrayUtils.isNotEmpty;
@@ -121,6 +120,19 @@ public abstract class ClassUtils {
             Date.class,
             Object.class
     );
+
+    public static final Set<Class<?>> PRIMITIVE_TYPES = asSet(
+            Void.TYPE,
+            Boolean.TYPE,
+            Character.TYPE,
+            Byte.TYPE,
+            Short.TYPE,
+            Integer.TYPE,
+            Long.TYPE,
+            Float.TYPE,
+            Double.TYPE
+    );
+
     /**
      * Prefix for internal array class names: "[L"
      */
@@ -177,7 +189,7 @@ public abstract class ClassUtils {
             Set<String> classNames = findClassNamesInClassPath(classPath, true);
             classPathToClassNamesMap.put(classPath, classNames);
         }
-        return Collections.unmodifiableMap(classPathToClassNamesMap);
+        return unmodifiableMap(classPathToClassNamesMap);
     }
 
     private static Map<String, String> initClassNameToClassPathsMap() {
@@ -191,7 +203,7 @@ public abstract class ClassUtils {
             }
         }
 
-        return Collections.unmodifiableMap(classNameToClassPathsMap);
+        return unmodifiableMap(classNameToClassPathsMap);
     }
 
     private static Map<String, Set<String>> initPackageNameToClassNamesMap() {
@@ -207,7 +219,7 @@ public abstract class ClassUtils {
             classNamesInPackage.add(className);
         }
 
-        return Collections.unmodifiableMap(packageNameToClassNamesMap);
+        return unmodifiableMap(packageNameToClassNamesMap);
     }
 
     public static Class<?> forNameWithThreadContextClassLoader(String name)
@@ -343,13 +355,15 @@ public abstract class ClassUtils {
 
     /**
      * The specified type is primitive type or simple type
+     * <p>
+     * It's an optimized implementation for {@link Class#isPrimitive()}.
      *
      * @param type the type to test
      * @return
-     * @deprecated as 1.0.0, use {@link Class#isPrimitive()} plus {@link #isSimpleType(Class)} instead
+     * @see Class#isPrimitive()
      */
     public static boolean isPrimitive(Class<?> type) {
-        return type != null && (type.isPrimitive() || isSimpleType(type));
+        return PRIMITIVE_TYPES.contains(type);
     }
 
     /**
@@ -392,6 +406,30 @@ public abstract class ClassUtils {
         return value;
     }
 
+    /**
+     * The specified type is final or not
+     *
+     * @param type the type to test
+     * @return <code>true</code> if the specified type is a final class,
+     * <code>false</code> otherwise
+     */
+    public static boolean isFinal(Class<?> type) {
+        return type != null && Modifier.isFinal(type.getModifiers());
+    }
+
+    /**
+     * The specified type is array or not?
+     * <p>
+     * It's an optimized implementation for {@link Class#isArray()}).
+     *
+     * @param type the type to test
+     * @return <code>true</code> if the specified type is an array class,
+     * <code>false</code> otherwise
+     * @see Class#isArray()
+     */
+    public static boolean isArray(Class<?> type) {
+        return type != null && type.getName().startsWith("[");
+    }
 
     /**
      * We only check boolean value at this moment.
@@ -449,7 +487,7 @@ public abstract class ClassUtils {
         }
 
         // Keep the same order from List
-        return CollectionUtils.asSet(filterAll(allClasses, classFilters));
+        return CollectionUtils.asSet(filter(allClasses, classFilters));
     }
 
     /**
@@ -509,7 +547,7 @@ public abstract class ClassUtils {
         // FIFO -> FILO
         Collections.reverse(allInterfaces);
 
-        return CollectionUtils.asSet(filterAll(allInterfaces, interfaceFilters));
+        return CollectionUtils.asSet(filter(allInterfaces, interfaceFilters));
     }
 
     /**
@@ -802,7 +840,7 @@ public abstract class ClassUtils {
      * @return all class names in class path
      */
     public static Set<String> findClassNamesInClassPath(File archiveFile, boolean recursive) {
-        if (archiveFile==null || !archiveFile.exists()) {
+        if (archiveFile == null || !archiveFile.exists()) {
             return emptySet();
         }
         if (archiveFile.isDirectory()) { // Directory

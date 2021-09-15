@@ -17,6 +17,7 @@
 package org.geektimes.commons.reflect.util;
 
 import java.lang.reflect.*;
+import java.util.function.Predicate;
 
 /**
  * The utilities class for Java Reflection {@link Member}
@@ -25,6 +26,16 @@ import java.lang.reflect.*;
  * @since 1.0.0
  */
 public abstract class MemberUtils {
+
+    public final static Predicate<Method> STATIC_METHOD_PREDICATE = MemberUtils::isStatic;
+
+    public final static Predicate<Member> NON_STATIC_METHOD_PREDICATE = MemberUtils::isNonStatic;
+
+    public final static Predicate<Member> FINAL_METHOD_PREDICATE = MemberUtils::isFinal;
+
+    public final static Predicate<Member> PUBLIC_METHOD_PREDICATE = MemberUtils::isPublic;
+
+    public final static Predicate<Member> NON_PRIVATE_METHOD_PREDICATE = MemberUtils::isNonPrivate;
 
     /**
      * check the specified {@link Member member} is static or not ?
@@ -35,7 +46,6 @@ public abstract class MemberUtils {
     public static boolean isStatic(Member member) {
         return member != null && Modifier.isStatic(member.getModifiers());
     }
-
 
     /**
      * check the specified {@link Member member} is abstract or not ?
@@ -49,6 +59,16 @@ public abstract class MemberUtils {
 
     public static boolean isNonStatic(Member member) {
         return member != null && !Modifier.isStatic(member.getModifiers());
+    }
+
+    /**
+     * check the specified {@link Member member} is final or not ?
+     *
+     * @param member {@link Member} instance, e.g, {@link Constructor}, {@link Method} or {@link Field}
+     * @return Iff <code>member</code> is final one, return <code>true</code>, or <code>false</code>
+     */
+    public static boolean isFinal(Member member) {
+        return member != null && Modifier.isFinal(member.getModifiers());
     }
 
     /**
@@ -70,4 +90,15 @@ public abstract class MemberUtils {
     public static boolean isPublic(Member member) {
         return member != null && Modifier.isPublic(member.getModifiers());
     }
+
+    /**
+     * check the specified {@link Member member} is non-private or not ?
+     *
+     * @param member {@link Member} instance, e.g, {@link Constructor}, {@link Method} or {@link Field}
+     * @return Iff <code>member</code> is non-private one, return <code>true</code>, or <code>false</code>
+     */
+    public static boolean isNonPrivate(Member member) {
+        return member != null && !Modifier.isPrivate(member.getModifiers());
+    }
+
 }
