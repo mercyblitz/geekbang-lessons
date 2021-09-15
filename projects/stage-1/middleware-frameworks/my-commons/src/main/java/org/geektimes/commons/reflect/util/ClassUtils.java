@@ -47,7 +47,7 @@ import static java.lang.reflect.Modifier.isInterface;
 import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static org.geektimes.commons.collection.util.CollectionUtils.asSet;
-import static org.geektimes.commons.function.Streams.filterAll;
+import static org.geektimes.commons.function.Streams.filter;
 import static org.geektimes.commons.function.ThrowableFunction.execute;
 import static org.geektimes.commons.lang.util.ArrayUtils.isEmpty;
 import static org.geektimes.commons.lang.util.ArrayUtils.isNotEmpty;
@@ -487,7 +487,7 @@ public abstract class ClassUtils {
         }
 
         // Keep the same order from List
-        return CollectionUtils.asSet(filterAll(allClasses, classFilters));
+        return CollectionUtils.asSet(filter(allClasses, classFilters));
     }
 
     /**
@@ -547,7 +547,7 @@ public abstract class ClassUtils {
         // FIFO -> FILO
         Collections.reverse(allInterfaces);
 
-        return CollectionUtils.asSet(filterAll(allInterfaces, interfaceFilters));
+        return CollectionUtils.asSet(filter(allInterfaces, interfaceFilters));
     }
 
     /**

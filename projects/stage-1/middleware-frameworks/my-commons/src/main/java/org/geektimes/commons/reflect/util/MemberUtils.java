@@ -31,11 +31,11 @@ public abstract class MemberUtils {
 
     public final static Predicate<Member> NON_STATIC_METHOD_PREDICATE = MemberUtils::isNonStatic;
 
-    public final static Predicate<? extends Member> FINAL_METHOD_PREDICATE = MemberUtils::isFinal;
+    public final static Predicate<Member> FINAL_METHOD_PREDICATE = MemberUtils::isFinal;
 
-    public final static Predicate<? extends Member> PUBLIC_METHOD_PREDICATE = MemberUtils::isPublic;
+    public final static Predicate<Member> PUBLIC_METHOD_PREDICATE = MemberUtils::isPublic;
 
-    public final static Predicate<? extends Member> NON_PRIVATE_METHOD_PREDICATE = MemberUtils::isNonPrivate;
+    public final static Predicate<Member> NON_PRIVATE_METHOD_PREDICATE = MemberUtils::isNonPrivate;
 
     /**
      * check the specified {@link Member member} is static or not ?

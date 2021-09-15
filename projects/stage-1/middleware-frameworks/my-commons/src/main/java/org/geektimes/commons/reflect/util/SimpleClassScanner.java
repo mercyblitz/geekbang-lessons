@@ -19,7 +19,6 @@ import java.util.function.Predicate;
 import static java.util.Collections.unmodifiableSet;
 import static org.geektimes.commons.collection.util.CollectionUtils.*;
 import static org.geektimes.commons.function.Streams.filter;
-import static org.geektimes.commons.function.Streams.filterAll;
 import static org.geektimes.commons.lang.util.ClassLoaderUtils.findLoadedClass;
 import static org.geektimes.commons.lang.util.ClassLoaderUtils.loadClass;
 import static org.geektimes.commons.net.util.URLUtils.resolveArchiveFile;
@@ -138,7 +137,7 @@ public class SimpleClassScanner {
                 classesSet.add(class_);
             }
         }
-        return filterAll(classesSet, classFilters);
+        return filter(classesSet, classFilters);
     }
 
     public Set<Class<?>> scan(ClassLoader classLoader, File archiveFile, boolean requiredLoad,
@@ -151,7 +150,7 @@ public class SimpleClassScanner {
                 classesSet.add(class_);
             }
         }
-        return filterAll(classesSet, classFilters);
+        return filter(classesSet, classFilters);
     }
 
     private Set<String> filterClassNames(Set<String> classNames, String packageName, boolean recursive) {

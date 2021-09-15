@@ -28,7 +28,7 @@ import java.util.function.Predicate;
 import static java.util.Collections.emptySet;
 import static java.util.Collections.unmodifiableSet;
 import static org.geektimes.commons.collection.util.CollectionUtils.asSet;
-import static org.geektimes.commons.function.Streams.filterAll;
+import static org.geektimes.commons.function.Streams.filter;
 import static org.geektimes.commons.lang.util.StringUtils.isNotEmpty;
 import static org.geektimes.commons.reflect.util.ClassUtils.*;
 import static org.geektimes.commons.reflect.util.MemberUtils.*;
@@ -84,7 +84,7 @@ public class MethodUtils {
             }
         }
 
-        return unmodifiableSet(filterAll(allMethods, methodsToFilter));
+        return unmodifiableSet(filter(allMethods, methodsToFilter));
     }
 
     /**

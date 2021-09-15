@@ -17,7 +17,6 @@
 package org.geektimes.enterprise.inject.util;
 
 import org.geektimes.commons.lang.util.ArrayUtils;
-import org.geektimes.commons.reflect.util.ConstructorUtils;
 import org.geektimes.commons.reflect.util.MemberUtils;
 import org.geektimes.interceptor.InterceptorManager;
 
@@ -251,7 +250,8 @@ public abstract class Beans {
     }
 
     private static boolean hasNonDefaultConstructor(Class<?> beanClass) {
-        ConstructorUtils.hasPublicNoArgConstructor()
+        // TODO
+        return true;
     }
 
     private static boolean hasManagedBeanConstructor(Class<?> beanClass) {

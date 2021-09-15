@@ -29,7 +29,7 @@ import static java.util.Arrays.asList;
 import static java.util.Collections.*;
 import static java.util.Optional.ofNullable;
 import static org.geektimes.commons.function.Predicates.and;
-import static org.geektimes.commons.function.Streams.filterAll;
+import static org.geektimes.commons.function.Streams.filter;
 import static org.geektimes.commons.function.Streams.filterFirst;
 import static org.geektimes.commons.function.ThrowableSupplier.execute;
 import static org.geektimes.commons.lang.util.ArrayUtils.length;
@@ -178,7 +178,7 @@ public abstract class AnnotationUtils extends BaseUtils {
 
     public static <S extends Iterable<Annotation>> S filterAnnotations(S annotations,
                                                                        Predicate<Annotation>... annotationsToFilter) {
-        return filterAll(annotations, annotationsToFilter);
+        return filter(annotations, annotationsToFilter);
     }
 
     /**
@@ -208,7 +208,7 @@ public abstract class AnnotationUtils extends BaseUtils {
             allAnnotations.addAll(getDeclaredAnnotations(t));
         }
 
-        return filterAll(allAnnotations, annotationsToFilter);
+        return filter(allAnnotations, annotationsToFilter);
     }
 
     /**
@@ -225,7 +225,7 @@ public abstract class AnnotationUtils extends BaseUtils {
             return emptyList();
         }
 
-        return filterAll(asList(annotatedElement.getAnnotations()), annotationsToFilter);
+        return filter(asList(annotatedElement.getAnnotations()), annotationsToFilter);
     }
 
     public static <T> T getAttributeValue(Annotation[] annotations, String attributeName, Class<T> returnType) {
