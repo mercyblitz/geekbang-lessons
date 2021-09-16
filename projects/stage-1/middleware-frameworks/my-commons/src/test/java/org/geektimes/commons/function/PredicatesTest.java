@@ -40,7 +40,7 @@ public class PredicatesTest {
 
     @Test
     public void testAnd() {
-
+        assertTrue(and(alwaysTrue(), alwaysTrue()).test(null));
     }
 
 }

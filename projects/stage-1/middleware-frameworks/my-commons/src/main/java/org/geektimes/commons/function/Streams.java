@@ -16,6 +16,8 @@
  */
 package org.geektimes.commons.function;
 
+import org.geektimes.commons.lang.util.ArrayUtils;
+
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -30,8 +32,10 @@ import static java.lang.String.format;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Collections.unmodifiableSet;
 import static java.util.stream.Collectors.toList;
+import static java.util.stream.Collectors.toSet;
 import static org.geektimes.commons.collection.util.CollectionUtils.*;
-import static org.geektimes.commons.function.Predicates.*;
+import static org.geektimes.commons.function.Predicates.and;
+import static org.geektimes.commons.function.Predicates.or;
 
 /**
  * The utilities class for {@link Stream}
@@ -45,119 +49,84 @@ public interface Streams {
     }
 
     static <T, I extends Iterable<T>> Stream<T> filterStream(I values, Predicate<? super T> predicate) {
-        return filterStream(values, predicate, EMPTY_ARRAY);
+        return stream(values).filter(predicate);
     }
 
     static <T, I extends Iterable<T>> Stream<T> filterStream(I values, Predicate<? super T>... predicates) {
-        return filterStream(values, alwaysTrue(), predicates);
-    }
-
-    static <T, I extends Iterable<T>> Stream<T> filterStream(I values, Predicate<? super T> predicate,
-                                                             Predicate<? super T>... otherPredicates) {
-        return stream(values).filter(and(predicate, otherPredicates));
+        return ArrayUtils.isEmpty(predicates) ? stream(values) : filterStream(values, and(predicates));
     }
 
     static <E, L extends List<E>> List<E> filter(L values, Predicate<? super E> predicate) {
-        return filter(values, predicate, EMPTY_ARRAY);
-    }
-
-    static <E, L extends List<E>> List<E> filter(L values, Predicate<? super E>... predicates) {
-        return filter(values, alwaysTrue(), predicates);
-    }
-
-    static <E, L extends List<E>> List<E> filter(L values, Predicate<? super E> predicate, Predicate<? super E>... otherPredicates) {
         final L result;
         if (predicate == null) {
             result = values;
         } else {
-            result = (L) filterStream(values, predicate, otherPredicates).collect(toList());
+            result = (L) filterStream(values, predicate).collect(toList());
         }
         return unmodifiableList(result);
     }
 
+    static <E, L extends List<E>> List<E> filter(L values, Predicate<? super E>... predicates) {
+        return filter(values, and(predicates));
+    }
+
     static <E, S extends Set<E>> Set<E> filter(S values, Predicate<? super E> predicate) {
-        return filter(values, predicate, EMPTY_ARRAY);
-    }
-
-    static <E, S extends Set<E>> Set<E> filter(S values, Predicate<? super E>... predicates) {
-        return filter(values, alwaysTrue(), predicates);
-    }
-
-    static <E, S extends Set<E>> Set<E> filter(S values, Predicate<? super E> predicate,
-                                               Predicate<? super E>... otherPredicates) {
         final S result;
         if (predicate == null) {
             result = values;
         } else {
-            result = (S) filterStream(values, predicate, otherPredicates).collect(Collectors.toSet());
+            result = (S) filterStream(values, predicate).collect(toSet());
         }
         return unmodifiableSet(result);
     }
 
+    static <E, S extends Set<E>> Set<E> filter(S values, Predicate<? super E>... predicates) {
+        return filter(values, and(predicates));
+    }
+
     static <E, Q extends Queue<E>> Queue<E> filter(Q values, Predicate<? super E> predicate) {
-        return filter(values, predicate, EMPTY_ARRAY);
-    }
-
-    static <E, Q extends Queue<E>> Queue<E> filter(Q values, Predicate<? super E>... predicates) {
-        return filter(values, alwaysTrue(), predicates);
-    }
-
-    static <E, Q extends Queue<E>> Queue<E> filter(Q values, Predicate<? super E> predicate,
-                                                   Predicate<? super E>... otherPredicates) {
         final Q result;
         if (predicate == null) {
             result = values;
         } else {
-            result = (Q) filterStream(values, predicate, otherPredicates)
-                    .collect(LinkedList::new, List::add, List::addAll);
+            result = (Q) filterStream(values, predicate).collect(LinkedList::new, List::add, List::addAll);
         }
         return unmodifiableQueue(result);
     }
 
+    static <E, Q extends Queue<E>> Queue<E> filter(Q values, Predicate<? super E>... predicates) {
+        return filter(values, and(predicates));
+    }
+
     static <T, S extends Iterable<T>> S filter(S values, Predicate<? super T> predicate) {
-        return (S) filter(values, predicate, EMPTY_ARRAY);
-    }
-
-    static <T, S extends Iterable<T>> S filter(S values, Predicate<? super T>... predicates) {
-        return filter(values, alwaysTrue(), predicates);
-    }
-
-    static <T, S extends Iterable<T>> S filter(S values, Predicate<? super T> predicate,
-                                               Predicate<? super T>... otherPredicates) {
         if (isSet(values)) {
-            return (S) filter((Set) values, predicate, otherPredicates);
+            return (S) filter((Set) values, predicate);
         } else if (isList(values)) {
-            return (S) filter((List) values, predicate, otherPredicates);
+            return (S) filter((List) values, predicate);
         } else if (isQueue(values)) {
-            return (S) filter((Queue) values, predicate, otherPredicates);
+            return (S) filter((Queue) values, predicate);
         }
         String message = format("The 'values' type can't be supported!", values.getClass().getName());
         throw new UnsupportedOperationException(message);
     }
 
-    static <T, S extends Iterable<T>> S filterAny(S values, Predicate<? super T>... predicates) {
-        return filterAny(values, alwaysTrue(), predicates);
+    static <T, S extends Iterable<T>> S filter(S values, Predicate<? super T>... predicates) {
+        return filter(values, and(predicates));
     }
 
-    static <T, S extends Iterable<T>> S filterAny(S values, Predicate<? super T> predicate,
-                                                  Predicate<? super T>... otherPredicates) {
-        return filter(values, or(predicate, otherPredicates));
+    static <T, S extends Iterable<T>> S filterAny(S values, Predicate<? super T>... predicates) {
+        return filter(values, or(predicates));
     }
 
     static <T> T filterFirst(Iterable<T> values, Predicate<? super T> predicate) {
-        return (T) filterFirst(values, predicate, EMPTY_ARRAY);
+        return stream(values)
+                .filter(predicate)
+                .findFirst()
+                .orElse(null);
     }
 
     static <T> T filterFirst(Iterable<T> values, Predicate<? super T>... predicates) {
-        return filterFirst(values, alwaysTrue(), predicates);
-    }
-
-    static <T> T filterFirst(Iterable<T> values, Predicate<? super T> predicate,
-                             Predicate<? super T>... otherPredicates) {
-        return stream(values)
-                .filter(and(predicate, otherPredicates))
-                .findFirst()
-                .orElse(null);
+        return filterFirst(values, and(predicates));
     }
 
     static <T, R> List<R> map(List<T> values, Function<T, R> mapper) {
@@ -169,7 +138,7 @@ public interface Streams {
     static <T, R> Set<R> map(Set<T> values, Function<T, R> mapper) {
         return stream(values)
                 .map(mapper)
-                .collect(Collectors.toSet());
+                .collect(toSet());
     }
 }
 

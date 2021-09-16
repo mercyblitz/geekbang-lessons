@@ -54,20 +54,6 @@ public interface Predicates {
     /**
      * a composed predicate that represents a short-circuiting logical AND of {@link Predicate predicates}
      *
-     * @param predicate       {@link Predicate one predicate}
-     * @param otherPredicates {@link Predicate other predicates}
-     * @param <T>             the type to test
-     * @return non-null
-     */
-    static <T> Predicate<T> and(Predicate<? super T> predicate, Predicate<? super T>... otherPredicates) {
-        Predicate<T> andPredicate = alwaysTrue();
-        andPredicate = andPredicate.and(predicate).and(and(otherPredicates));
-        return andPredicate;
-    }
-
-    /**
-     * a composed predicate that represents a short-circuiting logical AND of {@link Predicate predicates}
-     *
      * @param predicates {@link Predicate other predicates}
      * @param <T>        the type to test
      * @return non-null
@@ -78,20 +64,6 @@ public interface Predicates {
             andPredicate = andPredicate.and(p);
         }
         return andPredicate;
-    }
-
-    /**
-     * a composed predicate that represents a short-circuiting logical OR of {@link Predicate predicates}
-     *
-     * @param predicate       {@link Predicate one predicate}
-     * @param otherPredicates {@link Predicate other predicates}
-     * @param <T>             the detected type
-     * @return non-null
-     */
-    static <T> Predicate<T> or(Predicate<? super T> predicate, Predicate<? super T>... otherPredicates) {
-        Predicate<T> orPredicate = alwaysTrue();
-        orPredicate = orPredicate.or(predicate).or(or(otherPredicates));
-        return orPredicate;
     }
 
     /**
