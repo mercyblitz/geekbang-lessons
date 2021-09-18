@@ -22,7 +22,7 @@ import java.util.Collection;
 import java.util.ServiceLoader;
 import java.util.stream.StreamSupport;
 
-import static org.geektimes.commons.reflect.util.TypeUtils.findActualTypeArgument;
+import static org.geektimes.commons.reflect.util.TypeUtils.findActualTypeArgumentClass;
 
 /**
  * An interface to convert the source-typed value to multiple value, e.g , Java array, {@link Collection} or
@@ -58,7 +58,7 @@ public interface MultiValueConverter<S> extends Prioritized {
      * @return non-null
      */
     default Class<S> getSourceType() {
-        return findActualTypeArgument(getClass(), MultiValueConverter.class, 0);
+        return findActualTypeArgumentClass(getClass(), MultiValueConverter.class, 0);
     }
 
     /**

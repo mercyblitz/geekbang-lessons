@@ -14,29 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard.context;
+package org.geektimes.enterprise.inject.util;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.spi.Context;
 import javax.enterprise.context.spi.Contextual;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.AnnotatedType;
-import javax.enterprise.inject.spi.BeanManager;
+
+import static org.geektimes.commons.reflect.util.TypeUtils.findActualTypeArgumentClass;
 
 /**
- * The Context for {@link ApplicationScoped}
+ * The utilities class for {@link Context}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class ApplicationScopedContext extends AbstractContext {
+public abstract class Contexts {
 
-    public ApplicationScopedContext(BeanManager beanManager) {
-        super(beanManager, ApplicationScoped.class);
+    public static <T> Class<T> getBeanClass(Contextual<T> contextual) {
+        Class<?> contextualClass = contextual.getClass();
+        return findActualTypeArgumentClass(contextualClass, Contextual.class, 0);
     }
 
-    @Override
-    protected <T> T get(Contextual<T> contextual, CreationalContext<T> creationalContext,
-                        AnnotatedType<T> beanType) {
-        return null;
-    }
 }

@@ -31,6 +31,7 @@ import org.geektimes.enterprise.inject.standard.beans.interceptor.InterceptorBea
 import org.geektimes.enterprise.inject.standard.beans.producer.ProducerBean;
 import org.geektimes.enterprise.inject.standard.beans.producer.ProducerFieldBean;
 import org.geektimes.enterprise.inject.standard.beans.producer.ProducerMethodBean;
+import org.geektimes.enterprise.inject.standard.context.mananger.ContextManager;
 import org.geektimes.enterprise.inject.standard.disposer.DisposerMethodManager;
 import org.geektimes.enterprise.inject.standard.event.*;
 import org.geektimes.enterprise.inject.standard.producer.ProducerFieldBeanAttributes;
@@ -42,7 +43,7 @@ import org.geektimes.interceptor.InterceptorManager;
 
 import javax.el.ELResolver;
 import javax.el.ExpressionFactory;
-import javax.enterprise.context.ContextNotActiveException;
+import javax.enterprise.context.*;
 import javax.enterprise.context.spi.Context;
 import javax.enterprise.context.spi.Contextual;
 import javax.enterprise.context.spi.CreationalContext;
@@ -52,6 +53,7 @@ import javax.enterprise.event.ObservesAsync;
 import javax.enterprise.inject.Disposes;
 import javax.enterprise.inject.Instance;
 import javax.enterprise.inject.Produces;
+import javax.enterprise.inject.Stereotype;
 import javax.enterprise.inject.spi.*;
 import javax.enterprise.util.TypeLiteral;
 import java.lang.annotation.Annotation;
@@ -60,7 +62,6 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.Function;
 
-import static java.lang.String.format;
 import static java.lang.System.getProperty;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.requireNonNull;
@@ -68,6 +69,7 @@ import static java.util.ServiceLoader.load;
 import static org.geektimes.commons.lang.util.ArrayUtils.iterate;
 import static org.geektimes.enterprise.inject.util.Beans.isAnnotatedVetoed;
 import static org.geektimes.enterprise.inject.util.Beans.isManagedBean;
+import static org.geektimes.enterprise.inject.util.Decorators.isDecorator;
 import static org.geektimes.enterprise.inject.util.Disposers.resolveAndValidateDisposerMethods;
 import static org.geektimes.enterprise.inject.util.Exceptions.newDefinitionException;
 import static org.geektimes.enterprise.inject.util.Injections.getMethodParameterInjectionPoints;
@@ -100,6 +102,8 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     private ClassLoader classLoader;
 
     private final Map<String, Object> properties;
+
+    private final ContextManager contextManager;
 
     private final BeanArchiveManager beanArchiveManager;
 
@@ -137,12 +141,11 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     private final Set<DeploymentException> deploymentProblems;
 
 
-    private final Map<Class<? extends Annotation>, Context> contexts;
-
     public StandardBeanManager() {
         this.classLoader = ClassLoaderUtils.getClassLoader(getClass());
 
-        this.beanArchiveManager = new BeanArchiveManager(classLoader);
+        this.contextManager = new ContextManager();
+        this.beanArchiveManager = new BeanArchiveManager(this);
         this.observerMethodsManager = new ObserverMethodManager(this);
         this.disposerMethodManager = new DisposerMethodManager(this);
         this.interceptorManager = getInstance(classLoader);
@@ -163,7 +166,6 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         this.definitionErrors = new LinkedHashSet<>();
         this.deploymentProblems = new LinkedHashSet<>();
 
-        this.contexts = new HashMap<>();
     }
 
     @Override
@@ -222,6 +224,52 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
                 validateMethodParameterInjectionPoint(injectionPoint);
             }
         }
+    }
+
+    /**
+     * Is defining annotation type or not.
+     * <p>
+     * A bean class may have a bean defining annotation, allowing it to be placed anywhere in an application,
+     * as defined in Bean archives. A bean class with a bean defining annotation is said to be an implicit bean.
+     * The set of bean defining annotations contains:
+     * <ul>
+     *     <li>{@link ApplicationScoped @ApplicationScoped}, {@link SessionScoped @SessionScoped},
+     *         {@link ConversationScoped @ConversationScoped} and {@link RequestScoped @RequestScoped} annotations
+     *     </li>
+     *     <li>all other normal scope types</li>
+     *     <li>{@link javax.interceptor.Interceptor @Interceptor} and {@link javax.decorator.Decorator @Decorator} annotations</li>
+     *     <li>all stereotype annotations (i.e. annotations annotated with {@link Stereotype @Stereotype})</li>
+     *     <li>the {@link Dependent @Dependent} scope annotation</li>
+     * </ul>
+     *
+     * @param type
+     * @param includedInterceptor
+     * @param includedDecorator
+     * @return
+     */
+    public boolean isDefiningAnnotationType(Class<?> type, boolean includedInterceptor, boolean includedDecorator) {
+
+        if (includedInterceptor && interceptorManager.isInterceptorClass(type)) {
+            return true;
+        }
+        if (includedDecorator && isDecorator(type)) {
+            return true;
+        }
+
+        boolean hasDefiningAnnotation = false;
+
+        Annotation[] annotations = type.getAnnotations();
+        for (Annotation annotation : annotations) {
+            Class<? extends Annotation> annotationType = annotation.annotationType();
+            if (isScope(annotationType) ||
+                    isNormalScope(annotationType) ||
+                    isStereotype(annotationType)) {
+                hasDefiningAnnotation = true;
+                break;
+            }
+        }
+
+        return hasDefiningAnnotation;
     }
 
     /**
@@ -284,17 +332,17 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     @Override
     public boolean isScope(Class<? extends Annotation> annotationType) {
-        return beanArchiveManager.isScope(annotationType);
+        return contextManager.isScope(annotationType);
     }
 
     @Override
     public boolean isNormalScope(Class<? extends Annotation> annotationType) {
-        return beanArchiveManager.isNormalScope(annotationType);
+        return contextManager.isNormalScope(annotationType);
     }
 
     @Override
     public boolean isPassivatingScope(Class<? extends Annotation> annotationType) {
-        return beanArchiveManager.isPassivatingScope(annotationType);
+        return contextManager.isPassivatingScope(annotationType);
     }
 
     @Override
@@ -344,11 +392,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     @Override
     public Context getContext(Class<? extends Annotation> scopeType) {
-        Context context =  contexts.get(scopeType);
-        if(!context.isActive()){
-            throw new ContextNotActiveException(format("The context[scope : @%s] is not active!",scopeType.getName()));
-        }
-        return context;
+        return contextManager.getContext(scopeType);
     }
 
     @Override
@@ -515,7 +559,6 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     }
 
     private void initializeBeanArchiveManager() {
-        beanArchiveManager.setClassLoader(classLoader);
         beanArchiveManager.enableScanImplicit(isScanImplicitEnabled());
     }
 
@@ -1020,8 +1063,11 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     public StandardBeanManager classLoader(ClassLoader classLoader) {
         this.classLoader = classLoader;
-        this.beanArchiveManager.setClassLoader(classLoader);
         return this;
+    }
+
+    public ContextManager getContextManager() {
+        return contextManager;
     }
 
     public BeanArchiveManager getBeanArchiveManager() {
@@ -1112,17 +1158,9 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         }
     }
 
-    /**
-     *
-     * @param context {@link Context}
-     * @throws DeploymentException If the scope of specified {@link Context} has been registered
-     */
-    public void addContext(Context context) throws DeploymentException {
-        Class<? extends Annotation> scope = context.getScope();
-        if(contexts.containsKey(scope)){
-            throw new DeploymentException(format("The context[scope : @%s] has been registered!",scope.getName()));
-        }
-        contexts.put(scope,context);
+
+    public ClassLoader getClassLoader() {
+        return classLoader;
     }
 
 }

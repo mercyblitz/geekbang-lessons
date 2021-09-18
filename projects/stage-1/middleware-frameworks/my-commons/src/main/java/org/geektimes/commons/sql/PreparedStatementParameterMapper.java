@@ -26,7 +26,7 @@ import static java.util.ServiceLoader.load;
 import static java.util.stream.Collectors.toList;
 import static org.geektimes.commons.function.Streams.stream;
 import static org.geektimes.commons.reflect.util.ClassUtils.isAssignableFrom;
-import static org.geektimes.commons.reflect.util.TypeUtils.findActualTypeArgument;
+import static org.geektimes.commons.reflect.util.TypeUtils.findActualTypeArgumentClass;
 
 /**
  * The Mapper interface for {@link PreparedStatement}'s parameter
@@ -42,7 +42,7 @@ public interface PreparedStatementParameterMapper<T> extends Prioritized {
             .collect(toList());
 
     default Class<T> getParameterType() {
-        return findActualTypeArgument(this.getClass(), PreparedStatementParameterMapper.class, 0);
+        return findActualTypeArgumentClass(this.getClass(), PreparedStatementParameterMapper.class, 0);
     }
 
     default boolean matches(Class<?> parameterType) {

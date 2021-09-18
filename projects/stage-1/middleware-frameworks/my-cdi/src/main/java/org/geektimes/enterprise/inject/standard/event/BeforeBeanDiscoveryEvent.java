@@ -18,6 +18,7 @@ package org.geektimes.enterprise.inject.standard.event;
 
 import org.geektimes.enterprise.inject.standard.beans.manager.BeanArchiveManager;
 import org.geektimes.enterprise.inject.standard.beans.manager.StandardBeanManager;
+import org.geektimes.enterprise.inject.standard.context.mananger.ContextManager;
 
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
@@ -58,7 +59,8 @@ public class BeforeBeanDiscoveryEvent extends ContainerEvent implements BeforeBe
     @Override
     public void addScope(Class<? extends Annotation> scopeType, boolean normal, boolean passivating) {
         getCallerExtension();
-        beanArchiveManager.addSyntheticScope(scopeType, normal, passivating);
+        ContextManager contextManager = standardBeanManager.getContextManager();
+        contextManager.addSyntheticScope(scopeType, normal, passivating);
     }
 
     @Override

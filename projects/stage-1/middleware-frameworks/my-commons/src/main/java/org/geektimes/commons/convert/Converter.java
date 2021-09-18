@@ -24,7 +24,7 @@ import java.util.function.Function;
 
 import static org.geektimes.commons.function.Streams.stream;
 import static org.geektimes.commons.reflect.util.ClassUtils.isAssignableFrom;
-import static org.geektimes.commons.reflect.util.TypeUtils.findActualTypeArgument;
+import static org.geektimes.commons.reflect.util.TypeUtils.findActualTypeArgumentClass;
 
 /**
  * A class to convert the source-typed value to the target-typed value
@@ -66,7 +66,7 @@ public interface Converter<S, T> extends Function<S, T>, Prioritized {
      * @return non-null
      */
     default Class<S> getSourceType() {
-        return findActualTypeArgument(getClass(), Converter.class, 0);
+        return findActualTypeArgumentClass(getClass(), Converter.class, 0);
     }
 
     /**
@@ -75,7 +75,7 @@ public interface Converter<S, T> extends Function<S, T>, Prioritized {
      * @return non-null
      */
     default Class<T> getTargetType() {
-        return findActualTypeArgument(getClass(), Converter.class, 1);
+        return findActualTypeArgumentClass(getClass(), Converter.class, 1);
     }
 
     /**

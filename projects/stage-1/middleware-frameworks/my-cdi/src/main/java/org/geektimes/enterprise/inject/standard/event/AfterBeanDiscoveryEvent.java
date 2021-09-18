@@ -71,7 +71,7 @@ public class AfterBeanDiscoveryEvent implements AfterBeanDiscovery {
 
     @Override
     public void addContext(Context context) {
-        standardBeanManager.addContext(context);
+        standardBeanManager.getContextManager().addContext(context);
     }
 
     @Override

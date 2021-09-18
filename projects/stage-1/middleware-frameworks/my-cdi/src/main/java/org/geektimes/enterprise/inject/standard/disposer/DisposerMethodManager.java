@@ -21,6 +21,7 @@ import org.geektimes.enterprise.inject.standard.beans.manager.StandardBeanManage
 
 import javax.enterprise.inject.spi.AnnotatedMethod;
 import javax.enterprise.inject.spi.AnnotatedParameter;
+import javax.enterprise.inject.spi.BeanManager;
 import javax.enterprise.inject.spi.DefinitionException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -42,11 +43,11 @@ public class DisposerMethodManager {
 
     private final Map<Type, AnnotatedMethod> storage;
 
-    private final StandardBeanManager standardBeanManager;
+    private final BeanManager beanManager;
 
-    public DisposerMethodManager(StandardBeanManager standardBeanManager) {
+    public DisposerMethodManager(BeanManager beanManager) {
         this.storage = new LinkedHashMap<>();
-        this.standardBeanManager = standardBeanManager;
+        this.beanManager = beanManager;
     }
 
     public void registerDisposerMethods(Map<Type, AnnotatedMethod> disposerMethods) throws DefinitionException {
@@ -77,7 +78,7 @@ public class DisposerMethodManager {
         Object[] arguments = new Object[parameters.size()];
         for (AnnotatedParameter parameter : parameters) {
             MethodParameterInjectionPoint injectionPoint = new MethodParameterInjectionPoint(parameter);
-            arguments[parameter.getPosition()] = standardBeanManager.getInjectableReference(injectionPoint, null);
+            arguments[parameter.getPosition()] = beanManager.getInjectableReference(injectionPoint, null);
         }
 
         Method method = disposerMethod.getJavaMember();

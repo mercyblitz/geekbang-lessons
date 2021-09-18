@@ -94,10 +94,13 @@ public class InjectionTargetBean<T> implements Bean<T> {
     public T create(CreationalContext<T> creationalContext) {
         // Instantiation
         T instance = injectionTarget.produce(creationalContext);
-        // Initialization
-        injectionTarget.postConstruct(instance);
+
         // Injection
         injectionTarget.inject(instance, creationalContext);
+
+        // Initialization
+        injectionTarget.postConstruct(instance);
+
         return instance;
     }
 

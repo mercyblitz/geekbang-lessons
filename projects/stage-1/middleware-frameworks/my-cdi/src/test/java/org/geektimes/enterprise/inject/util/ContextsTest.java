@@ -14,29 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard.context;
+package org.geektimes.enterprise.inject.util;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.spi.Contextual;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.AnnotatedType;
-import javax.enterprise.inject.spi.BeanManager;
+import org.geektimes.enterprise.inject.Book;
+import org.geektimes.enterprise.inject.standard.context.BookContextual;
+import org.geektimes.enterprise.inject.standard.context.ExtBookContextual;
+import org.junit.Test;
+
+import static org.geektimes.enterprise.inject.util.Contexts.getBeanClass;
+import static org.junit.Assert.assertEquals;
 
 /**
- * The Context for {@link ApplicationScoped}
+ * {@link Contexts} Test
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class ApplicationScopedContext extends AbstractContext {
+public class ContextsTest {
 
-    public ApplicationScopedContext(BeanManager beanManager) {
-        super(beanManager, ApplicationScoped.class);
-    }
+    @Test
+    public void testGetBeanClass() {
+        Class<?> beanClass = getBeanClass(new BookContextual());
+        assertEquals(Book.class, beanClass);
 
-    @Override
-    protected <T> T get(Contextual<T> contextual, CreationalContext<T> creationalContext,
-                        AnnotatedType<T> beanType) {
-        return null;
+        beanClass = getBeanClass(new ExtBookContextual());
+        assertEquals(Book.class, beanClass);
     }
 }

@@ -16,27 +16,11 @@
  */
 package org.geektimes.enterprise.inject.standard.context;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.spi.Contextual;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.AnnotatedType;
-import javax.enterprise.inject.spi.BeanManager;
-
 /**
- * The Context for {@link ApplicationScoped}
+ * {@link ExtBookContextual}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class ApplicationScopedContext extends AbstractContext {
-
-    public ApplicationScopedContext(BeanManager beanManager) {
-        super(beanManager, ApplicationScoped.class);
-    }
-
-    @Override
-    protected <T> T get(Contextual<T> contextual, CreationalContext<T> creationalContext,
-                        AnnotatedType<T> beanType) {
-        return null;
-    }
+public class ExtBookContextual extends BookContextual {
 }

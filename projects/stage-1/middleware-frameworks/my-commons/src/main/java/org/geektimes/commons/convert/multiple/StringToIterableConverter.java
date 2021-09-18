@@ -25,7 +25,7 @@ import java.util.Optional;
 import static org.geektimes.commons.convert.Converter.getConverter;
 import static org.geektimes.commons.reflect.util.ClassUtils.getAllInterfaces;
 import static org.geektimes.commons.reflect.util.ClassUtils.isAssignableFrom;
-import static org.geektimes.commons.reflect.util.TypeUtils.findActualTypeArgument;
+import static org.geektimes.commons.reflect.util.TypeUtils.findActualTypeArgumentClass;
 
 
 /**
@@ -70,7 +70,7 @@ public abstract class StringToIterableConverter<T extends Iterable> implements S
     }
 
     protected final Class<T> getSupportedType() {
-        return findActualTypeArgument(getClass(), StringToIterableConverter.class, 0);
+        return findActualTypeArgumentClass(getClass(), StringToIterableConverter.class, 0);
     }
 
     @Override
