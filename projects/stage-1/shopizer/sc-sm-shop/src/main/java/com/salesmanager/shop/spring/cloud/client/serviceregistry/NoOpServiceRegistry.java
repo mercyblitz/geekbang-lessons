@@ -14,29 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard.context;
+package com.salesmanager.shop.spring.cloud.client.serviceregistry;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.spi.Contextual;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.AnnotatedType;
-import javax.enterprise.inject.spi.BeanManager;
+import org.springframework.cloud.client.serviceregistry.Registration;
+import org.springframework.cloud.client.serviceregistry.ServiceRegistry;
 
 /**
- * The Context for {@link ApplicationScoped}
+ * No-Operation {@link ServiceRegistry}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class ApplicationScopedContext extends AbstractAlterableContext {
+public class NoOpServiceRegistry implements ServiceRegistry {
 
-    public ApplicationScopedContext(BeanManager beanManager) {
-        super(beanManager, ApplicationScoped.class);
+    @Override
+    public void register(Registration registration) {
     }
 
     @Override
-    protected <T> T get(Contextual<T> contextual, CreationalContext<T> creationalContext,
-                        AnnotatedType<T> beanType) {
+    public void deregister(Registration registration) {
+    }
+
+    @Override
+    public void close() {
+    }
+
+    @Override
+    public void setStatus(Registration registration, String status) {
+    }
+
+    @Override
+    public Object getStatus(Registration registration) {
         return null;
     }
 }

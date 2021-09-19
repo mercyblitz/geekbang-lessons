@@ -14,29 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard.context;
+package com.salesmanager.shop.spring.cloud.client.discovery;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.spi.Contextual;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.AnnotatedType;
-import javax.enterprise.inject.spi.BeanManager;
+import org.springframework.context.annotation.DeferredImportSelector;
+import org.springframework.core.type.AnnotationMetadata;
+
+import java.util.List;
 
 /**
- * The Context for {@link ApplicationScoped}
+ * Enable Service Discovery {@link DeferredImportSelector}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class ApplicationScopedContext extends AbstractAlterableContext {
+public class EnableServiceDiscoveryImportSelector extends SafeSpringFactoryImportSelector<EnableServiceDiscovery> {
 
-    public ApplicationScopedContext(BeanManager beanManager) {
-        super(beanManager, ApplicationScoped.class);
+    @Override
+    protected void doSelectImports(AnnotationMetadata metadata, List<String> importedClassNames) {
+
     }
 
     @Override
-    protected <T> T get(Contextual<T> contextual, CreationalContext<T> creationalContext,
-                        AnnotatedType<T> beanType) {
-        return null;
+    protected boolean isEnabled() {
+        return getEnvironment().getProperty("spring.cloud.discovery.enabled", Boolean.class, Boolean.TRUE);
     }
 }

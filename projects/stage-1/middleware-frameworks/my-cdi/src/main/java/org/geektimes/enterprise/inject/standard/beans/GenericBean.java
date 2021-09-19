@@ -35,6 +35,8 @@ import static org.geektimes.commons.collection.util.CollectionUtils.newLinkedHas
 
 /**
  * Generic implementation for {@link Bean Bean}, which extends {@link GenericBeanAttributes}
+ * <p>
+ * Implementations of {@link Bean Bean} usually maintain a reference to an instance of {@link BeanManager}.
  *
  * @param <T> the class of the bean instance
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>

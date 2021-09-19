@@ -1,0 +1,6 @@
+com.salesmanager.shop.spring.cloud.client.discovery.EnableServiceDiscovery=\
+org.springframework.cloud.client.discovery.simple.SimpleDiscoveryClient
+
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.salesmanager.shop.spring.cloud.client.discovery.ServiceMigrationDiscoveryClientAutoConfiguration,\
+com.salesmanager.shop.spring.cloud.client.serviceregistry.NoOpAutoServiceRegistrationAutoConfiguration

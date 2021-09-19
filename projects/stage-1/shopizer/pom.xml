@@ -31,6 +31,7 @@
         <module>sm-core</module>
         <module>sm-shop-model</module>
         <module>sm-shop</module>
+        <module>sc-sm-shop</module>
     </modules>
 
     <properties>

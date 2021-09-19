@@ -16,22 +16,28 @@
  */
 package org.geektimes.enterprise.inject.standard.context;
 
-import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Dependent;
+import javax.enterprise.context.spi.AlterableContext;
 import javax.enterprise.context.spi.Contextual;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.BeanManager;
 
 /**
- * The Context for {@link ApplicationScoped}
+ * The Context for {@link Dependent @Dependent}
+ * <p>
+ * If the bean does not declare any stereotype with a declared default scope,
+ * the default scope for the bean is {@link Dependent @Dependent}.
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
+ * @see Dependent
+ * @see AlterableContext
  * @since 1.0.0
  */
-public class ApplicationScopedContext extends AbstractAlterableContext {
+public class DependentScopeContext extends AbstractAlterableContext {
 
-    public ApplicationScopedContext(BeanManager beanManager) {
-        super(beanManager, ApplicationScoped.class);
+    public DependentScopeContext(BeanManager beanManager) {
+        super(beanManager, Dependent.class);
     }
 
     @Override

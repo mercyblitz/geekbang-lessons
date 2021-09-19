@@ -62,6 +62,7 @@ import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.Function;
 
+import static java.lang.String.format;
 import static java.lang.System.getProperty;
 import static java.util.Collections.unmodifiableList;
 import static java.util.Objects.requireNonNull;
@@ -141,6 +142,10 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     private final Set<DeploymentException> deploymentProblems;
 
 
+    private boolean firedAfterBeanDiscoveryEvent = false;
+
+    private boolean firedAfterDeploymentValidationEvent = false;
+
     public StandardBeanManager() {
         this.classLoader = ClassLoaderUtils.getClassLoader(getClass());
 
@@ -170,13 +175,20 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     @Override
     public Object getReference(Bean<?> bean, Type beanType, CreationalContext<?> ctx) {
+        assertAfterDeploymentValidation();
+        if (!Objects.equals(beanType.getTypeName(), bean.getBeanClass().getTypeName())) {
+            throw new IllegalArgumentException(format("The given type[%s] is not a bean type[%s] of the given bean!",
+                            beanType.getTypeName(),
+                            bean.getBeanClass()));
+        }
         Class<? extends Annotation> scope = bean.getScope();
-        // TODO
-        return null;
+        Context context = getContext(scope);
+        return context.get((Contextual) bean, ctx);
     }
 
     @Override
     public Object getInjectableReference(InjectionPoint ij, CreationalContext<?> ctx) {
+        assertAfterDeploymentValidation();
         // TODO
         return null;
     }
@@ -189,30 +201,35 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     @Override
     public Set<Bean<?>> getBeans(Type beanType, Annotation... qualifiers) {
+        assertAfterBeanDiscovery();
         // TODO
         return null;
     }
 
     @Override
     public Set<Bean<?>> getBeans(String name) {
+        assertAfterBeanDiscovery();
         // TODO
         return null;
     }
 
     @Override
     public Bean<?> getPassivationCapableBean(String id) {
+        assertAfterBeanDiscovery();
         // TODO
         return null;
     }
 
     @Override
     public <X> Bean<? extends X> resolve(Set<Bean<? extends X>> beans) {
+        assertAfterBeanDiscovery();
         // TODO
         return null;
     }
 
     @Override
     public void validate(InjectionPoint injectionPoint) {
+        assertAfterBeanDiscovery();
         Annotated annotated = injectionPoint.getAnnotated();
         if (annotated instanceof AnnotatedField) { // InjectionPoint on Field
             validateFieldInjectionPoint(injectionPoint);
@@ -224,6 +241,39 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
                 validateMethodParameterInjectionPoint(injectionPoint);
             }
         }
+    }
+
+    /**
+     * @param injectionPoint {@link InjectionPoint}
+     * @throws DefinitionException If an injected field is annotated @Produces, the container automatically detects
+     *                             the problem and treats it as a definition error.
+     */
+    private void validateFieldInjectionPoint(InjectionPoint injectionPoint) throws DefinitionException {
+        validateForbiddenAnnotation(injectionPoint, Produces.class);
+    }
+
+    /**
+     * @param injectionPoint {@link InjectionPoint}
+     * @throws DefinitionException If a bean constructor has a parameter annotated @Disposes, @Observes, or @ObservesAsync,
+     *                             the container automatically detects the problem and treats it as a definition error.
+     */
+    private void validateConstructorParameterInjectionPoint(InjectionPoint injectionPoint) throws DefinitionException {
+        validateForbiddenAnnotation(injectionPoint, Disposes.class);
+        validateForbiddenAnnotation(injectionPoint, Observes.class);
+        validateForbiddenAnnotation(injectionPoint, ObservesAsync.class);
+    }
+
+    /**
+     * @param injectionPoint {@link InjectionPoint}
+     * @throws DefinitionException If an initializer method is annotated @Produces, has a parameter annotated @Disposes,
+     *                             has a parameter annotated @Observes, or has a parameter annotated @ObservesAsync,
+     *                             the container automatically detects the problem and treats it as a definition error.
+     */
+    private void validateMethodParameterInjectionPoint(InjectionPoint injectionPoint) throws DefinitionException {
+        validateForbiddenAnnotation((Method) injectionPoint.getMember(), Produces.class);
+        validateForbiddenAnnotation(injectionPoint, Disposes.class);
+        validateForbiddenAnnotation(injectionPoint, Observes.class);
+        validateForbiddenAnnotation(injectionPoint, ObservesAsync.class);
     }
 
     /**
@@ -272,39 +322,6 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         return hasDefiningAnnotation;
     }
 
-    /**
-     * @param injectionPoint {@link InjectionPoint}
-     * @throws DefinitionException If an injected field is annotated @Produces, the container automatically detects
-     *                             the problem and treats it as a definition error.
-     */
-    private void validateFieldInjectionPoint(InjectionPoint injectionPoint) throws DefinitionException {
-        validateForbiddenAnnotation(injectionPoint, Produces.class);
-    }
-
-    /**
-     * @param injectionPoint {@link InjectionPoint}
-     * @throws DefinitionException If a bean constructor has a parameter annotated @Disposes, @Observes, or @ObservesAsync,
-     *                             the container automatically detects the problem and treats it as a definition error.
-     */
-    private void validateConstructorParameterInjectionPoint(InjectionPoint injectionPoint) throws DefinitionException {
-        validateForbiddenAnnotation(injectionPoint, Disposes.class);
-        validateForbiddenAnnotation(injectionPoint, Observes.class);
-        validateForbiddenAnnotation(injectionPoint, ObservesAsync.class);
-    }
-
-    /**
-     * @param injectionPoint {@link InjectionPoint}
-     * @throws DefinitionException If an initializer method is annotated @Produces, has a parameter annotated @Disposes,
-     *                             has a parameter annotated @Observes, or has a parameter annotated @ObservesAsync,
-     *                             the container automatically detects the problem and treats it as a definition error.
-     */
-    private void validateMethodParameterInjectionPoint(InjectionPoint injectionPoint) throws DefinitionException {
-        validateForbiddenAnnotation((Method) injectionPoint.getMember(), Produces.class);
-        validateForbiddenAnnotation(injectionPoint, Disposes.class);
-        validateForbiddenAnnotation(injectionPoint, Observes.class);
-        validateForbiddenAnnotation(injectionPoint, ObservesAsync.class);
-    }
-
     @Override
     @Deprecated
     public void fireEvent(Object event, Annotation... qualifiers) {
@@ -315,17 +332,20 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     @Override
     public <T> Set<ObserverMethod<? super T>> resolveObserverMethods(T event, Annotation... qualifiers) {
+        assertAfterBeanDiscovery();
         return (Set) observerMethodsManager.resolveObserverMethods(event, qualifiers);
     }
 
     @Override
     public List<Decorator<?>> resolveDecorators(Set<Type> types, Annotation... qualifiers) {
+        assertAfterBeanDiscovery();
         // TODO
         return null;
     }
 
     @Override
     public List<Interceptor<?>> resolveInterceptors(InterceptionType type, Annotation... interceptorBindings) {
+        assertAfterBeanDiscovery();
         // TODO
         return null;
     }
@@ -415,6 +435,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     @Deprecated
     @Override
     public <T> InjectionTarget<T> createInjectionTarget(AnnotatedType<T> type) {
+
         return null;
     }
 
@@ -491,6 +512,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
 
     @Override
     public Instance<Object> createInstance() {
+        assertAfterBeanDiscovery();
         // TODO
         return null;
     }
@@ -825,9 +847,27 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     /**
      * the container must fire an event of type AfterBeanDiscovery, as defined in AfterBeanDiscovery event, and abort
      * initialization of the application if any observer registers a definition error.
+     * An exception is thrown if the following operations are called before the AfterBeanDiscovery event is fired:
+     * <ul>
+     *     <li>{@link #getBeans(String)}</li>
+     *     <li>{@link #getBeans(Type, Annotation...)}</li>
+     *     <li>{@link #getPassivationCapableBean(String)}</li>
+     *     <li>{@link #resolve(Set)}</li>
+     *     <li>{@link #resolveDecorators(Set, Annotation...)}</li>
+     *     <li>{@link #resolveInterceptors(InterceptionType, Annotation...)}</li>
+     *     <li>{@link #resolveObserverMethods(Object, Annotation...)}</li>
+     *     <li>{@link #validate(InjectionPoint)}</li>
+     *  </ul>
      */
     private void performAfterBeanDiscovery() {
         fireAfterBeanDiscoveryEvent();
+    }
+
+    private void assertAfterBeanDiscovery() {
+        if (!firedAfterBeanDiscoveryEvent) {
+            throw new UnsupportedOperationException("Current operation must not be invoked before " +
+                    "AfterBeanDiscovery event is fired!");
+        }
     }
 
     /**
@@ -842,9 +882,22 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     /**
      * the container must fire an event of type AfterDeploymentValidation, as defined in AfterDeploymentValidation event,
      * and abort initialization of the application if any observer registers a deployment problem.
+     * An exception is thrown if the following operations are called before the AfterBeanDiscovery event is fired:
+     * <ul>
+     *     <li>{@link #createInstance()}</li>
+     *     <li>{@link #getReference(Bean, Type, CreationalContext)}</li>
+     *     <li>{@link #getInjectableReference(InjectionPoint, CreationalContext)}</li>
+     *  </ul>
      */
     private void performAfterDeploymentValidation() {
         fireAfterDeploymentValidationEvent();
+    }
+
+    private void assertAfterDeploymentValidation() {
+        if (!firedAfterDeploymentValidationEvent) {
+            throw new UnsupportedOperationException("Current operation must not be invoked before " +
+                    "AfterDeploymentValidation event is fired");
+        }
     }
 
     private StandardBeanManager discoverExtensions() {
@@ -930,6 +983,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
      */
     private void fireAfterBeanDiscoveryEvent() {
         fireEvent(new AfterBeanDiscoveryEvent(this));
+        firedAfterBeanDiscoveryEvent = true;
     }
 
 
@@ -939,6 +993,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
      */
     private void fireAfterDeploymentValidationEvent() {
         fireEvent(new AfterDeploymentValidationEvent(this));
+        firedAfterDeploymentValidationEvent = true;
     }
 
     private void fireEvent(Object event) {

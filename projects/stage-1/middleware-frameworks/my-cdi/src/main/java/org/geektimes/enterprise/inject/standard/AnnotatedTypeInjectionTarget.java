@@ -72,10 +72,19 @@ public class AnnotatedTypeInjectionTarget<T> implements InjectionTarget<T> {
 
     @Override
     public void dispose(T instance) {
-        Class<?> beanClass = instance.getClass();
-        Set<Type> beanTypes = getBeanTypes(beanClass);
+       // DO NOTHING
     }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * When the Bean implementation performs dependency injection, it must obtain the contextual instances to inject
+     * by calling BeanManager.getInjectableReference(), passing an instance of InjectionPoint that represents the
+     * injection point and the instance of CreationalContext that was passed to Bean.create().
+     *
+     * @param instance
+     * @param ctx
+     */
     @Override
     public void inject(T instance, CreationalContext<T> ctx) {
         // Injected Fields
@@ -156,24 +165,6 @@ public class AnnotatedTypeInjectionTarget<T> implements InjectionTarget<T> {
         return annotatedType;
     }
 
-    public Map<AnnotatedConstructor, List<ConstructorParameterInjectionPoint>> getConstructorParameterInjectionPointsMap() {
-        if (constructorParameterInjectionPointsMap == null) {
-            constructorParameterInjectionPointsMap = Injections.getConstructorParameterInjectionPointsMap(getAnnotatedType(), bean);
-        }
-        return constructorParameterInjectionPointsMap;
-    }
-
-    public List<ConstructorParameterInjectionPoint> getConstructorParameterInjectionPoints() {
-        Map<AnnotatedConstructor, List<ConstructorParameterInjectionPoint>> injectionPointsMap =
-                getConstructorParameterInjectionPointsMap();
-        if (injectionPointsMap.isEmpty()) {
-            return emptyList();
-        }
-        List<ConstructorParameterInjectionPoint> injectionPoints = new LinkedList<>();
-        injectionPointsMap.values().forEach(injectionPoints::addAll);
-        return unmodifiableList(injectionPoints);
-    }
-
     public Set<FieldInjectionPoint> getFieldInjectionPoints() {
         if (fieldInjectionPoints == null) {
             fieldInjectionPoints = Injections.getFieldInjectionPoints(getAnnotatedType(), bean);
@@ -188,32 +179,8 @@ public class AnnotatedTypeInjectionTarget<T> implements InjectionTarget<T> {
         return methodParameterInjectionPointsMap;
     }
 
-    public List<MethodParameterInjectionPoint> getMethodParameterInjectionPoints() {
-        List<MethodParameterInjectionPoint> injectionPoints = new LinkedList<>();
-        getMethodParameterInjectionPointsMap().values().forEach(injectionPoints::addAll);
-        return unmodifiableList(injectionPoints);
-    }
-
     @Override
     public Set<InjectionPoint> getInjectionPoints() {
-
-        List<ConstructorParameterInjectionPoint> constructorParameterInjectionPoints = getConstructorParameterInjectionPoints();
-
-        Set<FieldInjectionPoint> fieldInjectionPoints = getFieldInjectionPoints();
-
-        List<MethodParameterInjectionPoint> methodParameterInjectionPoints = getMethodParameterInjectionPoints();
-
-        int size = constructorParameterInjectionPoints.size() + fieldInjectionPoints.size()
-                + methodParameterInjectionPoints.size();
-
-        Set<InjectionPoint> injectionPoints = newLinkedHashSet(size);
-        // add the InjectionPoints from Constructors' parameters
-        injectionPoints.addAll(constructorParameterInjectionPoints);
-        // add the InjectionPoints from Fields
-        injectionPoints.addAll(fieldInjectionPoints);
-        // add the InjectionPoints from Methods' parameters
-        injectionPoints.addAll(methodParameterInjectionPoints);
-
-        return unmodifiableSet(injectionPoints);
+       return bean.getInjectionPoints();
     }
 }
