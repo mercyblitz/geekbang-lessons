@@ -14,49 +14,53 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard.producer;
+package org.geektimes.enterprise.inject.standard.target;
 
-import org.geektimes.enterprise.inject.standard.beans.ManagedBean;
+import org.geektimes.enterprise.inject.standard.beans.manager.StandardBeanManager;
+import org.geektimes.enterprise.inject.standard.producer.AbstractProducer;
 
 import javax.enterprise.context.spi.CreationalContext;
+import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.InjectionPoint;
-import javax.enterprise.inject.spi.Producer;
+import javax.enterprise.inject.spi.InjectionTarget;
 import java.util.Set;
 
 /**
- * {@link Producer} represents a {@link ManagedBean}
+ * Abstract {@link InjectionTarget}
  *
  * @param <T> The class of object produced by the producer
+ * @param <X> THe class of {@link Bean}
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
- * @since 1.0.0
+ * @since 1.0.0.
  */
-public class ManagedBeanProducer<T> implements Producer<T> {
+public class AbstractInjectionTarget<T, X> extends AbstractProducer<T, X> implements InjectionTarget<T> {
 
-    private final ManagedBean<T> managedBean;
+    public AbstractInjectionTarget(Bean<X> declaringBean, StandardBeanManager standardBeanManager) {
+        super(declaringBean, standardBeanManager);
+    }
 
-    private CreationalContext<T> ctx;
+    @Override
+    public void inject(T instance, CreationalContext<T> ctx) {
 
-    public ManagedBeanProducer(ManagedBean<T> managedBean) {
-        this.managedBean = managedBean;
+    }
+
+    @Override
+    public void postConstruct(T instance) {
+
+    }
+
+    @Override
+    public void preDestroy(T instance) {
+
+    }
+
+    @Override
+    protected Set<InjectionPoint> resolveInjectionPoints() {
+        return null;
     }
 
     @Override
     public T produce(CreationalContext<T> ctx) {
-        this.ctx = ctx;
-        return managedBean.create(ctx);
-    }
-
-    @Override
-    public void dispose(T instance) {
-        managedBean.destroy(instance, ctx);
-    }
-
-    @Override
-    public Set<InjectionPoint> getInjectionPoints() {
-        return managedBean.getInjectionPoints();
-    }
-
-    public ManagedBean<T> getManagedBean() {
-        return managedBean;
+        return null;
     }
 }

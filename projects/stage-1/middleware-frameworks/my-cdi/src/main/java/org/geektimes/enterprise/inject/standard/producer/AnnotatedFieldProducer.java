@@ -17,7 +17,6 @@
 package org.geektimes.enterprise.inject.standard.producer;
 
 import org.geektimes.enterprise.inject.standard.beans.manager.StandardBeanManager;
-import org.geektimes.enterprise.inject.standard.disposer.DisposerMethodManager;
 
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.CreationException;
@@ -38,20 +37,13 @@ import static org.geektimes.commons.reflect.util.MemberUtils.isStatic;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class AnnotatedFieldProducer<T, X> implements Producer<T> {
+public class AnnotatedFieldProducer<T, X> extends AbstractProducer<T, X> {
 
     private final AnnotatedField<T> producerField;
 
-    private final Bean<X> declaringBean;
-
-    private final StandardBeanManager standardBeanManager;
-
-    private Set<InjectionPoint> injectionPoints;
-
     public AnnotatedFieldProducer(AnnotatedField<T> producerField, Bean<X> declaringBean, StandardBeanManager standardBeanManager) {
+        super(declaringBean, standardBeanManager);
         this.producerField = producerField;
-        this.declaringBean = declaringBean;
-        this.standardBeanManager = standardBeanManager;
     }
 
     @Override
@@ -63,7 +55,7 @@ public class AnnotatedFieldProducer<T, X> implements Producer<T> {
         final T beanInstance;
         try {
             if (!isStatic(field)) {
-                instance = standardBeanManager.getReference(declaringBean, declaringBean.getBeanClass(), ctx);
+                instance = getDeclaringBeanInstance(ctx);
             }
             beanInstance = (T) field.get(instance);
         } catch (Throwable e) {
@@ -72,14 +64,12 @@ public class AnnotatedFieldProducer<T, X> implements Producer<T> {
         return beanInstance;
     }
 
-    @Override
-    public void dispose(T instance) {
-        DisposerMethodManager disposerMethodManager = standardBeanManager.getDisposerMethodManager();
-        disposerMethodManager.invokeDisposerMethod(instance);
+    public AnnotatedField<T> getProducerField() {
+        return producerField;
     }
 
     @Override
-    public Set<InjectionPoint> getInjectionPoints() {
+    protected Set<InjectionPoint> resolveInjectionPoints() {
         return emptySet();
     }
 }

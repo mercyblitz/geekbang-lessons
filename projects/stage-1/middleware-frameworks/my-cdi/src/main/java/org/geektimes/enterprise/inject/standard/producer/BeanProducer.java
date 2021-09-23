@@ -19,59 +19,36 @@ package org.geektimes.enterprise.inject.standard.producer;
 import org.geektimes.enterprise.inject.standard.beans.manager.StandardBeanManager;
 
 import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.CreationException;
-import javax.enterprise.inject.spi.AnnotatedMethod;
 import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.InjectionPoint;
 import javax.enterprise.inject.spi.Producer;
-import java.lang.reflect.Method;
 import java.util.Set;
 
-import static org.geektimes.commons.reflect.util.MemberUtils.isStatic;
-import static org.geektimes.enterprise.inject.util.Injections.getMethodParameterInjectionPoints;
-
 /**
- * {@link Producer} implementation for Producer {@link AnnotatedMethod Method}
+ * {@link Producer} for {@link Bean}
  *
- * @param <T> The class of object produced by the producer
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class AnnotatedMethodProducer<T, X> extends AbstractProducer<T, X> {
+public class BeanProducer<T> extends AbstractProducer<T, T> {
 
-    private final AnnotatedMethod<T> producerMethod;
-
-    public AnnotatedMethodProducer(AnnotatedMethod<T> producerMethod, Bean<X> declaringBean, StandardBeanManager standardBeanManager) {
+    public BeanProducer(Bean<T> declaringBean, StandardBeanManager standardBeanManager) {
         super(declaringBean, standardBeanManager);
-        this.producerMethod = producerMethod;
     }
 
     @Override
     public T produce(CreationalContext<T> ctx) {
-        Method method = producerMethod.getJavaMember();
-
-        Object[] injectedArguments = resolveInjectedArguments(ctx);
-
-        Object instance = null;
-
-        final T beanInstance;
-        try {
-            if (!isStatic(method)) {
-                instance = getDeclaringBeanInstance(ctx);
-            }
-            beanInstance = (T) method.invoke(instance, injectedArguments);
-        } catch (Throwable e) {
-            throw new CreationException(e);
-        }
-        return beanInstance;
+        Bean<T> bean = getDeclaringBean();
+        return bean.create(ctx);
     }
 
-    public AnnotatedMethod<T> getProducerMethod() {
-        return producerMethod;
+    @Override
+    public void dispose(T instance) {
+        // DO NOTHING
     }
 
     @Override
     protected Set<InjectionPoint> resolveInjectionPoints() {
-        return (Set) getMethodParameterInjectionPoints(producerMethod, getDeclaringBean());
+        return getDeclaringBean().getInjectionPoints();
     }
 }

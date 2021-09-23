@@ -59,6 +59,8 @@ import javax.enterprise.util.TypeLiteral;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.lang.reflect.WildcardType;
 import java.util.*;
 import java.util.function.Function;
 
@@ -230,6 +232,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
     @Override
     public void validate(InjectionPoint injectionPoint) {
         assertAfterBeanDiscovery();
+        validateInjectionPointType(injectionPoint);
         Annotated annotated = injectionPoint.getAnnotated();
         if (annotated instanceof AnnotatedField) { // InjectionPoint on Field
             validateFieldInjectionPoint(injectionPoint);
@@ -240,6 +243,22 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
             } else if (isMethodParameter(annotatedParameter)) { // InjectionPoint on Methods' Parameter
                 validateMethodParameterInjectionPoint(injectionPoint);
             }
+        }
+    }
+
+    /**
+     * Any legal bean type may be the required type of an injection point.
+     * Furthermore, the required type of an injection point may contain a wildcard type parameter.
+     * However, a type variable is not a legal injection point type.
+     *
+     * @param injectionPoint {@link InjectionPoint}
+     * @throws DefinitionException If an injection point type is a type variable, the container automatically
+     * detects the problem and treats it as a definition error.
+     */
+    private void validateInjectionPointType(InjectionPoint injectionPoint) throws DefinitionException {
+        Type type = injectionPoint.getType();
+        if(type instanceof TypeVariable){
+            throw newDefinitionException("A type variable[%s] is not a legal injection point[%s] type",type,injectionPoint);
         }
     }
 
@@ -274,52 +293,6 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         validateForbiddenAnnotation(injectionPoint, Disposes.class);
         validateForbiddenAnnotation(injectionPoint, Observes.class);
         validateForbiddenAnnotation(injectionPoint, ObservesAsync.class);
-    }
-
-    /**
-     * Is defining annotation type or not.
-     * <p>
-     * A bean class may have a bean defining annotation, allowing it to be placed anywhere in an application,
-     * as defined in Bean archives. A bean class with a bean defining annotation is said to be an implicit bean.
-     * The set of bean defining annotations contains:
-     * <ul>
-     *     <li>{@link ApplicationScoped @ApplicationScoped}, {@link SessionScoped @SessionScoped},
-     *         {@link ConversationScoped @ConversationScoped} and {@link RequestScoped @RequestScoped} annotations
-     *     </li>
-     *     <li>all other normal scope types</li>
-     *     <li>{@link javax.interceptor.Interceptor @Interceptor} and {@link javax.decorator.Decorator @Decorator} annotations</li>
-     *     <li>all stereotype annotations (i.e. annotations annotated with {@link Stereotype @Stereotype})</li>
-     *     <li>the {@link Dependent @Dependent} scope annotation</li>
-     * </ul>
-     *
-     * @param type
-     * @param includedInterceptor
-     * @param includedDecorator
-     * @return
-     */
-    public boolean isDefiningAnnotationType(Class<?> type, boolean includedInterceptor, boolean includedDecorator) {
-
-        if (includedInterceptor && interceptorManager.isInterceptorClass(type)) {
-            return true;
-        }
-        if (includedDecorator && isDecorator(type)) {
-            return true;
-        }
-
-        boolean hasDefiningAnnotation = false;
-
-        Annotation[] annotations = type.getAnnotations();
-        for (Annotation annotation : annotations) {
-            Class<? extends Annotation> annotationType = annotation.annotationType();
-            if (isScope(annotationType) ||
-                    isNormalScope(annotationType) ||
-                    isStereotype(annotationType)) {
-                hasDefiningAnnotation = true;
-                break;
-            }
-        }
-
-        return hasDefiningAnnotation;
     }
 
     @Override
@@ -564,6 +537,53 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         initializeBeanArchiveManager();
         performInitializationLifecycle();
         // TODO
+    }
+
+
+    /**
+     * Is defining annotation type or not.
+     * <p>
+     * A bean class may have a bean defining annotation, allowing it to be placed anywhere in an application,
+     * as defined in Bean archives. A bean class with a bean defining annotation is said to be an implicit bean.
+     * The set of bean defining annotations contains:
+     * <ul>
+     *     <li>{@link ApplicationScoped @ApplicationScoped}, {@link SessionScoped @SessionScoped},
+     *         {@link ConversationScoped @ConversationScoped} and {@link RequestScoped @RequestScoped} annotations
+     *     </li>
+     *     <li>all other normal scope types</li>
+     *     <li>{@link javax.interceptor.Interceptor @Interceptor} and {@link javax.decorator.Decorator @Decorator} annotations</li>
+     *     <li>all stereotype annotations (i.e. annotations annotated with {@link Stereotype @Stereotype})</li>
+     *     <li>the {@link Dependent @Dependent} scope annotation</li>
+     * </ul>
+     *
+     * @param type
+     * @param includedInterceptor
+     * @param includedDecorator
+     * @return
+     */
+    public boolean isDefiningAnnotationType(Class<?> type, boolean includedInterceptor, boolean includedDecorator) {
+
+        if (includedInterceptor && interceptorManager.isInterceptorClass(type)) {
+            return true;
+        }
+        if (includedDecorator && isDecorator(type)) {
+            return true;
+        }
+
+        boolean hasDefiningAnnotation = false;
+
+        Annotation[] annotations = type.getAnnotations();
+        for (Annotation annotation : annotations) {
+            Class<? extends Annotation> annotationType = annotation.annotationType();
+            if (isScope(annotationType) ||
+                    isNormalScope(annotationType) ||
+                    isStereotype(annotationType)) {
+                hasDefiningAnnotation = true;
+                break;
+            }
+        }
+
+        return hasDefiningAnnotation;
     }
 
     public void addDefinitionError(Throwable t) {
