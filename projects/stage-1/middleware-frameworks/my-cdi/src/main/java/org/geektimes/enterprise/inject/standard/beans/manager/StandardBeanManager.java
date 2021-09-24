@@ -34,6 +34,8 @@ import org.geektimes.enterprise.inject.standard.beans.producer.ProducerMethodBea
 import org.geektimes.enterprise.inject.standard.context.mananger.ContextManager;
 import org.geektimes.enterprise.inject.standard.disposer.DisposerMethodManager;
 import org.geektimes.enterprise.inject.standard.event.*;
+import org.geektimes.enterprise.inject.standard.event.application.*;
+import org.geektimes.enterprise.inject.standard.observer.ObserverMethodManager;
 import org.geektimes.enterprise.inject.standard.producer.ProducerFieldBeanAttributes;
 import org.geektimes.enterprise.inject.standard.producer.ProducerFieldFactory;
 import org.geektimes.enterprise.inject.standard.producer.ProducerMethodBeanAttributes;
@@ -50,17 +52,13 @@ import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.event.Event;
 import javax.enterprise.event.Observes;
 import javax.enterprise.event.ObservesAsync;
-import javax.enterprise.inject.Disposes;
-import javax.enterprise.inject.Instance;
-import javax.enterprise.inject.Produces;
-import javax.enterprise.inject.Stereotype;
+import javax.enterprise.inject.*;
 import javax.enterprise.inject.spi.*;
 import javax.enterprise.util.TypeLiteral;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
-import java.lang.reflect.WildcardType;
 import java.util.*;
 import java.util.function.Function;
 
@@ -180,8 +178,8 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         assertAfterDeploymentValidation();
         if (!Objects.equals(beanType.getTypeName(), bean.getBeanClass().getTypeName())) {
             throw new IllegalArgumentException(format("The given type[%s] is not a bean type[%s] of the given bean!",
-                            beanType.getTypeName(),
-                            bean.getBeanClass()));
+                    beanType.getTypeName(),
+                    bean.getBeanClass()));
         }
         Class<? extends Annotation> scope = bean.getScope();
         Context context = getContext(scope);
@@ -253,12 +251,12 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
      *
      * @param injectionPoint {@link InjectionPoint}
      * @throws DefinitionException If an injection point type is a type variable, the container automatically
-     * detects the problem and treats it as a definition error.
+     *                             detects the problem and treats it as a definition error.
      */
     private void validateInjectionPointType(InjectionPoint injectionPoint) throws DefinitionException {
         Type type = injectionPoint.getType();
-        if(type instanceof TypeVariable){
-            throw newDefinitionException("A type variable[%s] is not a legal injection point[%s] type",type,injectionPoint);
+        if (type instanceof TypeVariable) {
+            throw newDefinitionException("A type variable[%s] is not a legal injection point[%s] type", type, injectionPoint);
         }
     }
 
@@ -537,6 +535,26 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         initializeBeanArchiveManager();
         performInitializationLifecycle();
         // TODO
+    }
+
+    /**
+     * When an application is stopped, the container performs the following steps:
+     * <ol>
+     *     <li>the container must destroy all contexts.</li>
+     *     <li>the container must fire an event of type {@link BeforeShutdown}</li>
+     * </ol>
+     */
+    public void shutdown() {
+        destroyContexts();
+        fireBeforeShutdownEvent();
+    }
+
+    private void destroyContexts() {
+        contextManager.destroy();
+    }
+
+    private void fireBeforeShutdownEvent() {
+        fireEvent(new BeforeShutdownEvent(this));
     }
 
 
@@ -937,6 +955,15 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         fireEvent(new BeforeBeanDiscoveryEvent(this));
     }
 
+    /**
+     * The container must fire an event, before it processes a type, for every Java class, interface
+     * (excluding annotation type, a special kind of interface type) or enum discovered as defined
+     * in Type discovery.
+     * An event is not fired for any type annotated with {@link Vetoed @Vetoed},
+     * or in a package annotated with {@link Vetoed @Vetoed}
+     *
+     * @param annotatedType {@link AnnotatedType}
+     */
     private void fireProcessAnnotatedTypeEvent(AnnotatedType<?> annotatedType) {
         if (!isAnnotatedVetoed(annotatedType.getJavaClass())) {
             fireEvent(new ProcessAnnotatedTypeEvent(annotatedType, this));

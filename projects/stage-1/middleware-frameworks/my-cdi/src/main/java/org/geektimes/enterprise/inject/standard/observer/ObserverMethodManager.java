@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard.event;
+package org.geektimes.enterprise.inject.standard.observer;
 
 import org.geektimes.commons.function.Streams;
 import org.geektimes.commons.reflect.util.ClassUtils;
@@ -24,6 +24,7 @@ import org.geektimes.enterprise.inject.standard.MethodParameterInjectionPoint;
 import org.geektimes.enterprise.inject.standard.annotation.ReflectiveAnnotatedMethod;
 import org.geektimes.enterprise.inject.standard.annotation.ReflectiveAnnotatedParameter;
 import org.geektimes.enterprise.inject.standard.beans.manager.StandardBeanManager;
+import org.geektimes.enterprise.inject.standard.event.*;
 
 import javax.enterprise.event.Event;
 import javax.enterprise.event.NotificationOptions;

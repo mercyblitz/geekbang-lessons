@@ -14,26 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard.event;
+package com.salesmanager.shop.spring.cloud.service.client;
 
-import org.geektimes.enterprise.inject.standard.beans.manager.StandardBeanManager;
-import org.geektimes.enterprise.inject.standard.event.application.BeforeBeanDiscoveryEvent;
-import org.junit.Test;
-
-import javax.enterprise.inject.Default;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.cloud.openfeign.EnableFeignClients;
 
 /**
- * {@link BeforeBeanDiscoveryEvent}
+ * TODO Comment
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
- * @since 1.0.0
+ * @since TODO
  */
-public class BeforeBeanDiscoveryEventTest {
-
-    private BeforeBeanDiscoveryEvent event = new BeforeBeanDiscoveryEvent(new StandardBeanManager());
-
-    @Test(expected = IllegalStateException.class)
-    public void test() {
-        event.addQualifier(Default.class);
-    }
+@EnableAutoConfiguration
+@EnableFeignClients
+public class ServiceClientApplication {
 }

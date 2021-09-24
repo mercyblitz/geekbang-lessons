@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard.event;
+package org.geektimes.enterprise.inject.standard.event.application;
 
 import org.geektimes.enterprise.inject.standard.beans.manager.BeanArchiveManager;
 import org.geektimes.enterprise.inject.standard.beans.manager.StandardBeanManager;
@@ -34,7 +34,7 @@ import static org.geektimes.enterprise.inject.standard.beans.BeanTypeSource.SYNT
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class AfterTypeDiscoveryEvent extends ContainerEvent implements AfterTypeDiscovery {
+public class AfterTypeDiscoveryEvent extends ApplicationEvent implements AfterTypeDiscovery {
 
     private final StandardBeanManager standardBeanManager;
 

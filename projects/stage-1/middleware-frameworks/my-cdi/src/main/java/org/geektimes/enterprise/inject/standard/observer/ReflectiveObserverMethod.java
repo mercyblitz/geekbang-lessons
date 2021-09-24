@@ -14,9 +14,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard.event;
+package org.geektimes.enterprise.inject.standard.observer;
 
-import org.geektimes.enterprise.inject.standard.event.ObserverMethodParameter;
 import org.geektimes.enterprise.inject.util.Events;
 
 import javax.enterprise.event.Observes;

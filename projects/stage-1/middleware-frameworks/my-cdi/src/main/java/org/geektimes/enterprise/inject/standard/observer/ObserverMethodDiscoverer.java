@@ -14,29 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard.event;
+package org.geektimes.enterprise.inject.standard.observer;
 
-import org.geektimes.enterprise.inject.standard.beans.manager.StandardBeanManager;
-
-import javax.enterprise.inject.spi.AfterDeploymentValidation;
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.ObserverMethod;
+import java.util.List;
 
 /**
- * an event is raised after it has validated that there are no deployment problems and before creating
- * contexts or processing requests.
+ * The discoverer for {@link ObserverMethod}
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class AfterDeploymentValidationEvent implements AfterDeploymentValidation {
+public interface ObserverMethodDiscoverer {
 
-    private final StandardBeanManager standardBeanManager;
-
-    public AfterDeploymentValidationEvent(StandardBeanManager standardBeanManager) {
-        this.standardBeanManager = standardBeanManager;
-    }
-
-    @Override
-    public void addDeploymentProblem(Throwable t) {
-        standardBeanManager.addDeploymentProblem(t);
-    }
+    /**
+     * Get the all {@link ObserverMethod observer methods} from the specified bean type
+     *
+     * @param bean     the bean instance or {@link Bean} , if it's bean instance that {@link ObserverMethod observer methods} are belongs to
+     *                 if bean is <code>null</code>, the {@link ObserverMethod observer methods}
+     *                 should be static
+     * @param beanType the specified bean type
+     * @return non-null read-only {@link List}
+     */
+    List<ObserverMethod> getObserverMethods(Object bean, Class<?> beanType);
 }

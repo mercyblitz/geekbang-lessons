@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard.event;
+package org.geektimes.enterprise.inject.standard.event.application;
 
 import org.geektimes.enterprise.inject.standard.beans.manager.BeanArchiveManager;
 import org.geektimes.enterprise.inject.standard.beans.manager.StandardBeanManager;
@@ -32,7 +32,7 @@ import java.lang.annotation.Annotation;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class BeforeBeanDiscoveryEvent extends ContainerEvent implements BeforeBeanDiscovery {
+public class BeforeBeanDiscoveryEvent extends ApplicationEvent implements BeforeBeanDiscovery {
 
     private final StandardBeanManager standardBeanManager;
 

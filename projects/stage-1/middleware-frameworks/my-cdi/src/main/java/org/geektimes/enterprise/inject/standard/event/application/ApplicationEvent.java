@@ -14,14 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard.event;
+package org.geektimes.enterprise.inject.standard.event.application;
 
 import javax.enterprise.inject.spi.BeforeBeanDiscovery;
 import javax.enterprise.inject.spi.Extension;
 import java.util.EventObject;
 
 import static java.lang.String.format;
-import static org.geektimes.enterprise.inject.standard.event.ReflectiveObserverMethod.getBeanInstance;
+import static org.geektimes.enterprise.inject.standard.observer.ReflectiveObserverMethod.getBeanInstance;
 
 /**
  * Container Event
@@ -29,7 +29,7 @@ import static org.geektimes.enterprise.inject.standard.event.ReflectiveObserverM
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class ContainerEvent extends EventObject {
+public class ApplicationEvent extends EventObject {
 
     /**
      * Constructs a prototypical Event.
@@ -37,7 +37,7 @@ public class ContainerEvent extends EventObject {
      * @param source The object on which the Event initially occurred.
      * @throws IllegalArgumentException if source is null.
      */
-    public ContainerEvent(Object source) {
+    public ApplicationEvent(Object source) {
         super(source);
     }
 

@@ -16,7 +16,7 @@
  */
 package org.geektimes.enterprise.inject.util;
 
-import org.geektimes.enterprise.inject.standard.event.ObserverMethodParameter;
+import org.geektimes.enterprise.inject.standard.observer.ObserverMethodParameter;
 
 import javax.enterprise.event.Observes;
 import javax.enterprise.event.ObservesAsync;
@@ -35,7 +35,7 @@ import static java.lang.String.format;
 import static java.util.Arrays.asList;
 import static java.util.Collections.emptyList;
 import static org.geektimes.commons.lang.util.AnnotationUtils.isAnnotationPresent;
-import static org.geektimes.enterprise.inject.standard.event.ObserverMethodParameter.*;
+import static org.geektimes.enterprise.inject.standard.observer.ObserverMethodParameter.*;
 
 /**
  * The utilities class for CDI Events

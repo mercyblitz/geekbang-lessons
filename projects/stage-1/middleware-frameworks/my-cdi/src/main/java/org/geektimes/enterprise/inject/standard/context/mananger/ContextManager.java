@@ -101,4 +101,8 @@ public class ContextManager {
                 // Extensions
                 syntheticNormalScopes.getOrDefault(annotationType, Boolean.FALSE);
     }
+
+    public void destroy() {
+        // TODO
+    }
 }

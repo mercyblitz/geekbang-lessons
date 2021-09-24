@@ -226,7 +226,7 @@ public abstract class TypeUtils extends BaseUtils {
                 .map(ParameterizedType.class::cast)
                 .collect(toList());
 
-        return unmodifiableList(filter(allGenericInterfaces, typeFilters));
+        return filter(allGenericInterfaces, typeFilters);
     }
 
     public static String getClassName(Type type) {
@@ -372,7 +372,7 @@ public abstract class TypeUtils extends BaseUtils {
             superType = superClass.getGenericSuperclass();
         }
 
-        return unmodifiableSet(filter(allSuperTypes, typeFilters));
+        return filter(allSuperTypes, typeFilters);
     }
 
     /**
@@ -406,7 +406,7 @@ public abstract class TypeUtils extends BaseUtils {
             allSuperInterfaces.addAll(getAllInterfaces(superType));
         }
 
-        return unmodifiableSet(filter(allSuperInterfaces, typeFilters));
+        return filter(allSuperInterfaces, typeFilters);
     }
 
     public static Set<Type> getAllTypes(Type type, Predicate<Type>... typeFilters) {
@@ -420,7 +420,7 @@ public abstract class TypeUtils extends BaseUtils {
         // add all super interfaces
         allTypes.addAll(getAllInterfaces(type));
 
-        return unmodifiableSet(filter(allTypes, typeFilters));
+        return filter(allTypes, typeFilters);
     }
 
     public static Set<ParameterizedType> findParameterizedTypes(Class<?> sourceClass) {

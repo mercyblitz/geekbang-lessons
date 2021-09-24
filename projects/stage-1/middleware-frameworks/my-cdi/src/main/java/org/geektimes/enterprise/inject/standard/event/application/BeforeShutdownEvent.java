@@ -14,26 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard.event;
+package org.geektimes.enterprise.inject.standard.event.application;
 
 import org.geektimes.enterprise.inject.standard.beans.manager.StandardBeanManager;
-import org.geektimes.enterprise.inject.standard.event.application.BeforeBeanDiscoveryEvent;
-import org.junit.Test;
 
-import javax.enterprise.inject.Default;
+import javax.enterprise.inject.spi.BeforeShutdown;
 
 /**
- * {@link BeforeBeanDiscoveryEvent}
+ * {@link BeforeShutdown} Event
  *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-public class BeforeBeanDiscoveryEventTest {
+public class BeforeShutdownEvent extends ApplicationEvent implements BeforeShutdown {
 
-    private BeforeBeanDiscoveryEvent event = new BeforeBeanDiscoveryEvent(new StandardBeanManager());
-
-    @Test(expected = IllegalStateException.class)
-    public void test() {
-        event.addQualifier(Default.class);
+    public BeforeShutdownEvent(StandardBeanManager standardBeanManager) {
+        super(standardBeanManager);
     }
 }
