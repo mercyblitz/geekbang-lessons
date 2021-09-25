@@ -79,36 +79,8 @@ public class ManagedBean<T> extends GenericBean<T> {
 
     @Override
     public T create(CreationalContext<T> creationalContext) {
-        T instance = null;
-
-        Map<AnnotatedConstructor, List<ConstructorParameterInjectionPoint>> injectionPointsMap =
-                getConstructorParameterInjectionPointsMap();
-
-        try {
-            if (injectionPointsMap.isEmpty()) { // non-argument constructor
-                instance = (T) getBeanClass().newInstance();
-            } else { // @Inject constructor
-                // just only one Constructor annotated @Inject
-                Map.Entry<AnnotatedConstructor, List<ConstructorParameterInjectionPoint>> entry =
-                        injectionPointsMap.entrySet().iterator().next();
-                List<ConstructorParameterInjectionPoint> injectionPoints = entry.getValue();
-                Object[] arguments = new Object[injectionPoints.size()];
-                AnnotatedConstructor annotatedConstructor = entry.getKey();
-                Constructor constructor = annotatedConstructor.getJavaMember();
-                int i = 0;
-                BeanManager beanManager = getBeanManager();
-                for (ConstructorParameterInjectionPoint injectionPoint : injectionPoints) {
-                    if (constructor == null) {
-                        constructor = injectionPoint.getMember();
-                    }
-                    arguments[i++] = beanManager.getInjectableReference(injectionPoint, creationalContext);
-                }
-                instance = (T) constructor.newInstance(arguments);
-            }
-            creationalContext.push(instance);
-        } catch (Throwable e) {
-            throw new CreationException(e);
-        }
+        T instance = super.create(creationalContext);
+        // TODO
         return instance;
     }
 

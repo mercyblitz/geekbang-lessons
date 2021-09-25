@@ -151,12 +151,11 @@ public interface InterceptorManager {
     List<Object> resolveInterceptors(Executable executable, Object... defaultInterceptors);
 
     /**
+     * Register an {@linkplain javax.interceptor.Interceptor @Interceptor} binding {@link Class type}
+     * whether it adds {@link InterceptorBinding} or not.
      * <p>
-     * Declares an annotation type as an {@linkplain javax.interceptor.Interceptor @Interceptor} binding type if you
-     * wish to make an annotation an interceptor binding type without adding {@link InterceptorBinding} to it.
-     * </p>
      *
-     * @param interceptorBindingType
+     * @param interceptorBindingType {@linkplain javax.interceptor.Interceptor @Interceptor} binding {@link Class type}
      */
     void registerInterceptorBindingType(Class<? extends Annotation> interceptorBindingType);
 

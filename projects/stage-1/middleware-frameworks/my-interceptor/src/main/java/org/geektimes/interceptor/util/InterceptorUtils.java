@@ -34,7 +34,7 @@ import static java.util.Objects.requireNonNull;
 import static org.geektimes.commons.function.ThrowableSupplier.execute;
 import static org.geektimes.commons.lang.util.AnnotationUtils.isAnnotationPresent;
 import static org.geektimes.commons.lang.util.AnnotationUtils.isMetaAnnotation;
-import static org.geektimes.commons.reflect.util.ConstructorUtils.hasPublicNoArgConstructor;
+import static org.geektimes.commons.reflect.util.ConstructorUtils.hasNonPrivateConstructorWithoutParameters;
 
 /**
  * The utilities class for {@link Interceptor}
@@ -272,7 +272,7 @@ public abstract class InterceptorUtils {
     }
 
     private static void validateInterceptorClassConstructors(Class<?> interceptorClass) {
-        if (!hasPublicNoArgConstructor(interceptorClass)) {
+        if (!hasNonPrivateConstructorWithoutParameters(interceptorClass)) {
             throw newIllegalStateException("The Interceptor class[%s] must have a public no-arg constructor!",
                     interceptorClass.getName());
         }

@@ -22,7 +22,7 @@ import java.util.function.Predicate;
 
 import static java.util.Arrays.asList;
 import static org.geektimes.commons.function.Streams.filter;
-import static org.geektimes.commons.reflect.util.MemberUtils.isPublic;
+import static org.geektimes.commons.reflect.util.MemberUtils.isPrivate;
 
 /**
  * The utilities class of {@link Constructor}
@@ -33,20 +33,21 @@ import static org.geektimes.commons.reflect.util.MemberUtils.isPublic;
 public abstract class ConstructorUtils {
 
     /**
-     * Is a public no-arg constructor or not ?
+     * Is a non-private constructor without parameters
      *
      * @param constructor {@link Constructor}
      * @return <code>true</code> if the given {@link Constructor} is a public no-arg one,
      * otherwise <code>false</code>
      */
-    public static boolean isPublicNoArgConstructor(Constructor<?> constructor) {
-        return isPublic(constructor) && constructor.getParameterCount() == 0;
+    public static boolean isNonPrivateConstructorWithoutParameters(Constructor<?> constructor) {
+        return !isPrivate(constructor) && constructor.getParameterCount() < 1;
     }
 
-    public static boolean hasPublicNoArgConstructor(Class<?> type) {
+    public static boolean hasNonPrivateConstructorWithoutParameters(Class<?> type) {
+        Constructor<?>[] constructors = type.getDeclaredConstructors();
         boolean has = false;
-        for (Constructor<?> constructor : type.getConstructors()) {
-            if (isPublicNoArgConstructor(constructor)) {
+        for (Constructor<?> constructor : constructors) {
+            if (isNonPrivateConstructorWithoutParameters(constructor)) {
                 has = true;
                 break;
             }

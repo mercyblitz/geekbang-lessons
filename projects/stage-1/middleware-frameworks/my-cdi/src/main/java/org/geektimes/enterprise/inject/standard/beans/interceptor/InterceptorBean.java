@@ -93,7 +93,7 @@ import static org.geektimes.interceptor.InterceptorManager.getInstance;
                 // TODO
                 break;
         }
-        return false;
+        return supported;
     }
 
     @Override
@@ -110,13 +110,11 @@ import static org.geektimes.interceptor.InterceptorManager.getInstance;
 
     @Override
     public T create(CreationalContext<T> creationalContext) {
-        // TODO
         return super.create(creationalContext);
     }
 
     @Override
     public void destroy(T instance, CreationalContext<T> creationalContext) {
-    	// TODO
         super.destroy(instance, creationalContext);
     }
 
@@ -124,7 +122,7 @@ import static org.geektimes.interceptor.InterceptorManager.getInstance;
     protected void validate(Class interceptorClass) {
         this.interceptorManager.validateInterceptorClass(interceptorClass);
     }
-    
+
     @Override
     public Annotated getAnnotated() {
         return interceptorType;

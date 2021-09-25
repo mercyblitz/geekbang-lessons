@@ -84,7 +84,7 @@ public class MethodUtils {
             }
         }
 
-        return unmodifiableSet(filter(allMethods, methodsToFilter));
+        return filter(allMethods, methodsToFilter);
     }
 
     /**
