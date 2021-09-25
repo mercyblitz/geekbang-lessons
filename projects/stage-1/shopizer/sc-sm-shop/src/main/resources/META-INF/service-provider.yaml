@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: service-provider
+
+  # default disable all
+  cloud:
+    nacos:
+      discovery:
+        enabled: false
+        register-enabled: false
+    zookeeper:
+      enabled: false
+    consul:
+      enabled: false
+
+
+eureka:
+  client:
+    enabled: false
+
+management:
+  health:
+    elasticsearch:
+      enabled: false
+

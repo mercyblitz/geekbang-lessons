@@ -14,19 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.salesmanager.shop.spring.cloud.service.client;
+package com.salesmanager.shop.spring.cloud.service.provider;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.cloud.client.loadbalancer.LoadBalanced;
-import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.cloud.sleuth.Tracer;
+import org.springframework.cloud.sleuth.annotation.NewSpan;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.EnableAspectJAutoProxy;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.client.RestTemplate;
 
 /**
  * TODO Comment
@@ -35,41 +35,54 @@ import org.springframework.web.client.RestTemplate;
  * @since TODO
  */
 @EnableAutoConfiguration
-@EnableFeignClients(clients = HelloWorldService.class)
 @RestController
-public class ServiceClientApplication {
+@EnableAspectJAutoProxy(proxyTargetClass = true)
+public class ServiceProviderApplication {
 
-    private static final Logger log = LoggerFactory.getLogger(ServiceClientApplication.class);
-
-    @Autowired
-    private HelloWorldService helloWorldService;
+    private static final Logger log = LoggerFactory.getLogger(ServiceProviderApplication.class);
 
     @Autowired
-    private RestTemplate restTemplate;
+    private Tracer tracer;
+
+    @Autowired
+    private EchoService echoService;
+
 
     @RequestMapping("/")
-    public String index() {
-        String message = helloWorldService.helloWorld();
-        log.info(message);
-        return message;
+    @NewSpan
+    String home() {
+        log.info("Hello,World");
+        return echoService.echo("Hello world!");
     }
 
-    @RequestMapping("/rest")
-    public String rest() {
-        String message =  restTemplate.getForObject("http://service-provider/hello/world", String.class);
-        log.info(message);
-        return message;
+    @RequestMapping("/hello/world")
+    String helloWorld() {
+        log.info("Hello world 2021!");
+        return echoService.echo("Hello world 2021!");
     }
+
+//    @RequestMapping("/trace/id")
+//    String traceId() {
+//        log.info(tracer.toString());
+//        return tracer.toString();
+//    }
+//
+//    @RequestMapping("/span/id")
+//    String spanId() {
+//        Span span = tracer.currentSpan();
+//        log.info(span.toString());
+//        return span.toString();
+//    }
 
     @Bean
-    @LoadBalanced
-    public RestTemplate restTemplate() {
-        return new RestTemplate();
+    public EchoService echoService() {
+        return new EchoService();
     }
 
     public static void main(String[] args) {
-        new SpringApplicationBuilder(ServiceClientApplication.class)
-                .run("--spring.config.additional-location=classpath:/META-INF/service-client.yaml");
-
+        new SpringApplicationBuilder(ServiceProviderApplication.class)
+                .run("--spring.config.additional-location=classpath:/META-INF/service-provider.yaml");
     }
+
+
 }

@@ -1,0 +1,37 @@
+spring:
+  application:
+    name: service-client
+
+  # default disable all
+  cloud:
+    nacos:
+      discovery:
+        enabled: false
+        register-enabled: false
+    zookeeper:
+      enabled: false
+    consul:
+      enabled: false
+
+    discovery:
+      client:
+        simple:
+          instances:
+            service-provider[0]:
+              instanceId: service-provider-1
+              serviceId: service-provider
+              host: 127.0.0.1
+              port: 8080
+
+
+eureka:
+  client:
+    enabled: false
+
+management:
+  health:
+    elasticsearch:
+      enabled: false
+
+server:
+  port: 9090
