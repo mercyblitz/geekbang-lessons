@@ -54,7 +54,7 @@ public abstract class InterceptorUtils {
         return false;
     }
 
-    public static List<Object> sortInterceptors(List<Object> interceptors) {
+    public static List<Object> sortInterceptors(List<?> interceptors) {
         List<Object> sortedInterceptors = new LinkedList<>(interceptors);
         sortedInterceptors.sort(PriorityComparator.INSTANCE);
         return sortedInterceptors;
@@ -281,7 +281,7 @@ public abstract class InterceptorUtils {
     private static void validateInterceptorClassMethods(Class<?> interceptorClass) {
     }
 
-    public static boolean isInterceptorBinding(Class<? extends Annotation> annotationType) {
+    public static boolean isAnnotatedInterceptorBinding(Class<? extends Annotation> annotationType) {
         return isMetaAnnotation(annotationType, InterceptorBinding.class);
     }
 

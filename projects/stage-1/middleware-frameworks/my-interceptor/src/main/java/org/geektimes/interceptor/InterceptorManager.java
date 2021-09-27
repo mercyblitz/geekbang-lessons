@@ -151,6 +151,23 @@ public interface InterceptorManager {
     List<Object> resolveInterceptors(Executable executable, Object... defaultInterceptors);
 
     /**
+     * Resolve the bindings of {@link javax.interceptor.Interceptor @Interceptor} {@link Class classes} upon
+     * the specified {@linkplain Method method} or {@link Constructor}
+     * <p>
+     * See Specification:
+     * <p>
+     * 5.2 Interceptor Ordering Rules
+     * <p>
+     * 5.2.1 Use of the Priority Annotation in Ordering Interceptors
+     *
+     * @param executable                the intercepted of {@linkplain Method method} or {@linkplain Constructor constructor}
+     * @param defaultInterceptorClasses the default interceptors {@link Class classes}
+     * @return a non-null read-only {@link Priority priority} {@link List list} of
+     * {@link javax.interceptor.Interceptor @Interceptor} {@link Class classes}
+     */
+    List<Class<?>> resolveInterceptorClasses(Executable executable, Class<?>... defaultInterceptorClasses);
+
+    /**
      * Register an {@linkplain javax.interceptor.Interceptor @Interceptor} binding {@link Class type}
      * whether it adds {@link InterceptorBinding} or not.
      * <p>
@@ -158,6 +175,15 @@ public interface InterceptorManager {
      * @param interceptorBindingType {@linkplain javax.interceptor.Interceptor @Interceptor} binding {@link Class type}
      */
     void registerInterceptorBindingType(Class<? extends Annotation> interceptorBindingType);
+
+    /**
+     * Register an {@linkplain javax.interceptor.Interceptor @Interceptor} binding {@link Class type}
+     * whether it adds {@link InterceptorBinding} or not.
+     *
+     * @param interceptorBindingType An interceptor binding type
+     * @param interceptorBindingDef  An optional list of annotations defining the {@linkplain javax.enterprise.inject.spi.Interceptor interceptor}
+     */
+    void registerInterceptorBinding(Class<? extends Annotation> interceptorBindingType, Annotation... interceptorBindingDef);
 
     /**
      * Get all registered {@link Class classes} of {@link javax.interceptor.Interceptor @Interceptor}

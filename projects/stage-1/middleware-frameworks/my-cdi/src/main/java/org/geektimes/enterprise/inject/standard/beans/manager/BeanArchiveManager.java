@@ -352,7 +352,7 @@ public class BeanArchiveManager {
     }
 
     public boolean isInterceptorBinding(Class<? extends Annotation> annotationType) {
-        return InterceptorUtils.isInterceptorBinding(annotationType) ||
+        return InterceptorUtils.isAnnotatedInterceptorBinding(annotationType) ||
                 // Extensions
                 syntheticInterceptorBindings.containsKey(annotationType);
     }

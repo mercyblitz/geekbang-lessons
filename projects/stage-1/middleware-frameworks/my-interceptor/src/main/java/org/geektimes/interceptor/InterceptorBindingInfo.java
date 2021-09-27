@@ -23,7 +23,7 @@ import java.util.Objects;
 
 import static org.geektimes.commons.lang.util.AnnotationUtils.getAttributesMap;
 import static org.geektimes.interceptor.InterceptorBindingAttributeFilter.FILTERS;
-import static org.geektimes.interceptor.util.InterceptorUtils.isInterceptorBinding;
+import static org.geektimes.interceptor.util.InterceptorUtils.isAnnotatedInterceptorBinding;
 
 /**
  * The Metadata Info Class for {@link InterceptorBinding}
@@ -47,7 +47,7 @@ public class InterceptorBindingInfo {
     public InterceptorBindingInfo(Annotation declaredAnnotation) {
         this.declaredAnnotation = declaredAnnotation;
         this.declaredAnnotationType = declaredAnnotation.annotationType();
-        this.synthetic = !isInterceptorBinding(declaredAnnotationType);
+        this.synthetic = !isAnnotatedInterceptorBinding(declaredAnnotationType);
         this.attributes = getAttributesMap(declaredAnnotation, FILTERS);
     }
 
@@ -68,7 +68,9 @@ public class InterceptorBindingInfo {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
         InterceptorBindingInfo that = (InterceptorBindingInfo) o;
-        return synthetic == that.synthetic && Objects.equals(declaredAnnotationType, that.declaredAnnotationType) && Objects.equals(attributes, that.attributes);
+        return synthetic == that.synthetic
+                && Objects.equals(declaredAnnotationType, that.declaredAnnotationType)
+                && Objects.equals(attributes, that.attributes);
     }
 
     @Override

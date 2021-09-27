@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- package org.geektimes.enterprise.inject.standard.beans.interceptor;
+package org.geektimes.enterprise.inject.standard.beans.interceptor;
 
 import org.geektimes.enterprise.inject.standard.beans.GenericBean;
 import org.geektimes.interceptor.InterceptorInfo;
@@ -36,7 +36,7 @@ import static org.geektimes.interceptor.InterceptorManager.getInstance;
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
  * @since 1.0.0
  */
-    public class InterceptorBean<T> extends GenericBean<T> implements Interceptor<T> {
+public class InterceptorBean<T> extends GenericBean<T> implements Interceptor<T> {
 
     private final AnnotatedType<?> interceptorType;
 
