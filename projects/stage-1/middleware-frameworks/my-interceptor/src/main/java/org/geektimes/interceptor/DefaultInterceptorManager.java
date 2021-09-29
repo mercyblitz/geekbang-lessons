@@ -35,8 +35,7 @@ import static java.util.Collections.*;
 import static java.util.stream.Collectors.toList;
 import static org.geektimes.commons.lang.util.AnnotationUtils.findAnnotation;
 import static org.geektimes.commons.lang.util.AnnotationUtils.isMetaAnnotation;
-import static org.geektimes.interceptor.util.InterceptorUtils.searchAnnotation;
-import static org.geektimes.interceptor.util.InterceptorUtils.sortInterceptors;
+import static org.geektimes.interceptor.util.InterceptorUtils.*;
 
 /**
  * Default {@link InterceptorManager}
@@ -47,10 +46,9 @@ import static org.geektimes.interceptor.util.InterceptorUtils.sortInterceptors;
 public class DefaultInterceptorManager implements InterceptorManager {
 
     /**
-     * The supported annotation types of interceptor binding mapping
-     * the {@link Interceptor @Interceptor} {@link Class classes}.
+     * The supported annotation types of interceptor binding.
      */
-    private final Map<Class<? extends Annotation>, Set<Class<?>>> bindingInterceptorClasses;
+    private final Set<Class<? extends Annotation>> interceptorBindingTypes;
 
     /**
      * The {@link InterceptorInfo} Repository
@@ -63,18 +61,29 @@ public class DefaultInterceptorManager implements InterceptorManager {
     private final Map<InterceptorBindings, SortedSet<Object>> bindingInterceptors;
 
     /**
-     * The cache for {@link Method} or {@link Constructor} mapping the prioritized {@link Interceptor @Interceptor} instances
+     * The map the {@link InterceptorBinding interceptorBindings} or synthetic annotations to annotation types
      */
-    private final Map<Executable, List<Object>> interceptorsCache;
+    private final Map<Annotation, Class<? extends Annotation>> interceptorBindings;
 
-    private final Map<Executable, List<InterceptorInfo>> interceptorInfoCache;
+    /**
+     * The cache for {@link Method} or {@link Constructor} mapping the prioritized {@link Interceptor @Interceptor}
+     * instances
+     */
+    private final Map<Executable, List<Object>> executableInterceptors;
+
+    /**
+     * The cache for {@link Method} or {@link Constructor} mapping the prioritized {@link Interceptor @Interceptor}
+     * {@link Class classes}
+     */
+    private final Map<Executable, List<Class<?>>> executableInterceptorClasses;
 
     public DefaultInterceptorManager() {
-        this.bindingInterceptorClasses = new HashMap<>();
+        this.interceptorBindings = new HashMap<>();
+        this.interceptorBindingTypes = new HashSet<>();
         this.interceptorInfoRepository = new TreeMap<>(PriorityComparator.INSTANCE);
         this.bindingInterceptors = new HashMap<>();
-        this.interceptorsCache = new HashMap<>();
-        this.interceptorInfoCache = new HashMap<>();
+        this.executableInterceptors = new HashMap<>();
+        this.executableInterceptorClasses = new HashMap<>();
         registerDefaultInterceptorBindingType();
     }
 
@@ -128,7 +137,7 @@ public class DefaultInterceptorManager implements InterceptorManager {
 
     @Override
     public List<Object> resolveInterceptors(Executable executable, Object... defaultInterceptors) {
-        return interceptorsCache.computeIfAbsent(executable, e -> {
+        return executableInterceptors.computeIfAbsent(executable, e -> {
 
             List<Object> interceptors = new LinkedList<>();
 
@@ -159,61 +168,37 @@ public class DefaultInterceptorManager implements InterceptorManager {
 
     @Override
     public List<Class<?>> resolveInterceptorClasses(Executable executable, Class<?>... defaultInterceptorClasses) {
-        List<InterceptorInfo> interceptorInfoList = interceptorInfoCache.computeIfAbsent(executable, e -> {
-
-            List<Class<?>> interceptorClasses = new LinkedList<>();
-
-            if (!isExcludedDefaultInterceptors(executable)) {
-                // 1. Default interceptors are invoked first
-                interceptorClasses.addAll(asList(defaultInterceptorClasses));
-            }
-
-            // Resolve interceptors using @Interceptors
-            // 2. Interceptors declared by applying the Interceptors annotation at class-level to the target
-            // class are invoked next.
-            // 3. Interceptors declared by applying the Interceptors annotation at method- or constructor-level
-            // are invoked next.
-            interceptorClasses.addAll(resolveAnnotatedInterceptorClasses(executable));
-
-            // Resolve interceptors using Interceptor Bindings
-            // 4. Interceptors declared using interceptor bindings are invoked next.
-            interceptorClasses.addAll(resolveBindingInterceptorClasses(executable));
-
-            // 5.2.1 Use of the Priority Annotation in Ordering Interceptors
-            sortInterceptors(interceptorClasses);
-
-            return unmodifiableList(interceptorClasses);
-        });
-
-
-        return interceptorInfoList;
+        return null;
     }
 
 
     @Override
     public void registerInterceptorBindingType(Class<? extends Annotation> interceptorBindingType) {
-        registerInterceptorBinding(interceptorBindingType);
+        this.interceptorBindingTypes.add(interceptorBindingType);
     }
 
     @Override
-    public void registerInterceptorBinding(Class<? extends Annotation> interceptorBindingType,
-                                           Annotation... interceptorBindingDef) {
-        Set<Class<?>> interceptorClasses = bindingInterceptorClasses.computeIfAbsent(interceptorBindingType,
-                t -> new HashSet<>());
-
+    public void registerInterceptorBinding(Class<? extends Annotation> interceptorBindingType, Annotation... interceptorBindingDef) {
         // TODO
     }
 
     @Override
     public boolean isInterceptorBindingType(Class<? extends Annotation> annotationType) {
-        if (bindingInterceptorClasses.containsKey(annotationType)) {
-            return true;
-        }
-        if (isMetaAnnotation(annotationType, InterceptorBinding.class)) {
+        boolean valid = false;
+        if (interceptorBindingTypes.contains(annotationType)) {
+            valid = true;
+        } else if (isAnnotatedInterceptorBinding(annotationType)) {
             registerInterceptorBindingType(annotationType);
-            return true;
+            valid = true;
+        } else {
+            for (Class<? extends Annotation> interceptorBindingType : interceptorBindingTypes) {
+                if (isMetaAnnotation(annotationType, interceptorBindingType)) {
+                    registerInterceptorBindingType(annotationType);
+                    valid = true;
+                }
+            }
         }
-        return false;
+        return valid;
     }
 
     @Override
@@ -223,7 +208,7 @@ public class DefaultInterceptorManager implements InterceptorManager {
 
     @Override
     public Set<Class<? extends Annotation>> getInterceptorBindingTypes() {
-        return bindingInterceptorClasses.keySet();
+        return unmodifiableSet(interceptorBindingTypes);
     }
 
     @Override
@@ -247,12 +232,10 @@ public class DefaultInterceptorManager implements InterceptorManager {
     }
 
     private boolean isExcludedDefaultInterceptors(Executable executable) {
-        return findAnnotation(executable, ExcludeDefaultInterceptors.class) != null;
-    }
-
-    private List<Class<?>> resolveBindingInterceptorClasses(Executable executable) {
-        InterceptorBindings interceptorBindings = resolveInterceptorBindings(executable);
-        return unmodifiableSortedSet(bindingInterceptors.getOrDefault(interceptorBindings, emptySortedSet()));
+        if (executable != null && !executable.isAnnotationPresent(ExcludeDefaultInterceptors.class)) {
+            return findAnnotation(executable.getDeclaringClass(), ExcludeDefaultInterceptors.class) != null;
+        }
+        return false;
     }
 
     private SortedSet<Object> resolveBindingInterceptors(Executable executable) {
@@ -271,7 +254,7 @@ public class DefaultInterceptorManager implements InterceptorManager {
      * @see Interceptors
      * @see ExcludeClassInterceptors
      */
-    protected List<Class<?>> resolveAnnotatedInterceptorClasses(Executable executable) {
+    private List<Class<?>> resolveAnnotatedInterceptorClasses(Executable executable) {
         Class<?> componentClass = executable.getDeclaringClass();
 
         List<Class<?>> interceptorClasses = new LinkedList<>();
@@ -306,8 +289,27 @@ public class DefaultInterceptorManager implements InterceptorManager {
      * @see Interceptors
      * @see ExcludeClassInterceptors
      */
-    protected List<Object> resolveAnnotatedInterceptors(Executable executable) {
-        List<Class<?>> interceptorClasses = resolveAnnotatedInterceptorClasses(executable);
+    private List<Object> resolveAnnotatedInterceptors(Executable executable) {
+        Class<?> componentClass = executable.getDeclaringClass();
+
+        List<Class<?>> interceptorClasses = new LinkedList<>();
+
+        if (!executable.isAnnotationPresent(ExcludeClassInterceptors.class)) {
+            Interceptors classInterceptors = searchAnnotation(componentClass, Interceptors.class);
+            if (classInterceptors != null) {
+                for (Class interceptorClass : classInterceptors.value()) {
+                    interceptorClasses.add(interceptorClass);
+                }
+            }
+        }
+
+        Interceptors executableInterceptors = searchAnnotation(executable, Interceptors.class);
+        if (executableInterceptors != null) {
+            for (Class interceptorClass : executableInterceptors.value()) {
+                interceptorClasses.add(interceptorClass);
+            }
+        }
+
         return interceptorClasses.stream()
                 .map(InterceptorUtils::unwrap)
                 .collect(toList());
