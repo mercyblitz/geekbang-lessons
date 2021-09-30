@@ -18,6 +18,7 @@ package org.geektimes.interceptor;
 
 import org.junit.Test;
 
+import static org.geektimes.interceptor.InterceptorBindingInfo.valueOf;
 import static org.junit.Assert.*;
 
 /**
@@ -33,7 +34,7 @@ public class InterceptorBindingInfoTest {
     @Logging(name = "test")
     public void test() throws Throwable {
         Logging logging = this.getClass().getAnnotation(Logging.class);
-        InterceptorBindingInfo info = new InterceptorBindingInfo(logging);
+        InterceptorBindingInfo info = valueOf(logging);
         assertEquals(Logging.class, info.getDeclaredAnnotationType());
         assertFalse(info.isSynthetic());
         assertTrue(info.getAttributes().isEmpty());

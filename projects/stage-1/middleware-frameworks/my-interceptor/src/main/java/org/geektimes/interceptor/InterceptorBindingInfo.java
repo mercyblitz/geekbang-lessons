@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import static org.geektimes.commons.lang.util.AnnotationUtils.getAttributesMap;
-import static org.geektimes.interceptor.InterceptorBindingAttributeFilter.FILTERS;
+import static org.geektimes.interceptor.InterceptorBindingAttributeFilter.filters;
 import static org.geektimes.interceptor.util.InterceptorUtils.isAnnotatedInterceptorBinding;
 
 /**
@@ -48,7 +48,7 @@ public class InterceptorBindingInfo {
         this.declaredAnnotation = declaredAnnotation;
         this.declaredAnnotationType = declaredAnnotation.annotationType();
         this.synthetic = !isAnnotatedInterceptorBinding(declaredAnnotationType);
-        this.attributes = getAttributesMap(declaredAnnotation, FILTERS);
+        this.attributes = getAttributesMap(declaredAnnotation, filters());
     }
 
     public Class<? extends Annotation> getDeclaredAnnotationType() {
@@ -88,7 +88,14 @@ public class InterceptorBindingInfo {
      * @param interceptorBinding the instance of {@linkplain InterceptorBinding interceptor binding}
      * @return non-null
      */
-    public static InterceptorBindingInfo newInstance(Annotation interceptorBinding) {
+    public static InterceptorBindingInfo valueOf(Annotation interceptorBinding) {
         return new InterceptorBindingInfo(interceptorBinding);
+    }
+
+    public boolean equals(Annotation declaredAnnotation) {
+        if (declaredAnnotation == null) {
+            return false;
+        }
+        return this.equals(valueOf(declaredAnnotation));
     }
 }

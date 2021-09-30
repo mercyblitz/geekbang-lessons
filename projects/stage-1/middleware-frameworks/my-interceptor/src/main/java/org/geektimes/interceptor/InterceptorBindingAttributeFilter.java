@@ -32,8 +32,6 @@ import static org.geektimes.commons.util.ServiceLoaders.loadAsArray;
  */
 public interface InterceptorBindingAttributeFilter extends Predicate<Method> {
 
-    Predicate<Method> FILTERS = filters();
-
     default boolean test(Method attributeMethod) {
         return accept(attributeMethod);
     }
@@ -45,8 +43,8 @@ public interface InterceptorBindingAttributeFilter extends Predicate<Method> {
      */
     boolean accept(Method attributeMethod);
 
-    static Predicate<Method> filters() {
-        return Predicates.or(loadAsArray(InterceptorBindingAttributeFilter.class));
+    static Predicate<Method>[] filters() {
+        return loadAsArray(InterceptorBindingAttributeFilter.class);
     }
 
 }

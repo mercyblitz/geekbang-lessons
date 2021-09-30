@@ -222,6 +222,10 @@ public interface InterceptorManager {
 
     boolean isInterceptorBindingType(Class<? extends Annotation> annotationType);
 
+    default <T> T unwrap(Class<T> type) {
+        return InterceptorUtils.unwrap(type);
+    }
+
     static InterceptorManager getInstance(ClassLoader classLoader) {
         return loadSpi(InterceptorManager.class, classLoader);
     }
