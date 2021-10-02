@@ -32,7 +32,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * @since 1.0.0
  */
 @Inherited
-@InterceptorBinding
+@DataAccess
 @Target({TYPE, METHOD})
 @Retention(RUNTIME)
 public @interface Monitored {
