@@ -18,8 +18,10 @@ package org.geektimes.enterprise.inject.util;
 
 import javax.enterprise.context.spi.Context;
 import javax.enterprise.context.spi.Contextual;
+import java.lang.reflect.Type;
 
 import static org.geektimes.commons.reflect.util.TypeUtils.findActualTypeArgumentClass;
+import static org.geektimes.commons.reflect.util.TypeUtils.findActualTypeArguments;
 
 /**
  * The utilities class for {@link Context}
@@ -32,6 +34,11 @@ public abstract class Contexts {
     public static <T> Class<T> getBeanClass(Contextual<T> contextual) {
         Class<?> contextualClass = contextual.getClass();
         return findActualTypeArgumentClass(contextualClass, Contextual.class, 0);
+    }
+
+    public static <T> Type getBeanType(Contextual<T> contextual) {
+        Class<?> contextualClass = contextual.getClass();
+        return findActualTypeArguments(contextualClass, Contextual.class).get(0);
     }
 
 }

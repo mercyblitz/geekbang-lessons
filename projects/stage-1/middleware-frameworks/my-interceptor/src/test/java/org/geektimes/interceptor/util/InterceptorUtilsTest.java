@@ -16,6 +16,7 @@
  */
 package org.geektimes.interceptor.util;
 
+import org.geektimes.interceptor.AnnotatedInterceptor;
 import org.geektimes.interceptor.ExternalInterceptor;
 import org.geektimes.interceptor.Logging;
 import org.geektimes.interceptor.Monitored;
@@ -23,8 +24,13 @@ import org.junit.Test;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.annotation.Priority;
 import javax.interceptor.*;
+import java.lang.reflect.Method;
+import java.util.LinkedList;
+import java.util.List;
 
+import static java.util.Arrays.asList;
 import static org.geektimes.interceptor.util.InterceptorUtils.*;
 import static org.junit.Assert.*;
 
@@ -53,6 +59,20 @@ public class InterceptorUtilsTest {
     }
 
     @Test
+    public void testSortInterceptors() {
+        List<Class<?>> interceptorClasses = new LinkedList<>(asList(A.class, B.class));
+        interceptorClasses = sortInterceptors(interceptorClasses);
+        assertEquals(B.class, interceptorClasses.get(0));
+        assertEquals(A.class, interceptorClasses.get(1));
+    }
+
+    @Test
+    public void testUnwrap() {
+        testOnError(() -> unwrap(A.class), Exception.class);
+        assertNotNull(unwrap(String.class));
+    }
+
+    @Test
     public void testValidateInterceptorClass() {
         validateInterceptorClass(ExternalInterceptor.class);
         testOnError(() -> validateInterceptorClass(String.class), IllegalStateException.class);
@@ -77,10 +97,43 @@ public class InterceptorUtilsTest {
         assertFalse(isAnnotatedInterceptorBinding(Override.class));
     }
 
+    @Test
+    public void testIsAroundInvokeMethod() throws Throwable {
+        Method method = AnnotatedInterceptor.class.getMethod("intercept", InvocationContext.class);
+        assertTrue(isAroundInvokeMethod(method));
+    }
+
+    @Test
+    public void testIsAroundTimeoutMethod() throws Throwable {
+        Method method = AnnotatedInterceptor.class.getMethod("interceptTimeout", InvocationContext.class);
+        assertTrue(isAroundTimeoutMethod(method));
+    }
+
+    @Test
+    public void testIsAroundConstructMethod() throws Throwable {
+        Method method = AnnotatedInterceptor.class.getMethod("interceptConstruct", InvocationContext.class);
+        assertTrue(isAroundConstructMethod(method));
+    }
+
+    @Test
+    public void testIsPostConstructMethod() throws Throwable {
+        Method method = AnnotatedInterceptor.class.getMethod("interceptPostConstruct", InvocationContext.class);
+        assertTrue(isPostConstructMethod(method));
+    }
+
+    @Test
+    public void testIsPreDestroyMethod() throws Throwable {
+        Method method = AnnotatedInterceptor.class.getMethod("interceptPreDestroy", InvocationContext.class);
+        assertTrue(isPreDestroyMethod(method));
+    }
+
+
+    @Priority(2)
     @Interceptor
     abstract class A {
     }
 
+    @Priority(1)
     @Interceptor
     final class B {
     }

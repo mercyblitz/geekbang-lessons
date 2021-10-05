@@ -20,6 +20,7 @@ import org.geektimes.enterprise.inject.standard.beans.GenericBean;
 import org.geektimes.interceptor.InterceptorInfo;
 import org.geektimes.interceptor.InterceptorManager;
 
+import javax.enterprise.context.Dependent;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.*;
 import javax.interceptor.InvocationContext;
@@ -27,6 +28,7 @@ import java.lang.annotation.Annotation;
 import java.util.Set;
 
 import static java.lang.String.format;
+import static org.geektimes.enterprise.inject.util.Exceptions.newDefinitionException;
 import static org.geektimes.interceptor.InterceptorManager.getInstance;
 
 /**
@@ -60,6 +62,17 @@ public class InterceptorBean<T> extends GenericBean<T> implements Interceptor<T>
 
     private Set<Annotation> resolveInterceptorBindings() {
         return interceptorInfo.getInterceptorBindings().getDeclaredAnnotations();
+    }
+
+    @Override
+    public Class<? extends Annotation> getScope() {
+        Class<? extends Annotation> scope = super.getScope();
+        if (scope == null) {
+            scope = Dependent.class;
+        } else if (scope != null && !Dependent.class.equals(scope)) {
+            throw newDefinitionException("The scope of interceptor must be declared as @%s!", Dependent.class.getName());
+        }
+        return scope;
     }
 
     @Override

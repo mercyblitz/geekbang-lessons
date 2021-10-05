@@ -19,9 +19,8 @@ package org.geektimes.enterprise.inject.standard.context;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.context.spi.AlterableContext;
 import javax.enterprise.context.spi.Contextual;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.BeanManager;
+import java.lang.reflect.Type;
 
 /**
  * The Context for {@link Dependent @Dependent}
@@ -38,11 +37,5 @@ public class DependentScopeContext extends AbstractAlterableContext {
 
     public DependentScopeContext(BeanManager beanManager) {
         super(beanManager, Dependent.class);
-    }
-
-    @Override
-    protected <T> T get(Contextual<T> contextual, CreationalContext<T> creationalContext,
-                        AnnotatedType<T> beanType) {
-        return null;
     }
 }

@@ -687,10 +687,10 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
      * the container must perform bean discovery, as defined in Bean discovery.
      */
     private void performBeanDiscovery() {
-        determineManagedBeans();
         determineAlternativeBeans();
         determineInterceptorBeans();
         determineDecoratorBeans();
+        determineManagedBeans();
     }
 
     private void determineManagedBeans() {
@@ -731,7 +731,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
             determineProducerFields(managedBean);
             determineDisposerMethods(managedBean);
             determineObserverMethods(managedBean);
-            registerManagedBean(managedBean);
+            registerBean(managedBean);
         }
     }
 
@@ -826,7 +826,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         if (!interceptorBean.isVetoed()) {
             fireProcessBeanEvent(interceptorType, interceptorBean);
             registerInterceptorClass(interceptorType);
-            registerInterceptorBean(interceptorBean);
+            registerBean(interceptorBean);
         }
     }
 
@@ -840,6 +840,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         } else {
             genericBeans.add(bean);
         }
+        contextManager.addBean(bean);
     }
 
     private void registerInterceptorBean(Interceptor<?> interceptorBean) {
@@ -862,7 +863,7 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
         fireProcessBeanAttributesEvent(decoratorType, decoratorBean);
         if (!decoratorBean.isVetoed()) { // vetoed if ProcessBeanAttributes.veto() method was invoked
             fireProcessBeanEvent(decoratorType, decoratorBean);
-            registerDecoratorBean(decoratorBean);
+            registerBean(decoratorBean);
         }
     }
 

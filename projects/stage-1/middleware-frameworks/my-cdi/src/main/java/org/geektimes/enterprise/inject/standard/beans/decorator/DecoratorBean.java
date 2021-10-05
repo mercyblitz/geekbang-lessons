@@ -18,6 +18,7 @@ package org.geektimes.enterprise.inject.standard.beans.decorator;
 
 import org.geektimes.enterprise.inject.standard.beans.ManagedBean;
 
+import javax.enterprise.context.Dependent;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.spi.AnnotatedType;
 import javax.enterprise.inject.spi.Bean;
@@ -26,6 +27,8 @@ import javax.enterprise.inject.spi.Decorator;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Set;
+
+import static org.geektimes.enterprise.inject.util.Exceptions.newDefinitionException;
 
 /**
  * {@link Decorator} {@link Bean}
@@ -50,10 +53,19 @@ import java.util.Set;
  */
 public class DecoratorBean<T> extends ManagedBean<T> implements Decorator<T> {
 
-
-
     public DecoratorBean(AnnotatedType<T> decoratorType, BeanManager beanManager) {
         super(decoratorType, beanManager);
+    }
+
+    @Override
+    public Class<? extends Annotation> getScope() {
+        Class<? extends Annotation> scope = super.getScope();
+        if (scope == null) {
+            scope = Dependent.class;
+        } else if (scope != null && !Dependent.class.equals(scope)) {
+            throw newDefinitionException("The scope of decorator must be declared as @%s!", Dependent.class.getName());
+        }
+        return scope;
     }
 
     @Override

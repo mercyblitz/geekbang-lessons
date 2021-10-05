@@ -19,11 +19,14 @@ package org.geektimes.enterprise.inject.standard.context;
 import javax.enterprise.context.spi.Context;
 import javax.enterprise.context.spi.Contextual;
 import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.AnnotatedType;
+import javax.enterprise.inject.spi.Bean;
 import javax.enterprise.inject.spi.BeanManager;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.LinkedList;
+import java.util.List;
 
-import static org.geektimes.enterprise.inject.util.Contexts.getBeanClass;
+import static org.geektimes.enterprise.inject.util.Contexts.getBeanType;
 
 /**
  * Abstract implementation {@link Context}
@@ -37,11 +40,14 @@ public abstract class AbstractContext implements Context {
 
     protected final Class<? extends Annotation> scope;
 
+    protected final List<Bean<?>> beans;
+
     protected boolean active;
 
     public AbstractContext(BeanManager beanManager, Class<? extends Annotation> scope) {
         this.beanManager = beanManager;
         this.scope = scope;
+        this.beans = new LinkedList<>();
         active();
     }
 
@@ -54,23 +60,49 @@ public abstract class AbstractContext implements Context {
         return scope;
     }
 
+    /**
+     * @param contextual
+     * @param creationalContext
+     * @param <T>
+     * @return <ul>
+     * <li>return an existing instance of the given contextual type, or</li>
+     * <li>if no CreationalContext is given, return a null value, or</li>
+     * <li>if a CreationalContext is given, create a new instance of the given contextual type by calling
+     * Contextual.create(), passing the given CreationalContext, and return the new instance.</li>
+     * </ul>
+     */
     @Override
     public <T> T get(Contextual<T> contextual, CreationalContext<T> creationalContext) {
-        Class<T> beanClass = getBeanClass(contextual);
-        CreationalContext<T> context = creationalContext;
-        if (context == null) {
-            context = beanManager.createCreationalContext(contextual);
+        T instance = getInstance(contextual);
+        if (instance == null) {
+            if (creationalContext != null) {
+                instance = contextual.create(creationalContext);
+            }
         }
-        AnnotatedType<T> beanType = beanManager.createAnnotatedType(beanClass);
-        return get(contextual, context, beanType);
+        return instance;
+//        Class<T> beanClass = getBeanClass(contextual);
+//        Type requiredBeanType = getBeanType(contextual);
+//        CreationalContext<T> context = creationalContext;
+//        if (context == null) {
+//            context = beanManager.createCreationalContext(contextual);
+//        }
+//        AnnotatedType<T> beanType = beanManager.createAnnotatedType(beanClass);
+//        return get(contextual, context, beanType);
     }
 
-    protected abstract <T> T get(Contextual<T> contextual, CreationalContext<T> creationalContext,
-                                 AnnotatedType<T> beanType);
+    private <T> T getInstance(Contextual<T> contextual) {
+        Type requiredBeanType = getBeanType(contextual);
+        return getInstance(contextual, requiredBeanType);
+    }
+
+    protected <T> T getInstance(Contextual<T> contextual, Type requiredBeanType) {
+        // TODO
+        return null;
+    }
 
     @Override
     public <T> T get(Contextual<T> contextual) {
-        return get(contextual, null);
+        return get(contextual, beanManager.createCreationalContext(contextual));
     }
 
     public final void inactive() {
@@ -84,5 +116,9 @@ public abstract class AbstractContext implements Context {
     @Override
     public final boolean isActive() {
         return active;
+    }
+
+    public void addBean(Bean<?> bean) {
+        this.beans.add(bean);
     }
 }

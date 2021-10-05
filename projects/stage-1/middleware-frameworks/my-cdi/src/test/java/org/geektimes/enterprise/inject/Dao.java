@@ -14,24 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.geektimes.enterprise.inject.standard.context;
-
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.spi.Contextual;
-import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.spi.AnnotatedType;
-import javax.enterprise.inject.spi.BeanManager;
-import java.lang.reflect.Type;
+package org.geektimes.enterprise.inject;
 
 /**
- * The Context for {@link ApplicationScoped}
- *
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
- * @since 1.0.0
+ * @since
  */
-public class ApplicationScopedContext extends AbstractAlterableContext {
-
-    public ApplicationScopedContext(BeanManager beanManager) {
-        super(beanManager, ApplicationScoped.class);
-    }
+public class Dao<T extends Persistent> {
 }

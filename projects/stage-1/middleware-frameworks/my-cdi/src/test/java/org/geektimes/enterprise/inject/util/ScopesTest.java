@@ -19,7 +19,6 @@ package org.geektimes.enterprise.inject.util;
 import org.geektimes.enterprise.inject.Book;
 import org.junit.Test;
 
-import javax.enterprise.context.NormalScope;
 import javax.inject.Singleton;
 
 import static org.junit.Assert.assertEquals;
@@ -36,6 +35,6 @@ public class ScopesTest {
     @Test
     public void testGetScope() {
         assertEquals(Singleton.class, Scopes.getScopeType(ScopesTest.class));
-        assertEquals(NormalScope.class, Scopes.getScopeType(Book.class));
+        assertEquals(null, Scopes.getScopeType(Book.class));
     }
 }

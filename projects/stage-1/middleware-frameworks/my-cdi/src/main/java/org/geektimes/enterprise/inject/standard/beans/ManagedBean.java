@@ -16,20 +16,20 @@
  */
 package org.geektimes.enterprise.inject.standard.beans;
 
-import org.geektimes.enterprise.inject.standard.ConstructorParameterInjectionPoint;
 import org.geektimes.enterprise.inject.standard.annotation.ReflectiveAnnotatedType;
 import org.geektimes.enterprise.inject.standard.beans.producer.ProducerFieldBean;
 import org.geektimes.enterprise.inject.standard.beans.producer.ProducerMethodBean;
 import org.geektimes.enterprise.inject.util.Beans;
 
+import javax.enterprise.context.NormalScope;
 import javax.enterprise.context.spi.CreationalContext;
-import javax.enterprise.inject.CreationException;
-import javax.enterprise.inject.spi.*;
-import java.lang.reflect.Constructor;
+import javax.enterprise.inject.spi.Annotated;
+import javax.enterprise.inject.spi.AnnotatedType;
+import javax.enterprise.inject.spi.Bean;
+import javax.enterprise.inject.spi.BeanManager;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import static java.util.Collections.unmodifiableSet;
@@ -59,6 +59,12 @@ public class ManagedBean<T> extends GenericBean<T> {
 
     protected ManagedBean(Class<?> beanClass, BeanManager beanManager) {
         this(new ReflectiveAnnotatedType<>(beanClass), beanManager);
+    }
+
+    @Override
+    public Class<? extends Annotation> getScope() {
+        Class<? extends Annotation> scope = super.getScope();
+        return scope == null ? NormalScope.class : scope;
     }
 
     @Override
@@ -93,7 +99,6 @@ public class ManagedBean<T> extends GenericBean<T> {
     public Set<ProducerMethodBean> getProducerMethodBeans() {
         if (producerMethodBeans == null) {
             producerMethodBeans = resolveProducerMethodBeans(this);
-
         }
         return producerMethodBeans;
     }
@@ -101,7 +106,6 @@ public class ManagedBean<T> extends GenericBean<T> {
     public Set<ProducerFieldBean> getProducerFieldBeans() {
         if (producerFieldBeans == null) {
             producerFieldBeans = resolveProducerFieldBeans(this);
-
         }
         return producerFieldBeans;
     }

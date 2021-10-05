@@ -24,6 +24,7 @@ import org.geektimes.enterprise.inject.util.Injections;
 import javax.enterprise.context.spi.CreationalContext;
 import javax.enterprise.inject.CreationException;
 import javax.enterprise.inject.spi.*;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.util.LinkedList;
 import java.util.List;

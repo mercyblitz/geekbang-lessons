@@ -35,11 +35,9 @@ public abstract class Scopes {
 
     public static Class<? extends Annotation> getScopeType(AnnotatedElement annotatedElement) {
         Annotation scope = findAnnotation(annotatedElement, Scopes::isScope);
-        final Class<? extends Annotation> scopeType;
+        Class<? extends Annotation> scopeType = null;
         if (scope != null) {
             scopeType = scope.annotationType();
-        } else {
-            scopeType = NormalScope.class;
         }
         return scopeType;
     }

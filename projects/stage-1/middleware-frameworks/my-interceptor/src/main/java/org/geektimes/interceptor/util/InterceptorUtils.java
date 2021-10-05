@@ -66,8 +66,8 @@ public abstract class InterceptorUtils {
         return false;
     }
 
-    public static List<Object> sortInterceptors(List<?> interceptors) {
-        List<Object> sortedInterceptors = new LinkedList<>(interceptors);
+    public static <T> List<T> sortInterceptors(List<T> interceptors) {
+        List<T> sortedInterceptors = new LinkedList<>(interceptors);
         sortedInterceptors.sort(PriorityComparator.INSTANCE);
         return sortedInterceptors;
     }
@@ -183,21 +183,6 @@ public abstract class InterceptorUtils {
         return isInterceptionMethod(method, PRE_DESTROY_ANNOTATION_TYPE, void.class);
     }
 
-
-    public static <A extends Annotation> A resolveInterceptorBinding(Method method, Class<A> interceptorBindingType) {
-        if (method == null) {
-            return null;
-        }
-        return searchAnnotation(method, interceptorBindingType);
-    }
-
-    public static <A extends Annotation> A resolveInterceptorBinding(Constructor constructor, Class<A> interceptorBindingType) {
-        if (constructor == null) {
-            return null;
-        }
-        return searchAnnotation(constructor, interceptorBindingType);
-    }
-
     static boolean isInterceptionMethod(Method method, Class<? extends Annotation> annotationType,
                                         Class<?> validReturnType) {
         if (isAnnotationPresent(method, annotationType)) {
@@ -295,6 +280,20 @@ public abstract class InterceptorUtils {
 
     public static boolean isAnnotatedInterceptorBinding(Class<? extends Annotation> annotationType) {
         return isMetaAnnotation(annotationType, INTERCEPTOR_BINDING_ANNOTATION_TYPE);
+    }
+
+    public static <A extends Annotation> A resolveInterceptorBinding(Method method, Class<A> interceptorBindingType) {
+        if (method == null) {
+            return null;
+        }
+        return searchAnnotation(method, interceptorBindingType);
+    }
+
+    public static <A extends Annotation> A resolveInterceptorBinding(Constructor constructor, Class<A> interceptorBindingType) {
+        if (constructor == null) {
+            return null;
+        }
+        return searchAnnotation(constructor, interceptorBindingType);
     }
 
     public static boolean isAnnotatedInterceptorBinding(Executable executable,
