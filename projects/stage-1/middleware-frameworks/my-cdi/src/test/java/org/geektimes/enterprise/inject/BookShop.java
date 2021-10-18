@@ -18,6 +18,7 @@ package org.geektimes.enterprise.inject;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.annotation.Priority;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.event.Observes;
 import javax.enterprise.inject.Disposes;
@@ -60,7 +61,7 @@ public class BookShop extends Business implements Shop<Book> {
     public void dispose(@Disposes Book book) {
     }
 
-    public void onEvent(@Observes ProcessObserverMethod event) {
+    public void onEvent(@Observes @Priority(1) ProcessObserverMethod event) {
         System.out.println(event);
     }
 }

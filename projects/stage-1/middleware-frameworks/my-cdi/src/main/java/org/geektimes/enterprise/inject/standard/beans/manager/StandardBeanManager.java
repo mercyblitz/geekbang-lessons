@@ -915,6 +915,46 @@ public class StandardBeanManager implements BeanManager, Instance<Object> {
      * by the container.
      */
     private void performDeploymentValidation() {
+        validateBeanDependencies();
+        validateBeanSpecialization();
+        abortDeploymentIfProblemsDetected();
+    }
+
+    private void validateBeanDependencies() {
+        validateEnabledBeanDependencies();
+        validateInterceptorBeanDependencies();
+        validateDecoratorBeanDependencies();
+    }
+
+    private void validateEnabledBeanDependencies() {
+        validateManagedBeanDependencies();
+        // TODO
+    }
+
+    private void validateManagedBeanDependencies() {
+        managedBeans.forEach(this::validateManagedBeanDependencies);
+    }
+
+    private void validateManagedBeanDependencies(ManagedBean<?> managedBean) {
+        for (InjectionPoint injectionPoint : managedBean.getInjectionPoints()) {
+            Type requiredType = injectionPoint.getType();
+        }
+        // TODO
+    }
+
+    private void validateInterceptorBeanDependencies() {
+        // TODO
+    }
+
+    private void validateDecoratorBeanDependencies() {
+        // TODO
+    }
+
+    private void validateBeanSpecialization() {
+        // TODO
+    }
+
+    private void abortDeploymentIfProblemsDetected() {
         // TODO
     }
 
