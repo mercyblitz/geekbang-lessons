@@ -26,8 +26,7 @@ import javax.interceptor.Interceptor;
 import java.lang.reflect.Type;
 import java.util.Set;
 
-import static org.geektimes.enterprise.inject.util.Beans.getBeanTypes;
-import static org.geektimes.enterprise.inject.util.Beans.validateManagedBeanType;
+import static org.geektimes.enterprise.inject.util.Beans.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -66,6 +65,14 @@ public class BeansTest {
     @Test(expected = DefinitionException.class)
     public void testValidateManagedBeanC() {
         validateManagedBeanType(C.class);
+    }
+
+    @Test
+    public void testMatches() {
+        assertTrue(matches(String.class, String.class));
+        assertTrue(matches(CharSequence.class, String.class));
+        assertTrue(matches(String[].class, String[].class));
+        assertTrue(matches(int.class, Integer.class));
     }
 
     @Decorator

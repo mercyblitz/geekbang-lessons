@@ -18,6 +18,7 @@ package org.geektimes.commons.reflect.util;
 
 import org.apache.commons.io.filefilter.SuffixFileFilter;
 import org.geektimes.commons.collection.util.CollectionUtils;
+import org.geektimes.commons.collection.util.MapUtils;
 import org.geektimes.commons.constants.Constants;
 import org.geektimes.commons.constants.FileSuffixConstants;
 import org.geektimes.commons.constants.PathConstants;
@@ -137,16 +138,24 @@ public abstract class ClassUtils {
      * Prefix for internal array class names: "[L"
      */
     private static final String INTERNAL_ARRAY_PREFIX = "[L";
+
     /**
-     * Map with primitive type name as key and corresponding primitive type as
+     * A map with primitive type name as key and corresponding primitive type as
      * value, for example: "int" -> "int.class".
      */
-    private static final Map<String, Class<?>> PRIMITIVE_TYPE_NAME_MAP = new HashMap<String, Class<?>>(32);
+    private static final Map<String, Class<?>> PRIMITIVE_TYPE_NAME_MAP;
+
     /**
-     * Map with primitive wrapper type as key and corresponding primitive type
+     * A map with primitive wrapper type as key and corresponding primitive type
      * as value, for example: Integer.class -> int.class.
      */
-    private static final Map<Class<?>, Class<?>> PRIMITIVE_WRAPPER_TYPE_MAP = new HashMap<Class<?>, Class<?>>(16);
+    private static final Map<Class<?>, Class<?>> PRIMITIVE_WRAPPER_TYPE_MAP;
+
+    /**
+     * A map with primitive type as key and its wrapper type
+     * as value, for example: int.class -> Integer.class.
+     */
+    private static final Map<Class<?>, Class<?>> WRAPPER_PRIMITIVE_TYPE_MAP;
 
     private static final char PACKAGE_SEPARATOR_CHAR = '.';
 
@@ -159,22 +168,45 @@ public abstract class ClassUtils {
     private static final Map<String, Set<String>> packageNameToClassNamesMap = initPackageNameToClassNamesMap();
 
     static {
-        PRIMITIVE_WRAPPER_TYPE_MAP.put(Boolean.class, boolean.class);
-        PRIMITIVE_WRAPPER_TYPE_MAP.put(Byte.class, byte.class);
-        PRIMITIVE_WRAPPER_TYPE_MAP.put(Character.class, char.class);
-        PRIMITIVE_WRAPPER_TYPE_MAP.put(Double.class, double.class);
-        PRIMITIVE_WRAPPER_TYPE_MAP.put(Float.class, float.class);
-        PRIMITIVE_WRAPPER_TYPE_MAP.put(Integer.class, int.class);
-        PRIMITIVE_WRAPPER_TYPE_MAP.put(Long.class, long.class);
-        PRIMITIVE_WRAPPER_TYPE_MAP.put(Short.class, short.class);
+        PRIMITIVE_WRAPPER_TYPE_MAP = MapUtils.of(
+                Void.class, Void.TYPE,
+                Boolean.class, Boolean.TYPE,
+                Byte.class, Byte.TYPE,
+                Character.class, Character.TYPE,
+                Short.class, Short.TYPE,
+                Integer.class, Integer.TYPE,
+                Long.class, Long.TYPE,
+                Float.class, Float.TYPE,
+                Double.class, Double.TYPE
+        );
+    }
 
-        Set<Class<?>> primitiveTypeNames = new HashSet<>(32);
-        primitiveTypeNames.addAll(PRIMITIVE_WRAPPER_TYPE_MAP.values());
+    static {
+        WRAPPER_PRIMITIVE_TYPE_MAP = MapUtils.of(
+                Void.TYPE, Void.class,
+                Boolean.TYPE, Boolean.class,
+                Byte.TYPE, Byte.class,
+                Character.TYPE, Character.class,
+                Short.TYPE, Short.class,
+                Boolean.TYPE, Boolean.class,
+                Integer.TYPE, Integer.class,
+                Long.TYPE, Long.class,
+                Float.TYPE, Float.class,
+                Double.TYPE, Double.class
+        );
+    }
+
+    static {
+        Map<String, Class<?>> typeNamesMap = new HashMap<>(16);
+        List<Class<?>> primitiveTypeNames = new ArrayList<>(16);
+        primitiveTypeNames.addAll(asList(boolean.class, byte.class, char.class, double.class,
+                float.class, int.class, long.class, short.class));
         primitiveTypeNames.addAll(asList(boolean[].class, byte[].class, char[].class, double[].class,
                 float[].class, int[].class, long[].class, short[].class));
         for (Class<?> primitiveTypeName : primitiveTypeNames) {
-            PRIMITIVE_TYPE_NAME_MAP.put(primitiveTypeName.getName(), primitiveTypeName);
+            typeNamesMap.put(primitiveTypeName.getName(), primitiveTypeName);
         }
+        PRIMITIVE_TYPE_NAME_MAP = unmodifiableMap(typeNamesMap);
     }
 
     private ClassUtils() {
@@ -300,13 +332,23 @@ public abstract class ClassUtils {
      * @return <code>null</code> if not found
      */
     public static Class<?> resolvePrimitiveType(Class<?> type) {
-        if (type == null) {
-            return null;
-        }
-        if (type.isPrimitive()) {
+        if (isPrimitive(type)) {
             return type;
         }
         return PRIMITIVE_WRAPPER_TYPE_MAP.get(type);
+    }
+
+    /**
+     * Resolve the wrapper class from the primitive type
+     *
+     * @param primitiveType the primitive type
+     * @return <code>null</code> if not found
+     */
+    public static Class<?> resolveWrapperType(Class<?> primitiveType) {
+        if (PRIMITIVE_WRAPPER_TYPE_MAP.containsKey(primitiveType)) {
+            return primitiveType;
+        }
+        return WRAPPER_PRIMITIVE_TYPE_MAP.get(primitiveType);
     }
 
     /**
@@ -1037,6 +1079,19 @@ public abstract class ClassUtils {
         }
 
         return types;
+    }
+
+    public static boolean arrayTypeEquals(Class<?> oneArrayType, Class<?> anotherArrayType) {
+        if (!isArray(oneArrayType) || !isArray(anotherArrayType)) {
+            return false;
+        }
+        Class<?> oneComponentType = oneArrayType.getComponentType();
+        Class<?> anotherComponentType = anotherArrayType.getComponentType();
+        if (isArray(oneComponentType) && isArray(anotherComponentType)) {
+            return arrayTypeEquals(oneComponentType, anotherComponentType);
+        } else {
+            return Objects.equals(oneComponentType, anotherComponentType);
+        }
     }
 
 }

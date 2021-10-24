@@ -32,6 +32,7 @@ import javax.interceptor.Interceptor;
 import java.lang.reflect.*;
 import java.util.Comparator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Predicate;
@@ -352,6 +353,152 @@ public abstract class Beans {
     static void throwDefinitionException(String messagePattern, Object... args) {
         String message = format(messagePattern, args);
         throw new DefinitionException(message);
+    }
+
+
+    /**
+     * Match rules:
+     *
+     * <ul>
+     *     <li>Primitive types are considered to match their corresponding wrapper types in java.lang</li>
+     *     <li>Array types are considered to match only if their element types are identical</li>
+     * </ul>
+     *
+     * @param requiredType
+     * @param beanType
+     * @return
+     */
+    public static boolean matches(Type requiredType, Type beanType) {
+
+        if (Objects.equals(requiredType, beanType)) {
+            return true;
+        }
+
+        if (isClass(requiredType)) {
+            if (isClass(beanType)) {
+                return matches((Class) requiredType, (Class) beanType);
+            } else if (isParameterizedType(beanType)) {
+                ParameterizedType beanParameterizedType = asParameterizedType(beanType);
+                Type beanRawType = beanParameterizedType.getRawType();
+                return matches(requiredType, beanRawType);
+            }
+        } else if (isParameterizedType(requiredType)) {
+            ParameterizedType requiredParameterizedType = asParameterizedType(requiredType);
+            ParameterizedType beanParameterizedType = asParameterizedType(beanType);
+
+            if (requiredParameterizedType != null && beanParameterizedType != null) {
+                Type requiredRawType = requiredParameterizedType.getRawType();
+                Type beanRawType = beanParameterizedType.getRawType();
+                // A parameterized bean type is considered assignable to a parameterized required type
+                // if they have identical raw type
+                if (matches(requiredRawType, beanRawType)) {
+                    /**
+                     * the required type parameter and the bean type parameter are actual types with identical raw
+                     * type, and, if the type is parameterized, the bean type parameter is assignable to the required
+                     * type parameter according to these rules
+                     */
+                    Type[] requiredTypeArguments = requiredParameterizedType.getActualTypeArguments();
+                    Type[] beanTypeArguments = beanParameterizedType.getActualTypeArguments();
+                    int matchCount = 0;
+                    if (requiredTypeArguments.length == beanTypeArguments.length) {
+                        for (int i = 0; i < requiredTypeArguments.length; i++) {
+                            Type requiredTypeArgument = requiredTypeArguments[i];
+                            Type beanTypeArgument = beanTypeArguments[i];
+                            if (matchesTypeArgument(requiredTypeArgument, beanTypeArgument)) {
+                                matchCount++;
+                            }
+                        }
+                    }
+                    return matchCount == requiredTypeArguments.length;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean matchesTypeArgument(Type requiredTypeArgument, Type beanTypeArgument) {
+        if (isWildcardType(requiredTypeArgument)) { // the required type parameter is a wildcard
+            /**
+             * the bean type parameter is an actual type and the
+             * actual type is assignable to the upper bound
+             */
+            WildcardType requiredWildcardType = asWildcardType(requiredTypeArgument);
+            if (isClass(beanTypeArgument)) {
+                return matchesBounds(beanTypeArgument, requiredWildcardType.getUpperBounds());
+            } else if (isTypeVariable(beanTypeArgument)) {
+                /**
+                 *  the bean type parameter is a type variable and the upper bound of the type variable is assignable
+                 *  to or assignable from the upper bound, if any, of the wildcard and
+                 *  assignable from the lower bound, if any, of the wildcard
+                 */
+                TypeVariable beanTypeVariable = asTypeVariable(beanTypeArgument);
+                Type[] upperBounds = beanTypeVariable.getBounds();
+                if (matchesBounds(upperBounds, requiredWildcardType.getUpperBounds())
+                        || matchesBounds(upperBounds, requiredWildcardType.getLowerBounds())) {
+                    return true;
+                }
+            }
+            return false;
+        } else if (isTypeVariable(beanTypeArgument)) {
+            if (isClass(requiredTypeArgument)) {
+                /**
+                 * the required type parameter is an actual type, the bean type parameter is a type variable and
+                 * the actual type is assignable to the upper bound, if any, of the type variable
+                 */
+                TypeVariable beanTypeVariable = asTypeVariable(beanTypeArgument);
+                return matchesBounds(requiredTypeArgument, beanTypeVariable.getBounds());
+            } else if (isTypeVariable(requiredTypeArgument)) {
+                /**
+                 * the required type parameter and the bean type parameter are both type variables and the
+                 * upper bound of the required type parameter is assignable to the upper bound, if any, of the
+                 * bean type parameter.
+                 */
+                TypeVariable requiredTypeVariable = asTypeVariable(requiredTypeArgument);
+                TypeVariable beanTypeVariable = asTypeVariable(beanTypeArgument);
+                return matchesBounds(requiredTypeVariable.getBounds(), beanTypeVariable.getBounds());
+            }
+        }
+        return false;
+    }
+
+    private static boolean matchesBounds(Type[] types, Type[] bounds) {
+        int typesLength = types.length;
+        int matchCount = 0;
+        for (int i = 0; i < typesLength; i++) {
+            Type type = types[i];
+            if (matchesBounds(type, bounds)) {
+                matchCount++;
+            }
+        }
+        return matchCount == typesLength;
+    }
+
+    private static boolean matchesBounds(Type type, Type[] bounds) {
+        int boundsLength = bounds.length;
+        int matchCount = 0;
+        for (int i = 0; i < boundsLength; i++) {
+            Type bound = bounds[i];
+            if (matches(type, bound)) {
+                matchCount++;
+            }
+        }
+        return matchCount == boundsLength;
+    }
+
+    private static boolean matches(Class<?> requiredClass, Class<?> beanClass) {
+        if (isPrimitive(requiredClass)) {
+            return matchesPrimitiveType(requiredClass, beanClass);
+        } else if (isArray(requiredClass)) {
+            return arrayTypeEquals(requiredClass, beanClass);
+        } else {
+            return isAssignableFrom(requiredClass, beanClass);
+        }
+    }
+
+    private static boolean matchesPrimitiveType(Class<?> requiredClass, Type beanType) {
+        Class<?> requiredWrapperType = resolveWrapperType(requiredClass);
+        return Objects.equals(requiredWrapperType, beanType);
     }
 
 }

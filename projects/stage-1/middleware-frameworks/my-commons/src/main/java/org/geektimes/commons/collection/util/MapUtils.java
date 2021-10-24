@@ -18,9 +18,12 @@ package org.geektimes.commons.collection.util;
 
 import org.geektimes.commons.util.BaseUtils;
 
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+
+import static java.util.Collections.unmodifiableMap;
 
 /**
  * @author <a href="mailto:mercyblitz@gmail.com">Mercy</a>
@@ -30,11 +33,11 @@ public abstract class MapUtils extends BaseUtils {
 
     public static Map of(Object... values) {
         int length = values.length;
-        Map map = new LinkedHashMap(length / 2);
+        Map map = new HashMap(length / 2);
         for (int i = 0; i < length; ) {
             map.put(values[i++], values[i++]);
         }
-        return map;
+        return unmodifiableMap(map);
     }
 
     public static <K, V> Map<K, V> newLinkedHashMap() {

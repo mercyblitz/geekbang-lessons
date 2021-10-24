@@ -180,4 +180,78 @@ public class ClassUtilsTest {
         assertFalse(isArray(Object.class));
         assertFalse(isArray(int.class));
     }
+
+    @Test
+    public void testResolvePrimitiveType() {
+        assertEquals(Boolean.TYPE, resolvePrimitiveType(Boolean.TYPE));
+        assertEquals(Boolean.TYPE, resolvePrimitiveType(Boolean.class));
+
+        assertEquals(Byte.TYPE, resolvePrimitiveType(Byte.TYPE));
+        assertEquals(Byte.TYPE, resolvePrimitiveType(Byte.class));
+
+        assertEquals(Character.TYPE, resolvePrimitiveType(Character.TYPE));
+        assertEquals(Character.TYPE, resolvePrimitiveType(Character.class));
+
+        assertEquals(Short.TYPE, resolvePrimitiveType(Short.TYPE));
+        assertEquals(Short.TYPE, resolvePrimitiveType(Short.class));
+
+        assertEquals(Integer.TYPE, resolvePrimitiveType(Integer.TYPE));
+        assertEquals(Integer.TYPE, resolvePrimitiveType(Integer.class));
+
+        assertEquals(Long.TYPE, resolvePrimitiveType(Long.TYPE));
+        assertEquals(Long.TYPE, resolvePrimitiveType(Long.class));
+
+        assertEquals(Float.TYPE, resolvePrimitiveType(Float.TYPE));
+        assertEquals(Float.TYPE, resolvePrimitiveType(Float.class));
+
+        assertEquals(Double.TYPE, resolvePrimitiveType(Double.TYPE));
+        assertEquals(Double.TYPE, resolvePrimitiveType(Double.class));
+    }
+
+    @Test
+    public void testResolveWrapperType() {
+        assertEquals(Boolean.class, resolveWrapperType(Boolean.TYPE));
+        assertEquals(Boolean.class, resolveWrapperType(Boolean.class));
+
+        assertEquals(Byte.class, resolveWrapperType(Byte.TYPE));
+        assertEquals(Byte.class, resolveWrapperType(Byte.class));
+
+        assertEquals(Character.class, resolveWrapperType(Character.TYPE));
+        assertEquals(Character.class, resolveWrapperType(Character.class));
+
+        assertEquals(Short.class, resolveWrapperType(Short.TYPE));
+        assertEquals(Short.class, resolveWrapperType(Short.class));
+
+        assertEquals(Integer.class, resolveWrapperType(Integer.TYPE));
+        assertEquals(Integer.class, resolveWrapperType(Integer.class));
+
+        assertEquals(Long.class, resolveWrapperType(Long.TYPE));
+        assertEquals(Long.class, resolveWrapperType(Long.class));
+
+        assertEquals(Float.class, resolveWrapperType(Float.TYPE));
+        assertEquals(Float.class, resolveWrapperType(Float.class));
+
+        assertEquals(Double.class, resolveWrapperType(Double.TYPE));
+        assertEquals(Double.class, resolveWrapperType(Double.class));
+    }
+
+    @Test
+    public void testArrayTypeEquals() {
+        Class<?> oneArrayType = int[].class;
+        Class<?> anotherArrayType = int[].class;
+
+        assertTrue(arrayTypeEquals(oneArrayType, anotherArrayType));
+
+        oneArrayType = int[][].class;
+        anotherArrayType = int[][].class;
+        assertTrue(arrayTypeEquals(oneArrayType, anotherArrayType));
+
+        oneArrayType = int[][][].class;
+        anotherArrayType = int[][][].class;
+        assertTrue(arrayTypeEquals(oneArrayType, anotherArrayType));
+
+        oneArrayType = int[][][].class;
+        anotherArrayType = int[].class;
+        assertFalse(arrayTypeEquals(oneArrayType, anotherArrayType));
+    }
 }
