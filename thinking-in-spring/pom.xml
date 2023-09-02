@@ -34,7 +34,7 @@
     </modules>
 
     <properties>
-        <spring.version>5.2.2.RELEASE</spring.version>
+        <spring.version>5.2.5.RELEASE</spring.version>
     </properties>
 
     <!-- Spring 依赖管理 -->
